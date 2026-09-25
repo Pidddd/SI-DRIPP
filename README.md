@@ -24,6 +24,7 @@ Sistem Informasi Pendataan Stok dan Point of Sales (POS) tersentralisasi untuk C
 ## 📂 Struktur Folder Proyek
 Agar pengerjaan tidak bentrok, tim wajib menyimpan file sesuai dengan struktur kerangka MVC (Model-View-Controller) berikut:
 
+```text
 SI-DRIPP/
 ├── index.php                 # Halaman utama / Dashboard (mengarahkan sesuai Role)
 ├── README.md                 # Halaman sampul penjelasan repositori
@@ -56,3 +57,4 @@ SI-DRIPP/
 └── docs/                     # Folder Dokumentasi Proyek
     ├── Proposal_PBL.pdf      # Tempat menyimpan proposal yang sudah di-acc
     └── database_sidripp.sql  # Backup file tabel dan relasi database mentah
+```
