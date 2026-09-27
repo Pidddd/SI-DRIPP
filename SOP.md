@@ -19,9 +19,9 @@ Buka terminal di VS Code dan jalankan perintah berurutan ini:
 ```bash
 git checkout dev                  # (Untuk pindah ke branch gabungan tim)
 git pull origin dev               # (Untuk menarik/mengunduh kodingan terbaru dari GitHub agar tidak bentrok)
-git checkout -b nama-tugasmu      # (Untuk membuat branch/kamar baru khusus tugasmu dan langsung pindah ke sana)
+git checkout -b nama-branch       # (Untuk membuat branch/kamar baru khusus tugasmu dan langsung pindah ke sana)
 ```
-*(Catatan: Ganti `nama-tugasmu` dengan fitur yang sedang kamu kerjakan. Contoh: `git checkout -b fitur-login` atau `git checkout -b ui-kasir`).*
+*(Catatan: Ganti `nama-branch` dengan fitur yang sedang kamu kerjakan. Contoh: `git checkout -b fitur-login` atau `git checkout -b ui-kasir`).*
 
 ---
 
@@ -37,7 +37,7 @@ Jalankan perintah berurutan ini:
 ```bash
 git add .                         # (Untuk memasukkan semua perubahan kodemu ke keranjang sementara)
 git commit -m "Pesan kamu"        # (Untuk menyegel dan menyimpan kodemu beserta pesan penjelasannya)
-git push origin nama-tugasmu      # (Untuk mengunggah kodemu dari laptop ke server GitHub)
+git push origin nama-branch       # (Untuk mengunggah kodemu dari laptop ke server GitHub)
 ```
 *(⚠️ **PENTING:** Pada baris push, ujungnya wajib menggunakan nama branch-mu sendiri, JANGAN `dev` atau `main`! Contoh: `git push origin ui-kasir`).*
 
