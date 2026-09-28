@@ -11,7 +11,7 @@ Sistem Informasi Pendataan Stok dan Point of Sales (POS) tersentralisasi untuk C
 
 ## 🛠️ Tech Stack
 *   **Front-End:** HTML5, CSS3, JavaScript, Bootstrap/Tailwind CSS
-*   **Back-End:** PHP (MVC Architecture)
+*   **Back-End:** PHP (OOP & MVC Architecture)
 *   **Database:** MySQL / PostgreSQL
 *   **Design/Prototyping:** Figma
 
@@ -22,27 +22,28 @@ Sistem Informasi Pendataan Stok dan Point of Sales (POS) tersentralisasi untuk C
 4.  **Muhammad Toriq Januarsyah** - QA & Database
 
 ## 📂 Struktur Folder Proyek
-Agar pengerjaan tidak bentrok, tim wajib menyimpan file sesuai dengan struktur kerangka MVC (Model-View-Controller) berikut:
+Agar pengerjaan tidak bentrok dan sesuai standar PBO (OOP), tim wajib menyimpan file sesuai dengan struktur kerangka MVC berikut:
 
 ```text
 SI-DRIPP/
-├── classes/                  # 🌟 FOLDER BARU: Tempat menyimpan Class OOP
-│   ├── Database.php          # Class untuk koneksi ke database
-│   ├── User.php              # Class Induk untuk pengguna
-│   ├── Product.php           # Class untuk cetak biru barang
-│   └── Transaction.php       # Class untuk proses POS kasir
+├── classes/                  # Tempat menyimpan Class OOP (Model)
+│   ├── Database.php          # Class enkapsulasi koneksi database
+│   ├── User.php              # Class Induk manajemen pengguna & hak akses
+│   ├── Product.php           # Class cetak biru master data produk
+│   ├── Transaction.php       # Class untuk logika transaksi & kalkulasi diskon
+│   └── Inventory.php         # Class khusus manajemen stok, defect, & opname
 ├── index.php                 # Halaman utama / Dashboard (mengarahkan sesuai Role)
 ├── README.md                 # Halaman sampul penjelasan repositori
-├── TODO.md                   # File checklist pekerjaan tim
-├── includes/                 # Folder komponen yang dipakai berulang kali
-│   ├── connection.php        # File untuk koneksi ke database MySQL/PostgreSQL
+├── SOP.md                    # Standar Operasional Prosedur Git Workflow Tim
+├── ToDo.md                   # File checklist pekerjaan tim
+├── includes/                 # Folder komponen reuasable (Header, Footer, Sidebar)
 │   ├── header.php            # Bagian atas HTML + tag <head> + Navbar
 │   ├── footer.php            # Bagian bawah HTML + tag </body>
 │   └── sidebar.php           # Menu samping dinamis (berubah tergantung Role)
 ├── assets/                   # Folder untuk file statis (Front-End)
 │   ├── css/style.css         # Styling kustom (pelengkap Bootstrap/Tailwind)
 │   ├── js/app.js             # Script untuk interaksi UI
-│   └── img/                  # Folder untuk logo MKP Store / gambar statis
+│   └── img/                  # Folder logo MKP Store / gambar statis (berisi .gitkeep)
 ├── auth/                     # Modul Autentikasi Sistem
 │   ├── login.php             # Halaman form login
 │   ├── process_login.php     # Validasi username, password, & set $_SESSION Role
@@ -58,7 +59,7 @@ SI-DRIPP/
 ├── transactions/             # Modul Kasir / POS (Akses: Kasir)
 │   ├── index.php             # Katalog interaktif & Keranjang HORECA
 │   ├── process_checkout.php  # Kalkulasi diskon MOQ, potong stok global, input TOP
-│   └── print_invoice.php     # Halaman format Invoice siap cetak (PDF)
+│   └── print_invoice.php     # Halaman format Invoice siap checkout/cetak (PDF)
 ├── inventory/                # Modul Manajemen Inventaris (Akses: Staf Gudang)
 │   ├── stock_in.php          # Halaman input restock barang dari pabrik/vendor
 │   ├── defects.php           # Halaman pemindahan stok cacat/rusak
@@ -66,4 +67,3 @@ SI-DRIPP/
 └── docs/                     # Folder Dokumentasi Proyek
     ├── PBL_Proposal.pdf      # Tempat menyimpan proposal yang sudah di-acc
     └── sidripp_database.sql  # Backup file tabel dan relasi database mentah
-```
