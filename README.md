@@ -26,6 +26,11 @@ Agar pengerjaan tidak bentrok, tim wajib menyimpan file sesuai dengan struktur k
 
 ```text
 SI-DRIPP/
+├── classes/                  # 🌟 FOLDER BARU: Tempat menyimpan Class OOP
+│   ├── Database.php          # Class untuk koneksi ke database
+│   ├── User.php              # Class Induk untuk pengguna
+│   ├── Product.php           # Class untuk cetak biru barang
+│   └── Transaction.php       # Class untuk proses POS kasir
 ├── index.php                 # Halaman utama / Dashboard (mengarahkan sesuai Role)
 ├── README.md                 # Halaman sampul penjelasan repositori
 ├── TODO.md                   # File checklist pekerjaan tim
