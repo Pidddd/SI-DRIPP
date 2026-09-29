@@ -12,6 +12,27 @@ Semua anggota tim wajib mengikuti 4 tahapan di bawah ini setiap kali mengerjakan
 
 ---
 
+## 1. Aturan Percabangan (Branching Strategy)
+Kita menggunakan sistem *Git Workflow* berbasis **Feature Branching**. Dilarang keras melakukan *commit* atau *push* langsung ke branch `main` atau `dev`.
+
+*   **`main`:** Branch utama untuk rilis akhir yang bersih dan siap diuji/dinilai. Hanya PM (Rafid) yang berhak melakukan *merge* ke branch ini.
+*   **`dev`:** Branch integrasi tempat menggabungkan seluruh fitur yang sudah jadi untuk diuji coba bersama.
+*   **`feat/ nama-fitur`:** Branch kerja harian per individu untuk membuat fitur baru.
+*   **`fix/ nama-bug`:** Branch kerja untuk memperbaiki *error* atau *bug*.
+
+---
+
+## 2. Standar Penamaan Branch (Naming Convention)
+Setiap kali anggota tim ingin mengerjakan tugas baru, wajib membuat branch baru dari `dev` dengan format penamaan sebagai berikut:
+> `tipe-tugas/modul-deskripsi-singkat`
+
+**Kategori Tipe Tugas:**
+*   `feat/` : Pembuatan fitur baru (contoh: `feat/products-crud`, `feat/transactions-pos`)
+*   `fix/` : Perbaikan *bug* atau *error* (contoh: `fix/auth-session`, `fix/calc-moq`)
+*   `refactor/` : Perbaikan struktur kode tanpa mengubah fungsi (contoh: `refactor/css-layout`)
+
+---
+
 ## Tahap 1: Awal Buka Terminal (Persiapan)
 Sebelum mulai menulis kode, kamu wajib mengambil versi kode terbaru dari server agar kodemu tidak tertinggal atau menabrak pekerjaan teman yang lain.
 
