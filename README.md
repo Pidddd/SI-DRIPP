@@ -1,13 +1,58 @@
-# SI-DRIPP (Sistem Informasi Pendataan Stok dan Transaksi) 📦
+# 🛒 SI-DRIPP (Sistem Informasi Pendataan Stok dan Transaksi)
+> **CV Mitra Kembar Pradipta (MKP Store)**
 
 Sistem Informasi Pendataan Stok dan Point of Sales (POS) tersentralisasi untuk CV Mitra Kembar Pradipta (MKP Store). Proyek ini dikembangkan untuk mendigitalkan alur kerja operasional, mencegah selisih stok, dan mengotomatiskan diskon HORECA.
 
-## 🚀 Fitur Utama
-*   **Multi-Role Access:** Super Admin, Admin (Manajer), Kasir, dan Staf Gudang.
-*   **POS Kasir:** Pencetakan otomatis *invoice* PDF & kalkulasi diskon Minimum Order Quantity (MOQ).
-*   **Real-time Inventory:** Pemotongan stok global secara otomatis saat transaksi terjadi.
-*   **Manajemen Piutang:** Pelacakan Term of Payment (TOP) untuk klien HORECA.
-*   **Stock Opname Interaktif:** Modul sinkronisasi data fisik vs sistem.
+Aplikasi berbasis web menggunakan **PHP Native** untuk mengelola pendataan barang, transaksi kasir (POS), dan mutasi stok gudang.
+
+## 💡 Apa Itu PHP Native & Cara Menjalankannya?
+**PHP Native** berarti kita membangun sistem ini dari nol menggunakan bahasa PHP murni, tanpa menggunakan kerangka kerja (*framework*) pihak ketiga seperti Laravel atau CodeIgniter. Semua logika bisnis (tambah, edit, hapus data) dan koneksi database kita tulis sendiri menggunakan *Object-Oriented Programming* (OOP) agar performanya ringan dan cepat.
+
+**Langkah Menjalankan Aplikasi di Komputer Lokal:**
+1. **Siapkan Server Lokal:** Pastikan kamu sudah menginstal **XAMPP** atau **Laragon**.
+2. **Nyalakan Service:** Buka aplikasi XAMPP/Laragon, lalu klik **Start** pada modul **Apache** dan **MySQL**.
+3. **Simpan Proyek:** Pindahkan folder `SI-DRIPP-main` ini ke dalam folder `C:\xampp\htdocs\` (jika pakai XAMPP).
+4. **Siapkan Database:**
+   - Buka browser dan ketik `http://localhost/phpmyadmin`.
+   - Buat database baru bernama `sidripp_db`.
+   - Import file `docs/sidripp_database.sql` ke dalam database tersebut.
+5. **Jalankan Aplikasi:** Buka tab baru di browser dan ketik `http://localhost/SI-DRIPP-main`.
+
+---
+
+## 🚀 Fitur Utama (Target Sprint Iterasi 1 - 2 Minggu Ini)
+Sesuai dengan jadwal Milestone PBL, fokus pengerjaan tim selama 2 minggu ke depan adalah meletakkan fondasi sistem dan modul dasar:
+* Implementasi dan sinkronisasi tabel basis data (DDL) ke MySQL/PostgreSQL.
+* Slicing antarmuka (Front-End) untuk Halaman Login dan Dashboard.
+* Integrasi Modul Autentikasi Super Admin (Login, Logout, dan Proteksi Sesi).
+* Modul CRUD Master Data Admin (Tambah, Edit, Hapus data Produk dan Kategori).
+
+---
+
+## ✅ Checklist Pengerjaan Keseluruhan Fitur
+
+**👑 Hak Akses: Super Admin**
+- [ ] Manajemen Pengguna: Pendaftaran akun staf baru, pembaruan data staf, dan penetapan role akses mutlak.
+
+**💼 Hak Akses: Admin (Manajer / Owner)**
+- [ ] Dashboard Analitik: Menampilkan total omzet dan peringatan "Sisa Stok Menipis" untuk stok di bawah 2 karton.
+- [ ] Kelola Master Data Produk: CRUD nama barang, kategori, dan vendor.
+- [ ] Manajemen Piutang (TOP): Penyortiran jatuh tempo teratas dan integrasi tombol pesan WhatsApp ke pelanggan.
+- [ ] Rekapitulasi Penjualan Global: Filter rentang waktu dan ekspor data ke format PDF/Spreadsheet.
+- [ ] Keamanan Data: Proteksi fitur hapus data riwayat operasional menggunakan verifikasi PIN.
+
+**💵 Hak Akses: Petugas Kasir**
+- [ ] Katalog POS Interaktif: Kalkulasi otomatis diskon MOQ untuk minimal pembelian 2 karton.
+- [ ] Formulir Checkout: Opsi status pembayaran Lunas atau Piutang (TOP) beserta input batas tempo (hari) manual.
+- [ ] Transaksi Real-time: Pencetakan otomatis invoice ke format PDF dan pemotongan stok global secara otomatis.
+- [ ] Riwayat Transaksi Kasir: Melihat detail pesanan harian dan kontak pembeli.
+
+**📦 Hak Akses: Staf Gudang**
+- [ ] Modul Barang Masuk: Menambah stok dari pabrik/vendor (status default lunas).
+- [ ] Modul Barang Defect: Memisahkan stok cacat/rusak dengan kolom keterangan alasan spesifik.
+- [ ] Modul Stock Opname Interaktif: Sinkronisasi data sistem vs fisik dengan input selisih (+1/-1) dan indikator validasi warna.
+
+---
 
 ## 🛠️ Tech Stack
 *   **Front-End:** HTML5, CSS3, JavaScript, Bootstrap/Tailwind CSS
