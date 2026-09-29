@@ -30,3 +30,39 @@ Ini adalah halaman antarmuka utama. Setiap folder memiliki struktur logika yang 
 
 ## 5. File Root
 - `index.php`: Ini adalah halaman Dashboard Utama. File ini akan mengecek siapa yang sedang login, lalu menampilkan widget grafik omzet (untuk Admin) atau sekadar ucapan selamat datang (untuk Kasir/Gudang).
+
+---
+# 🔄 Alur Kerja Sistem (System Flow) SI-DRIPP
+
+Dokumen ini menjelaskan bagaimana alur kerja antar-file dan folder di dalam sistem SI-DRIPP agar seluruh tim (Front-End & Back-End) memiliki pemahaman arsitektur yang sama saat menulis kode.
+
+## 1. Konsep Arsitektur: Berbasis Modul (Module-Based)
+Sistem kita **TIDAK** memisahkan folder berdasarkan jabatan (misal: `folder_admin/` atau `folder_kasir/`). Kita menggunakan pemisahan berdasarkan **Fitur/Modul Sistem** (seperti `products/`, `transactions/`, `inventory/`, `users/`). 
+
+**Kenapa?** Agar penulisan kode tidak redundan. Jika Admin dan Kasir sama-sama butuh melihat katalog produk, mereka akan mengakses folder yang sama, namun dengan tombol akses (Edit/Hapus) yang disembunyikan sesuai otoritas jabatannya.
+
+## 2. Alur Hak Akses (Role-Based Access)
+Pusat kendali siapa yang bisa melihat apa, diatur melalui siklus *Login* dan *Sidebar*:
+1. **Login:** Pengguna masuk melalui antarmuka `auth/login.php`.
+2. **Validasi:** Data dilempar ke `auth/process_login.php` untuk dicocokkan dengan *database* melalui logika di `classes/User.php`.
+3. **Penyimpanan Sesi:** Jika cocok, sistem mencatat status pengguna ke dalam fungsi bawaan PHP yaitu `$_SESSION` (contoh: `$_SESSION['role'] = 'Admin'`).
+4. **Navigasi Dinamis:** Saat masuk ke Dashboard (`index.php`), komponen `includes/sidebar.php` akan membaca `$_SESSION['role']` tersebut. *Sidebar* akan melakukan filter logika (`if-else`) untuk menyembunyikan atau memunculkan tautan menu sesuai *role* pengguna saat itu.
+
+## 3. Alur Tampilan Halaman (UI Assembly)
+Untuk mencegah Front-End menulis ulang struktur dasar HTML (`<head>`, `<nav>`, `<footer>`) di setiap halaman, file antarmuka pada modul fitur (misal `products/index.php`) disusun layaknya *puzzle* dengan perintah `require_once`:
+
+```php
+<?php
+require_once '../includes/header.php';  // Merender tag <head>, CSS, dan Header
+require_once '../includes/sidebar.php'; // Merender navigasi menu samping
+?>
+
+<!-- KONTEN HALAMAN DITULIS DI SINI -->
+<div class="main-content">
+    <h2>Katalog Produk</h2>
+    <!-- Tabel atau Form dimasukkan di sini -->
+</div>
+
+<?php
+require_once '../includes/footer.php';  // Merender tag </body> dan script JS
+?>
