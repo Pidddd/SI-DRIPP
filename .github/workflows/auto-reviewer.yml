@@ -1,0 +1,28 @@
+name: Auto Assign Reviewer
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  auto-request-review:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add Reviewer
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            // Ganti "Pidddd" dengan username GitHub kamu yang akurat jika berbeda
+            const reviewer = "Pidddd"; 
+            
+            // Jangan assign jika yang bikin PR kamu sendiri
+            if (pr.user.login !== reviewer) {
+              await github.rest.pulls.requestReviewers({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                reviewers: [reviewer]
+              });
+              console.log(`Berhasil menambahkan ${reviewer} sebagai reviewer.`);
+            }
