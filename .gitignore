@@ -1,0 +1,19 @@
+# IDE & OS Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs & Configs
+*.log
+error_log
+php_errors.log
+
+# Composer (In case used later for mPDF/libraries)
+vendor/
+composer.lock
+
+# Environment Variables
+.env
+.env.local
