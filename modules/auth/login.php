@@ -1,3 +1,10 @@
+/**
+ * UI MODUL AUTH - HALAMAN LOGIN
+ * File: modules/auth/login.php
+ * Fungsi: Menampilkan antarmuka form login.
+ * Aksi Form: Mengarah ke process_login.php (Method POST)
+ */
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
