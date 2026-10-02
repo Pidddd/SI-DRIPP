@@ -17,3 +17,6 @@ composer.lock
 # Environment Variables
 .env
 .env.local
+
+# Database credentials - JANGAN di-commit
+config/database.php
