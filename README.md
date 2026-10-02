@@ -115,17 +115,23 @@ SI-DRIPP/
 ├── SOP.md                      <-- (Isi direvisi jadi SOP Git & PHP Native)
 └── ToDo.md                     <-- (Isi direvisi fokus ke fitur yang belum selesai)
 
+```
+
 ---
+
 ## 💡 Apa Itu PHP Native & Cara Menjalankannya?
-**PHP Native** berarti kita membangun sistem ini dari nol menggunakan bahasa PHP murni, tanpa menggunakan kerangka kerja (*framework*) pihak ketiga seperti Laravel atau CodeIgniter. Semua logika bisnis (tambah, edit, hapus data) dan koneksi database kita tulis sendiri menggunakan *Object-Oriented Programming* (OOP) agar performanya ringan dan cepat.
+
+**PHP Native** berarti kita membangun sistem ini dari nol menggunakan bahasa PHP murni, tanpa menggunakan kerangka kerja (_framework_) pihak ketiga seperti Laravel atau CodeIgniter. Semua logika bisnis (tambah, edit, hapus data) dan koneksi database kita tulis sendiri menggunakan _Object-Oriented Programming_ (OOP) agar performanya ringan dan cepat.
 
 ### 🧠 Penjelasan PHP Native Prosedural
+
 - Proyek ini dibangun menggunakan PHP Native Prosedural Terstruktur.
 - Tanpa Framework: Kami tidak menggunakan Laravel, CodeIgniter, atau framework lainnya.
 - Tanpa OOP (Object-Oriented Programming): Kami tidak menggunakan Class, Object, Inheritance, atau arsitektur MVC murni. Semua logika ditulis secara berurutan menggunakan blok function atau pemrosesan skrip langsung.
-- Pemisahan Tampilan & Logika: Meskipun prosedural, kode tidak ditumpuk dalam satu file. File yang menampilkan antarmuka HTML dipisah dari file yang melakukan eksekusi ke database (biasanya diawali dengan process_).
+- Pemisahan Tampilan & Logika: Meskipun prosedural, kode tidak ditumpuk dalam satu file. File yang menampilkan antarmuka HTML dipisah dari file yang melakukan eksekusi ke database (biasanya diawali dengan process\_).
 
 **Langkah Menjalankan Aplikasi di Komputer Lokal:**
+
 1. **Siapkan Server Lokal:** Pastikan kamu sudah menginstal **XAMPP** atau **Laragon**.
 2. **Nyalakan Service:** Buka aplikasi XAMPP/Laragon, lalu klik **Start** pada modul **Apache** dan **MySQL**.
 3. **Simpan Proyek:** Pindahkan folder `SI-DRIPP-main` ini ke dalam folder `C:\xampp\htdocs\` (jika pakai XAMPP).
@@ -134,4 +140,3 @@ SI-DRIPP/
    - Buat database baru bernama `sidripp_db`.
    - Import file `docs/sidripp_database.sql` ke dalam database tersebut.
 5. **Jalankan Aplikasi:** Buka tab baru di browser dan ketik `http://localhost/SI-DRIPP-main`.
-```
