@@ -45,6 +45,15 @@ SI-DRIPP adalah sistem informasi berbasis web yang dirancang khusus untuk mendig
 
 ---
 
+## 👥 Role Pengguna
+Sistem bersifat tertutup (tanpa fitur registrasi publik) dengan 4 role utama[cite: 2]:
+1. `super_admin`
+2. `admin`
+3. `kasir`
+4. `staf_gudang`
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Bahasa Pemrograman:** PHP Native (Prosedural, Non-OOP, Non-Framework)
@@ -63,57 +72,44 @@ SI-DRIPP adalah sistem informasi berbasis web yang dirancang khusus untuk mendig
 | Muhammad Toriq Januarsyah    | [254107020075] | Back-End & QA              |
 
 ## 📂 Struktur Folder Proyek
-
-Agar pengerjaan tidak bentrok dan sesuai standar PBO (OOP), tim wajib menyimpan file sesuai dengan struktur kerangka MVC berikut:
-
 ```text
 SI-DRIPP/
 ├── .github/
-│   └── workflows/
-│       ├── auto-reviewer.yml
-│       └── php-test.yml
+│   ├── pull_request_template.md  (Baru: Template checklist saat tim membuat PR)
+│   └── workflows/                (Tetap: Auto-reviewer & testing GitHub Actions)
 ├── assets/
-│   ├── css/
-│   │   └── style.css
-│   ├── img/
-│   │   └── .gitkeep
-│   └── js/
-│       └── app.js
-├── components/                 <-- (Folder baru pengganti 'includes')
-│   ├── footer.php
-│   ├── header.php
-│   └── sidebar.php
-├── config/                     <-- (Folder baru khusus konfigurasi)
-│   └── database.php            <-- (Berasal dari includes/connection.php)
+│   ├── css/style.css             (Tetap: Styling khusus SI-DRIPP)
+│   ├── img/                      (Tetap: Aset gambar logo/banner)
+│   └── js/app.js                 (Tetap: Interaktivitas frontend DOM)
+├── components/
+│   ├── header.php                (Tetap: Tag <head>, pemanggil CSS, Navbar atas)
+│   ├── sidebar.php               (Tetap: Menu navigasi kiri, dinamis sesuai role)
+│   └── footer.php                (Tetap: Tag penutup </body>, pemanggil JS)
+├── config/
+│   ├── database.php              (Tetap: Koneksi database prosedural - mysqli/PDO)
+│   └── helper.php                (Baru: File berisi fungsi bantuan murni (format_rupiah, anti_injection) - tanpa class)
 ├── docs/
-│   └── sidripp_database.sql    <-- (Bersih, file Proposal PBL PDF sudah dihapus)
-├── modules/                    <-- (Folder utama baru untuk semua fitur)
-│   ├── auth/
-│   │   ├── login.php
-│   │   ├── logout.php
-│   │   └── process_login.php
-│   ├── dashboard/              <-- (Folder baru disiapkan untuk halaman utama)
-│   ├── inventory/
-│   │   ├── defects.php
-│   │   ├── stock_in.php
-│   │   └── stock_opname.php
-│   ├── products/
-│   │   ├── create.php
-│   │   ├── index.php
-│   │   └── process_create.php
-│   ├── receivables/            <-- (Folder baru disiapkan untuk modul TOP/Piutang)
-│   ├── transactions/
-│   │   ├── index.php
-│   │   ├── print_invoice.php
-│   │   └── process_checkout.php
-│   └── users/
-│       ├── create.php
-│       ├── index.php
-│       └── process_user.php
-├── index.php                   <-- (Halaman routing utama/landing page)
-├── README.md                   <-- (Isi direvisi murni teknis, tanpa PBL/OOP)
-├── SOP.md                      <-- (Isi direvisi jadi SOP Git & PHP Native)
-└── ToDo.md                     <-- (Isi direvisi fokus ke fitur yang belum selesai)
+│   ├── sidripp_database.sql      (Tetap: Skema database yang 100% sinkron ERD revisi)
+│   ├── Proposal_PBL.pdf          (Tetap: Referensi aturan bisnis)
+│   └── ERD_Revisi.jpg            (Baru: Masukkan file gambar ERD ke repo sebagai acuan visual)
+├── modules/                      (Wadah utama logika aplikasi berdasarkan entitas)
+│   ├── auth/                     (Tetap: login, logout, process_login)
+│   ├── dashboard/                (Baru: index.php - Halaman pertama setelah login)
+│   ├── categories/               (Baru: index.php, create.php, process_*.php - Master kategori)
+│   ├── products/                 (Tetap: Master data barang)
+│   ├── inventory/                (Tetap: stock_in, defects, stock_opname - Manajemen fisik)
+│   ├── transactions/             (Tetap: POS Kasir, perhitungan diskon MOQ, invoice)
+│   ├── receivables/              (Baru: Daftar piutang/TOP dan update status lunas)
+│   ├── reports/                  (Baru: Cetak/Ekspor PDF rekap stok & transaksi)
+│   └── users/                    (Tetap: Kelola akun & role oleh Super Admin)
+├── .gitignore                    (Baru: Melindungi OS files, config lokal, & vendor library)
+├── AI-GUIDE.md                   (Tetap - Ditulis Ulang: Konteks untuk prompt AI)
+├── index.php                     (Tetap - Diubah Fungsi: Hanya sebagai Global Router/Redirect)
+├── README.md                     (Tetap - Ditulis Ulang: Profil & setup SI-DRIPP)
+├── SOP.md                        (Tetap - Ditulis Ulang: Aturan kolaborasi tim)
+└── ToDo.md                       (Tetap - Ditulis Ulang: Kanban/Checklist task)
+
+```
 
 ```
 
