@@ -75,44 +75,97 @@ Sistem bersifat tertutup (tanpa fitur registrasi publik) dengan 4 role utama[cit
 ```text
 SI-DRIPP/
 ├── .github/
-│   ├── pull_request_template.md  (Baru: Template checklist saat tim membuat PR)
-│   └── workflows/                (Tetap: Auto-reviewer & testing GitHub Actions)
-├── assets/
-│   ├── css/style.css             (Tetap: Styling khusus SI-DRIPP)
-│   ├── img/                      (Tetap: Aset gambar logo/banner)
-│   └── js/app.js                 (Tetap: Interaktivitas frontend DOM)
-├── components/
-│   ├── header.php                (Tetap: Tag <head>, pemanggil CSS, Navbar atas)
-│   ├── sidebar.php               (Tetap: Menu navigasi kiri, dinamis sesuai role)
-│   └── footer.php                (Tetap: Tag penutup </body>, pemanggil JS)
-├── config/
-│   ├── database.php              (Tetap: Koneksi database prosedural - mysqli/PDO)
-│   └── helper.php                (Baru: File berisi fungsi bantuan murni (format_rupiah, anti_injection) - tanpa class)
-├── docs/
-│   ├── sidripp_database.sql      (Tetap: Skema database yang 100% sinkron ERD revisi)
-│   ├── Proposal_PBL.pdf          (Tetap: Referensi aturan bisnis)
-│   └── ERD_Revisi.jpg            (Baru: Masukkan file gambar ERD ke repo sebagai acuan visual)
-├── modules/                      (Wadah utama logika aplikasi berdasarkan entitas)
-│   ├── auth/                     (Tetap: login, logout, process_login)
-│   ├── dashboard/                (Baru: index.php - Halaman pertama setelah login)
-│   ├── categories/               (Baru: index.php, create.php, process_*.php - Master kategori)
-│   ├── products/                 (Tetap: Master data barang)
-│   ├── inventory/                (Tetap: stock_in, defects, stock_opname - Manajemen fisik)
-│   ├── transactions/             (Tetap: POS Kasir, perhitungan diskon MOQ, invoice)
-│   ├── receivables/              (Baru: Daftar piutang/TOP dan update status lunas)
-│   ├── reports/                  (Baru: Cetak/Ekspor PDF rekap stok & transaksi)
-│   └── users/                    (Tetap: Kelola akun & role oleh Super Admin)
-├── .gitignore                    (Baru: Melindungi OS files, config lokal, & vendor library)
-├── AI-GUIDE.md                   (Tetap - Ditulis Ulang: Konteks untuk prompt AI)
-├── index.php                     (Tetap - Diubah Fungsi: Hanya sebagai Global Router/Redirect)
-├── README.md                     (Tetap - Ditulis Ulang: Profil & setup SI-DRIPP)
-├── SOP.md                        (Tetap - Ditulis Ulang: Aturan kolaborasi tim)
-└── ToDo.md                       (Tetap - Ditulis Ulang: Kanban/Checklist task)
+│   ├── pull_request_template.md     (Template checklist saat tim bikin PR)
+│   └── workflows/
+│       ├── auto-reviewer.yml        (Robot pengecek kode GitHub)
+│       └── php-test.yml             (Robot pengetes kode GitHub)
+│
+├── assets/                          (Folder khusus Frontend / Tampilan)
+│   ├── css/
+│   │   └── style.css                (File desain warna dan tata letak)
+│   ├── img/
+│   │   └── .gitkeep                 (Tempat nyimpan logo/gambar)
+│   └── js/
+│       └── app.js                   (File javascript untuk interaksi UI)
+│
+├── components/                      (Folder potongan UI yang dipakai berulang)
+│   ├── footer.php                   (Tag penutup HTML & pemanggil JS)
+│   ├── header.php                   (Tag pembuka HTML, Navbar atas, pemanggil CSS)
+│   └── sidebar.php                  (Menu navigasi kiri, dinamis sesuai role)
+│
+├── config/                          (Folder Inti / Mesin Backend)
+│   ├── auth_guard.php               (Polisi Penjaga: Cek session & cegah akses ilegal)
+│   ├── bootstrap.php                (File Utama: Jalankan session, panggil guard & db)
+│   ├── database.php         (Template koneksi DB yang di-push ke GitHub - PASSWORD KOSONG)
+│   └── helper.php                   (Kumpulan fungsi bantuan: format_rupiah, sanitasi)
+│
+├── docs/                            (Dokumen referensi tim)
+│   └── sidripp_database.sql         (File SQL untuk di-import ke phpMyAdmin)
+│
+├── modules/                         (Ruang Kerja Utama Fitur Aplikasi)
+│   │
+│   ├── auth/                        (Modul Login)
+│   │   ├── login.php                (UI: Halaman form login)
+│   │   └── process/                 (Backend: Folder khusus pemrosesan)
+│   │       ├── login.php            (Cek password ke DB, set session)
+│   │       └── logout.php           (Hancurkan session, tendang ke luar)
+│   │
+│   ├── categories/                  (Modul Master Kategori)
+│   │   ├── create.php               (UI: Form tambah kategori)
+│   │   ├── index.php                (UI: Tabel daftar kategori)
+│   │   └── process/
+│   │       └── create.php           (Backend: INSERT kategori ke DB)
+│   │
+│   ├── dashboard/                   (Modul Halaman Utama setelah Login)
+│   │   └── index.php                (UI: Menampilkan ringkasan/widget statistik)
+│   │
+│   ├── inventory/                   (Modul Gudang)
+│   │   ├── defects.php              (UI: Form laporan barang rusak)
+│   │   ├── stock_in.php             (UI: Form barang masuk dari vendor)
+│   │   ├── stock_opname.php         (UI: Form pengecekan stok fisik vs sistem)
+│   │   └── process/
+│   │       ├── defects.php          (Backend: Simpan data defect & kurangi stok aktual)
+│   │       ├── stock_in.php         (Backend: Tambah stok aktual produk)
+│   │       └── stock_opname.php     (Backend: Hitung selisih & simpan histori)
+│   │
+│   ├── products/                    (Modul Master Produk)
+│   │   ├── create.php               (UI: Form tambah produk baru)
+│   │   ├── index.php                (UI: Tabel katalog produk)
+│   │   └── process/
+│   │       └── create.php           (Backend: INSERT produk baru ke DB)
+│   │
+│   ├── receivables/                 (Modul Piutang / Belum Lunas)
+│   │   ├── index.php                (UI: Tabel daftar transaksi yang belum lunas)
+│   │   └── process/
+│   │       └── update_status.php    (Backend: Ubah status dari Belum Lunas jadi Lunas)
+│   │
+│   ├── reports/                     (Modul Laporan / Cetak PDF)
+│   │   ├── index.php                (UI: Tampilan filter tanggal laporan)
+│   │   └── process/
+│   │       └── export_pdf.php       (Backend: Query raksasa & generate PDF)
+│   │
+│   ├── transactions/                (Modul Kasir / POS)
+│   │   ├── index.php                (UI: Layar kasir tempat milih barang & input qty)
+│   │   ├── print_invoice.php        (UI: Tampilan struk nota untuk di-print)
+│   │   └── process/
+│   │       └── checkout.php         (Backend: INSERT transaksi, hitung diskon MOQ, potong stok)
+│   │
+│   └── users/                       (Modul Manajemen Pengguna & Role)
+│       ├── create.php               (UI: Form tambah akun)
+│       ├── index.php                (UI: Tabel daftar user (Admin, Kasir, dll))
+│       └── process/
+│           └── create.php           (Backend: INSERT user baru ke DB)
+│
+├── .gitignore                       (Aturan: Daftar file yang DILARANG masuk GitHub)
+├── AI-GUIDE.md                      (Prompt wajib jika tim mau pakai ChatGPT/Gemini)
+├── index.php                        (Router: Mengarahkan user yang baru buka web)
+├── README.md                        (Profil proyek, cara install)
+├── SOP.md                           (Aturan workflow Git & standar kode)
+└── ToDo.md                          (Checklist pembagian tugas tim)
 
 ```
 
----
-
+--- 
 ## 💡 Apa Itu PHP Native & Cara Menjalankannya?
 
 **PHP Native** berarti kita membangun sistem ini dari nol menggunakan bahasa PHP murni, tanpa menggunakan kerangka kerja (_framework_) pihak ketiga seperti Laravel atau CodeIgniter. Semua logika bisnis (tambah, edit, hapus data) dan koneksi database kita tulis sendiri menggunakan _Object-Oriented Programming_ (OOP) agar performanya ringan dan cepat.
@@ -134,3 +187,4 @@ SI-DRIPP/
    - Buat database baru bernama `sidripp_db`.
    - Import file `docs/sidripp_database.sql` ke dalam database tersebut.
 5. **Jalankan Aplikasi:** Buka tab baru di browser dan ketik `http://localhost/SI-DRIPP-main`.
+---
