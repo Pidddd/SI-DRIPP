@@ -96,7 +96,7 @@ SI-DRIPP/
 ├── config/                          (Folder Inti / Mesin Backend)
 │   ├── auth_guard.php               (Polisi Penjaga: Cek session & cegah akses ilegal)
 │   ├── bootstrap.php                (File Utama: Jalankan session, panggil guard & db)
-│   ├── database.php         (Template koneksi DB yang di-push ke GitHub - PASSWORD KOSONG)
+│   ├── database.example.php         (Template koneksi DB yang di-push ke GitHub - PASSWORD KOSONG)
 │   └── helper.php                   (Kumpulan fungsi bantuan: format_rupiah, sanitasi)
 │
 ├── docs/                            (Dokumen referensi tim)
