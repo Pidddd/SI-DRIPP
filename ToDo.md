@@ -1,68 +1,59 @@
-# 📝 Panduan Tugas Per File (Pembagian Kerja Tim)
+# Panduan Tugas dan Alur Kerja Sistem (To-Do List)
 
-File ini menjelaskan fungsi setiap file PHP yang ada di struktur direktori kita, agar tim Back-End (Timothy & Toriq) dan Front-End (Inas) tahu persis di mana harus menulis kodenya.
+## A. Alur Kerja Sistem (System Flow) SI-DRIPP
 
-## 1. Folder `classes/` (Pusat Logika Back-End / OOP)
-Di sini kita akan menulis *query* database. Dilarang menulis perintah SQL di luar folder ini .
-- `Database.php`: Berisi konfigurasi PDO (Host, User, Password, DB Name) dan fungsi untuk koneksi ke database.
-- `User.php`: Berisi fungsi untuk cek login, hashing password, dan CRUD data pegawai (Super Admin).
-- `Product.php`: Berisi fungsi CRUD barang, pengecekan stok minimum (<2 karton), dan pengurangan stok otomatis.
-- `Transaction.php`: Berisi fungsi untuk menyimpan nota penjualan, kalkulasi diskon MOQ, dan manajemen TOP (utang).
-- `Inventory.php`: Berisi fungsi untuk mencatat mutasi barang masuk, barang defect, dan pencatatan stock opname.
+Untuk memahami bagaimana aplikasi ini berjalan, pahami siklus data berikut:
 
-## 2. Folder `includes/` (Komponen UI Front-End)
-Inas akan memotong (slicing) elemen desain yang berulang ke sini agar tidak perlu diketik berkali-kali.
-- `header.php`: Berisi tag `<head>`, pemanggilan file CSS Bootstrap/Tailwind, dan navigasi atas (Navbar).
-- `sidebar.php`: Berisi menu navigasi samping yang dinamis (menu akan disembunyikan/ditampilkan berdasarkan pengecekan `$_SESSION['role']`).
-- `footer.php`: Berisi tag penutup `</body>` dan pemanggilan *script* JavaScript.
+1. **Master Data (`modules/users` & `modules/products`):** Sistem dimulai dari Admin yang mendaftarkan akun pegawai dan memasukkan data katalog produk. Stok awal produk diatur ke 0.
+2. **Barang Masuk (`modules/inventory/stock_in.php`):** Karyawan gudang mencatat suplai barang yang datang dari pabrik/vendor. Sistem akan menambah `Stok_Aktual` di tabel `products`.
+3. **Kasir / POS (`modules/transactions`):** Karyawan kasir melayani pembeli. Saat tombol _Checkout_ ditekan:
+   - Data pelanggan dan total harga masuk ke tabel `Transactions`.
+   - Rincian belanja masuk ke tabel `Transaction_Details`.
+   - `Stok_Aktual` di tabel `products` berkurang otomatis sesuai jumlah yang dibeli.
+4. **Piutang / TOP (`modules/receivables`):** Jika transaksi kasir tadi ditandai "Belum Lunas", data akan muncul di halaman Receivables. Modul ini digunakan untuk memantau jatuh tempo dan memproses pelunasan hutang pelanggan.
+5. **Penyesuaian Gudang (`modules/inventory`):** Jika ada barang yang rusak/hilang, gudang menggunakan form `defects.php` untuk memotong stok. Untuk penyesuaian besar-besaran, gunakan `stock_opname.php`.
 
-## 3. Folder `auth/` (Sistem Login)
-- `login.php`: Tampilan form login (Input Username & Password).
-- `process_login.php`: File logika murni (tanpa HTML) untuk mengecek kecocokan password ke `classes/User.php` lalu menyimpan sesi `$_SESSION['user_id']` dan `$_SESSION['role']`.
-- `logout.php`: File untuk menghancurkan sesi (`session_destroy()`) dan melempar *user* kembali ke `login.php`.
+## B. Panduan Tugas Per File (Pembagian Kerja Tim)
 
-## 4. Folder Modul Fitur (`users/`, `products/`, `inventory/`, `transactions/`)
-Ini adalah halaman antarmuka utama. Setiap folder memiliki struktur logika yang sama:
-- `index.php`: Halaman utama modul yang menampilkan tabel data (View). Contoh: `products/index.php` menampilkan tabel daftar barang.
-- `create.php` / `defects.php` / dll: Halaman yang berisi formulir (Form HTML) untuk menginput data baru.
-- `process_*.php` (misal `process_create.php`): File tak terlihat (Back-End) yang menerima data `$_POST` dari formulir, lalu mengirimkannya ke class terkait di folder `classes/`, dan terakhir melakukan *redirect* kembali ke `index.php`.
-- `print_invoice.php` (di folder transactions): Khusus untuk menarik data nota dan me-render-nya ke bentuk layout cetak/PDF.
+Setiap anggota tim akan ditugaskan untuk menghidupkan fungsi-fungsi di bawah ini:
 
-## 5. File Root
-- `index.php`: Ini adalah halaman Dashboard Utama. File ini akan mengecek siapa yang sedang login, lalu menampilkan widget grafik omzet (untuk Admin) atau sekadar ucapan selamat datang (untuk Kasir/Gudang).
+### 1. Folder `modules/products/` & `modules/users/` (Modul Master Data)
 
----
-# 🔄 Alur Kerja Sistem (System Flow) SI-DRIPP
+- **Status Saat Ini:** Read (Index) dan Create sudah selesai.
+- **Tugas Selanjutnya:**
+  - `edit.php`: Buat antarmuka yang menangkap `$_GET['id']`, lalu ambil data lama dari database untuk ditampilkan ke dalam nilai `input` form.
+  - `process_edit.php`: Buat logika validasi POST dan eksekusi query `UPDATE` ke database.
+  - `delete.php`: Buat script yang menangkap `$_GET['id']`, eksekusi query `DELETE`, lalu `header('Location: index.php')`.
 
-Dokumen ini menjelaskan bagaimana alur kerja antar-file dan folder di dalam sistem SI-DRIPP agar seluruh tim (Front-End & Back-End) memiliki pemahaman arsitektur yang sama saat menulis kode.
+### 2. Folder `modules/inventory/` (Modul Gudang)
 
-## 1. Konsep Arsitektur: Berbasis Modul (Module-Based)
-Sistem kita **TIDAK** memisahkan folder berdasarkan jabatan (misal: `folder_admin/` atau `folder_kasir/`). Kita menggunakan pemisahan berdasarkan **Fitur/Modul Sistem** (seperti `products/`, `transactions/`, `inventory/`, `users/`). 
+- **Status Saat Ini:** Hanya ada file UI form, belum bisa memproses data.
+- **Tugas Selanjutnya:**
+  - `process_inventory.php`: Buat satu file utama yang menangani _submit_ dari 3 form berbeda.
+  - Jika kiriman berasal dari form `stock_in.php` ➔ Eksekusi query `UPDATE products SET Stok_Aktual = Stok_Aktual + [Kuantitas]`.
+  - Jika kiriman berasal dari form `defects.php` ➔ Eksekusi query `UPDATE products SET Stok_Aktual = Stok_Aktual - [Kuantitas]`, dan simpan catatan/keterangan rusaknya.
+  - Jika dari `stock_opname.php` ➔ Sesuaikan stok dan catat selisihnya.
 
-**Kenapa?** Agar penulisan kode tidak redundan. Jika Admin dan Kasir sama-sama butuh melihat katalog produk, mereka akan mengakses folder yang sama, namun dengan tombol akses (Edit/Hapus) yang disembunyikan sesuai otoritas jabatannya.
+### 3. Folder `modules/transactions/` (Modul Kasir)
 
-## 2. Alur Hak Akses (Role-Based Access)
-Pusat kendali siapa yang bisa melihat apa, diatur melalui siklus *Login* dan *Sidebar*:
-1. **Login:** Pengguna masuk melalui antarmuka `auth/login.php`.
-2. **Validasi:** Data dilempar ke `auth/process_login.php` untuk dicocokkan dengan *database* melalui logika di `classes/User.php`.
-3. **Penyimpanan Sesi:** Jika cocok, sistem mencatat status pengguna ke dalam fungsi bawaan PHP yaitu `$_SESSION` (contoh: `$_SESSION['role'] = 'Admin'`).
-4. **Navigasi Dinamis:** Saat masuk ke Dashboard (`index.php`), komponen `includes/sidebar.php` akan membaca `$_SESSION['role']` tersebut. *Sidebar* akan melakukan filter logika (`if-else`) untuk menyembunyikan atau memunculkan tautan menu sesuai *role* pengguna saat itu.
+- **Status Saat Ini:** Hanya UI kasir kosong, logika inti belum ada.
+- **Tugas Selanjutnya:**
+  - `process_checkout.php`: Tulis logika penyimpanan multi-tabel. **Wajib menggunakan Transaction Control (`mysqli_begin_transaction`)**.
+    1. Lakukan `INSERT` ke tabel `Transactions`.
+    2. Dapatkan ID transaksi yang baru dibuat (`mysqli_insert_id`).
+    3. Lakukan `foreach` pada data keranjang. Di dalam _looping_, jalankan `INSERT` ke `Transaction_Details` dan `UPDATE` potong stok ke tabel `products`.
+    4. Jika sukses semua, lakukan `mysqli_commit()`. Jika gagal, `mysqli_rollback()`.
+  - `print_invoice.php`: Buat layout struk pembayaran khusus printer kasir dan picu `window.print()` pada JavaScript.
 
-## 3. Alur Tampilan Halaman (UI Assembly)
-Untuk mencegah Front-End menulis ulang struktur dasar HTML (`<head>`, `<nav>`, `<footer>`) di setiap halaman, file antarmuka pada modul fitur (misal `products/index.php`) disusun layaknya *puzzle* dengan perintah `require_once`:
+### 4. Folder `modules/receivables/` (Modul Piutang)
 
-```php
-<?php
-require_once '../includes/header.php';  // Merender tag <head>, CSS, dan Header
-require_once '../includes/sidebar.php'; // Merender navigasi menu samping
-?>
+- **Status Saat Ini:** Belum ada file sama sekali.
+- **Tugas Selanjutnya:**
+  - `index.php`: Buat antarmuka tabel yang menampilkan hasil query `SELECT` dari tabel `Transactions` dengan filter `WHERE Status_Pembayaran = 'Belum Lunas'`.
+  - `process_payment.php`: Buat logika query `UPDATE` untuk mengubah `Status_Pembayaran` menjadi 'Lunas' ketika pelanggan menyelesaikan tagihannya.
 
-<!-- KONTEN HALAMAN DITULIS DI SINI -->
-<div class="main-content">
-    <h2>Katalog Produk</h2>
-    <!-- Tabel atau Form dimasukkan di sini -->
-</div>
+### 5. Folder `modules/dashboard/` (Modul Laporan)
 
-<?php
-require_once '../includes/footer.php';  // Merender tag </body> dan script JS
-?>
+- **Status Saat Ini:** Belum ada file.
+- **Tugas Selanjutnya:**
+  - `index.php`: Buat tampilan ringkasan (widget) menggunakan fungsi `COUNT()` dan `SUM()` MySQL untuk menampilkan: Total Transaksi Hari Ini, Total Piutang Berjalan, dan Daftar Barang yang Stoknya Menipis.

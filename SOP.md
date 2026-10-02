@@ -3,6 +3,7 @@
 Dokumen ini adalah panduan wajib bagi seluruh anggota pengembang SI-DRIPP (Kelompok 404) dalam melakukan manajemen kode menggunakan Git dan GitHub.
 
 ## 🚨 Aturan Mutlak
+
 1. **DILARANG KERAS** melakukan `commit` dan `push` langsung ke branch `main`.
 2. **DILARANG KERAS** melakukan `commit` dan `push` langsung ke branch `dev`.
 3. Branch `main` hanya digunakan untuk rilis final / demo dosen.
@@ -13,64 +14,76 @@ Semua anggota tim wajib mengikuti 4 tahapan di bawah ini setiap kali mengerjakan
 ---
 
 ## 1. Aturan Percabangan (Branching Strategy)
-Kita menggunakan sistem *Git Workflow* berbasis **Feature Branching**. Dilarang keras melakukan *commit* atau *push* langsung ke branch `main` atau `dev`.
 
-*   **`main`:** Branch utama untuk rilis akhir yang bersih dan siap diuji/dinilai. Hanya PM (Rafid) yang berhak melakukan *merge* ke branch ini.
-*   **`dev`:** Branch integrasi tempat menggabungkan seluruh fitur yang sudah jadi untuk diuji coba bersama.
-*   **`feat/ nama-fitur`:** Branch kerja harian per individu untuk membuat fitur baru.
-*   **`fix/ nama-bug`:** Branch kerja untuk memperbaiki *error* atau *bug*.
+Kita menggunakan sistem _Git Workflow_ berbasis **Feature Branching**. Dilarang keras melakukan _commit_ atau _push_ langsung ke branch `main` atau `dev`.
+
+- **`main`:** Branch utama untuk rilis akhir yang bersih dan siap diuji/dinilai. Hanya PM (Rafid) yang berhak melakukan _merge_ ke branch ini.
+- **`dev`:** Branch integrasi tempat menggabungkan seluruh fitur yang sudah jadi untuk diuji coba bersama.
+- **`feat/ nama-fitur`:** Branch kerja harian per individu untuk membuat fitur baru.
+- **`fix/ nama-bug`:** Branch kerja untuk memperbaiki _error_ atau _bug_.
 
 ---
 
 ## 2. Standar Penamaan Branch (Naming Convention)
+
 Setiap kali anggota tim ingin mengerjakan tugas baru, wajib membuat branch baru dari `dev` dengan format penamaan sebagai berikut:
+
 > `tipe-tugas/modul-deskripsi-singkat`
 
 **Kategori Tipe Tugas:**
-*   `feat/` : Pembuatan fitur baru (contoh: `feat/products-crud`, `feat/transactions-pos`)
-*   `fix/` : Perbaikan *bug* atau *error* (contoh: `fix/auth-session`, `fix/calc-moq`)
-*   `refactor/` : Perbaikan struktur kode tanpa mengubah fungsi (contoh: `refactor/css-layout`)
+
+- `feat/` : Pembuatan fitur baru (contoh: `feat/products-crud`, `feat/transactions-pos`)
+- `fix/` : Perbaikan _bug_ atau _error_ (contoh: `fix/auth-session`, `fix/calc-moq`)
+- `refactor/` : Perbaikan struktur kode tanpa mengubah fungsi (contoh: `refactor/css-layout`)
 
 ---
 
 ## Tahap 1: Awal Buka Terminal (Persiapan)
+
 Sebelum mulai menulis kode, kamu wajib mengambil versi kode terbaru dari server agar kodemu tidak tertinggal atau menabrak pekerjaan teman yang lain.
 
 Buka terminal di VS Code dan jalankan perintah berurutan ini:
+
 ```bash
 git checkout dev                  # (Untuk pindah ke branch gabungan tim)
 git pull origin dev               # (Untuk menarik/mengunduh kodingan terbaru dari GitHub agar tidak bentrok)
 git checkout -b nama-branch       # (Untuk membuat branch/kamar baru khusus tugasmu dan langsung pindah ke sana)
 ```
-*(Catatan: Ganti `nama-branch` dengan fitur yang sedang kamu kerjakan. Contoh: `git checkout -b fitur-login` atau `git checkout -b ui-kasir`).*
+
+_(Catatan: Ganti `nama-branch` dengan fitur yang sedang kamu kerjakan. Contoh: `git checkout -b fitur-login` atau `git checkout -b ui-kasir`)._
 
 ---
 
 ## Tahap 2: Proses Pengerjaan (Koding)
+
 Silakan menulis kode, mengedit file, atau merancang UI sesuai pembagian tugas di branch kamu sendiri.
 
 ---
 
 ## Tahap 3: Akhir Koding (Penyimpanan & Push)
+
 Jika fiturmu sudah selesai atau kamu ingin menyimpan progres untuk dilanjutkan besok, kirim kodemu dari terminal ke GitHub.
 
 Jalankan perintah berurutan ini:
+
 ```bash
 git add .                         # (Untuk memasukkan semua perubahan kodemu ke keranjang sementara)
 git commit -m "Pesan kamu"        # (Untuk menyegel dan menyimpan kodemu beserta pesan penjelasannya)
 git push origin nama-branch       # (Untuk mengunggah kodemu dari laptop ke server GitHub)
 ```
-*(⚠️ **PENTING:** Pada baris push, ujungnya wajib menggunakan nama branch-mu sendiri, JANGAN `dev` atau `main`! Contoh: `git push origin ui-kasir`).*
+
+_(⚠️ **PENTING:** Pada baris push, ujungnya wajib menggunakan nama branch-mu sendiri, JANGAN `dev` atau `main`! Contoh: `git push origin ui-kasir`)._
 
 ---
 
 ## Tahap 4: Pengajuan Penggabungan (Pull Request)
+
 Setelah berhasil di-push melalui terminal, tugas terakhirmu ada di web GitHub:
 
 1. Buka halaman repositori SI-DRIPP di GitHub.
 2. Klik tombol hijau **"Compare & pull request"** yang otomatis muncul.
 3. Pastikan target penggabungannya mengarah ke **`dev`** (`base: dev` <- `compare: nama-tugasmu`).
 4. Klik tombol **Create Pull Request**.
-5. Segera konfirmasi di grup WhatsApp: *"Kodinganku udah di-push, tolong di-acc (Merge) ke dev ya."*
+5. Segera konfirmasi di grup WhatsApp: _"Kodinganku udah di-push, tolong di-acc (Merge) ke dev ya."_
 
 > **Project Manager (Rafid)** akan mereview kodemu. Jika tidak ada error atau bentrok (conflict), kodemu akan di-Merge ke dalam branch `dev` dan resmi menjadi bagian dari sistem.
