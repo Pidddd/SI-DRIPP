@@ -46,7 +46,9 @@ SI-DRIPP adalah sistem informasi berbasis web yang dirancang khusus untuk mendig
 ---
 
 ## 👥 Role Pengguna
+
 Sistem bersifat tertutup (tanpa fitur registrasi publik) dengan 4 role utama[cite: 2]:
+
 1. `super_admin`
 2. `admin`
 3. `kasir`
@@ -57,7 +59,7 @@ Sistem bersifat tertutup (tanpa fitur registrasi publik) dengan 4 role utama[cit
 ## 🛠️ Tech Stack
 
 - **Bahasa Pemrograman:** PHP Native (Prosedural, Non-OOP, Non-Framework)
-- **Database:** MySQL / MariaDB
+- **Database:** PostgreSQL
 - **Frontend:** HTML5, CSS3, Vanilla JavaScript
 - **Version Control:** Git & GitHub
 - **Design/Prototyping:** Figma
@@ -72,6 +74,7 @@ Sistem bersifat tertutup (tanpa fitur registrasi publik) dengan 4 role utama[cit
 | Muhammad Toriq Januarsyah    | [254107020075] | Back-End & QA              |
 
 ## 📂 Struktur Folder Proyek
+
 ```text
 SI-DRIPP/
 ├── .github/
@@ -165,7 +168,8 @@ SI-DRIPP/
 
 ```
 
---- 
+---
+
 ## 💡 Apa Itu PHP Native & Cara Menjalankannya?
 
 **PHP Native** berarti kita membangun sistem ini dari nol menggunakan bahasa PHP murni, tanpa menggunakan kerangka kerja (_framework_) pihak ketiga seperti Laravel atau CodeIgniter. Semua logika bisnis (tambah, edit, hapus data) dan koneksi database kita tulis sendiri menggunakan _Object-Oriented Programming_ (OOP) agar performanya ringan dan cepat.
@@ -179,12 +183,13 @@ SI-DRIPP/
 
 **Langkah Menjalankan Aplikasi di Komputer Lokal:**
 
-1. **Siapkan Server Lokal:** Pastikan kamu sudah menginstal **XAMPP** atau **Laragon**.
-2. **Nyalakan Service:** Buka aplikasi XAMPP/Laragon, lalu klik **Start** pada modul **Apache** dan **MySQL**.
+1. **Siapkan Server Lokal:** Pastikan kamu sudah menginstal **PostgreSQL** atau **Laragon**.
+2. **Nyalakan Service:** Buka aplikasi PostgreSQL/Laragon, lalu klik **Start** pada modul **Apache** dan **PostgreSQL**.
 3. **Simpan Proyek:** Pindahkan folder `SI-DRIPP-main` ini ke dalam folder `C:\xampp\htdocs\` (jika pakai XAMPP).
 4. **Siapkan Database:**
-   - Buka browser dan ketik `http://localhost/phpmyadmin`.
+   - buka koneksi melalui aplikasi DBeaver atau pgAdmin di komputer lokal.
    - Buat database baru bernama `sidripp_db`.
    - Import file `docs/sidripp_database.sql` ke dalam database tersebut.
 5. **Jalankan Aplikasi:** Buka tab baru di browser dan ketik `http://localhost/SI-DRIPP-main`.
+
 ---

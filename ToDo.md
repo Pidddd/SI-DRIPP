@@ -38,11 +38,11 @@ Setiap anggota tim akan ditugaskan untuk menghidupkan fungsi-fungsi di bawah ini
 
 - **Status Saat Ini:** Hanya UI kasir kosong, logika inti belum ada.
 - **Tugas Selanjutnya:**
-  - `process_checkout.php`: Tulis logika penyimpanan multi-tabel. **Wajib menggunakan Transaction Control (`mysqli_begin_transaction`)**.
+  - `process_checkout.php`: Tulis logika penyimpanan multi-tabel. **Wajib menggunakan Transaction Control (`pg_query($conn, "BEGIN")`)**.
     1. Lakukan `INSERT` ke tabel `Transactions`.
-    2. Dapatkan ID transaksi yang baru dibuat (`mysqli_insert_id`).
+    2. Dapatkan ID transaksi yang baru dibuat (`RETURNING id_transaksi`).
     3. Lakukan `foreach` pada data keranjang. Di dalam _looping_, jalankan `INSERT` ke `Transaction_Details` dan `UPDATE` potong stok ke tabel `products`.
-    4. Jika sukses semua, lakukan `mysqli_commit()`. Jika gagal, `mysqli_rollback()`.
+    4. Jika sukses semua, lakukan `pg_query($conn, "COMMIT")`. Jika gagal, `pg_query($conn, "ROLLBACK")`.
   - `print_invoice.php`: Buat layout struk pembayaran khusus printer kasir dan picu `window.print()` pada JavaScript.
 
 ### 4. Folder `modules/receivables/` (Modul Piutang)
@@ -56,4 +56,4 @@ Setiap anggota tim akan ditugaskan untuk menghidupkan fungsi-fungsi di bawah ini
 
 - **Status Saat Ini:** Belum ada file.
 - **Tugas Selanjutnya:**
-  - `index.php`: Buat tampilan ringkasan (widget) menggunakan fungsi `COUNT()` dan `SUM()` MySQL untuk menampilkan: Total Transaksi Hari Ini, Total Piutang Berjalan, dan Daftar Barang yang Stoknya Menipis.
+  - `index.php`: Buat tampilan ringkasan (widget) menggunakan fungsi `COUNT()` dan `SUM()` PostgreSQL untuk menampilkan: Total Transaksi Hari Ini, Total Piutang Berjalan, dan Daftar Barang yang Stoknya Menipis.

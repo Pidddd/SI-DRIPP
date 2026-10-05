@@ -18,7 +18,7 @@
   - _(File `database.php` yang berisi password asli disembunyikan oleh .gitignore)_
 
 - **`docs/`** (Dokumen referensi tim) **'_rafid_'**
-  - `sidripp_database.sql` (Database - Cetak biru tabel untuk di-import ke phpMyAdmin)
+  - `sidripp_database.sql` (Database - Cetak biru tabel untuk di-import ke pgAdmin)
   - `ERD_Revisi.jpg` (Referensi gambar relasi antar tabel)
   - `Proposal_PBL.pdf` (Referensi aturan bisnis aplikasi)
 
