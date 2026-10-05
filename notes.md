@@ -5,38 +5,38 @@
   - `js/app.js` (Frontend - Mengatur interaksi browser seperti pop-up/klik)
   - `img/` (Frontend - Tempat menyimpan logo dan gambar aplikasi)
 
-- **`components/`** (Frontend - Potongan desain UI yang dipakai berulang) **_timothy_**
+- **`components/`** (Frontend - Potongan desain UI yang dipakai berulang) **'_timothy_'**
   - `header.php` (Frontend - Tag pembuka HTML, pemanggil CSS, dan Navbar atas)
   - `sidebar.php` (Frontend - Menu navigasi kiri, dinamis sesuai role)
   - `footer.php` (Frontend - Tag penutup HTML dan pemanggil JS)
 
-- **`config/`** (Backend - Mesin inti dan pengaturan aplikasi) **_rafid_**
+- **`config/`** (Backend - Mesin inti dan pengaturan aplikasi) **'_rafid_'**
   - `bootstrap.php` (Backend - Mesin utama yang menjalankan session, memanggil database & guard. Semua file UI cukup panggil file ini di baris 1)
   - `auth_guard.php` (Backend - Polisi penjaga yang mengecek session login dan hak akses role)
   - `database.example.php` (Backend - Template koneksi DB untuk di-push ke GitHub, password dikosongkan)
   - `helper.php` (Backend - Kumpulan fungsi rumus bantuan prosedural, misal: format_rupiah)
   - _(File `database.php` yang berisi password asli disembunyikan oleh .gitignore)_
 
-- **`docs/`** (Dokumen referensi tim) **_rafid_**
+- **`docs/`** (Dokumen referensi tim) **'_rafid_'**
   - `sidripp_database.sql` (Database - Cetak biru tabel untuk di-import ke phpMyAdmin)
   - `ERD_Revisi.jpg` (Referensi gambar relasi antar tabel)
   - `Proposal_PBL.pdf` (Referensi aturan bisnis aplikasi)
 
 - **`modules/`** (Ruang kerja utama fitur aplikasi)
-  - **`auth/`** (Modul Login) **_inas_**, **_toriq_**
+  - **`auth/`** (Modul Login) **'_inas_'**, **'_toriq_'**
     - `login.php` (Frontend - Layar antarmuka form login)
     - `process/login.php` (Backend - Mengecek kecocokan password ke database & set session)
     - `process/logout.php` (Backend - Menghapus sesi login)
 
-  - **`categories/`** (Modul Kategori Produk) **_inas_**, **_rafid_**
+  - **`categories/`** (Modul Kategori Produk) **'_inas_'**, **'_rafid_'**
     - `index.php` (Frontend - Menampilkan layar tabel daftar kategori)
     - `create.php` (Frontend - Menampilkan layar form tambah kategori)
     - `process/create.php` (Backend - Mengeksekusi simpan kategori baru ke database)
 
-  - **`dashboard/`** (Modul Halaman Utama) **_timothy_**
+  - **`dashboard/`** (Modul Halaman Utama) **'_timothy_'**
     - `index.php` (Frontend - Menampilkan layar ringkasan statistik setelah login)
 
-  - **`inventory/`** (Modul Gudang Fisik) **_timothy_**, **_toriq_**
+  - **`inventory/`** (Modul Gudang Fisik) **'_timothy_'**, **'_toriq_'**
     - `stock_in.php` (Frontend - Menampilkan layar form pencatatan stok masuk vendor)
     - `defects.php` (Frontend - Menampilkan layar form laporan barang rusak/cacat)
     - `stock_opname.php` (Frontend - Menampilkan layar form pengecekan selisih stok)
@@ -44,25 +44,25 @@
     - `process/defects.php` (Backend - Eksekusi simpan defect & kurangi stok aktual)
     - `process/stock_opname.php` (Backend - Eksekusi hitung selisih & simpan validasi)
 
-  - **`products/`** (Modul Data Produk) **_inas_**, **_rafid_**
+  - **`products/`** (Modul Data Produk) **'_inas_'**, **'_rafid_'**
     - `index.php` (Frontend - Menampilkan layar tabel daftar barang/katalog)
     - `create.php` (Frontend - Menampilkan layar form tambah barang)
     - `process/create.php` (Backend - Mengeksekusi simpan barang baru ke database)
 
-  - **`receivables/`** (Modul Piutang / Hutang Pelanggan) **_Timothy_**, **_Toriq_**
+  - **`receivables/`** (Modul Piutang / Hutang Pelanggan) **'_Timothy_'**, **'_Toriq_'**
     - `index.php` (Frontend - Menampilkan layar tabel transaksi yang belum lunas/TOP)
     - `process/update_status.php` (Backend - Eksekusi mengubah status menjadi lunas)
 
-  - **`reports/`** (Modul Laporan) **_inas_**, **_rafid_**
+  - **`reports/`** (Modul Laporan) **'_inas_'**, **'_rafid_'**
     - `index.php` (Frontend - Menampilkan layar filter tanggal laporan)
     - `process/export_pdf.php` (Backend - Mengeksekusi query data rekap dan cetak PDF)
 
-  - **`transactions/`** (Modul Kasir / POS) **_timothy_**, **_toriq_**
+  - **`transactions/`** (Modul Kasir / POS) **'_timothy_'**, **'_toriq_'**
     - `index.php` (Frontend - Menampilkan layar utama meja kasir)
     - `print_invoice.php` (Frontend - Menampilkan desain struk nota)
     - `process/checkout.php` (Backend - Mengeksekusi simpan nota, hitung diskon MOQ, & potong stok)
 
-  - **`users/`** (Modul Pengguna Aplikasi) **_inas_**, **_rafid_**
+  - **`users/`** (Modul Pengguna Aplikasi) **'_inas_'**, **'_rafid_'**
     - `index.php` (Frontend - Menampilkan layar tabel daftar akun karyawan)
     - `create.php` (Frontend - Menampilkan layar form tambah akun)
     - `process/create.php` (Backend - Mengeksekusi simpan akun baru ke database)
