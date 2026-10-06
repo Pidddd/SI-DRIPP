@@ -1,0 +1,10 @@
+# Pemenuhan Requirement PBL - Basis Data Lanjut
+**Proyek:** SI-DRIPP (Sistem Informasi Pendataan Stok dan Transaksi MKP Store)
+
+| Kriteria (Requirement) | Implementasi di SI-DRIPP | Justifikasi (Alasan Penggunaan) |
+| :--- | :--- | :--- |
+| **Skema Relasional (Min. 3-5 Entitas, 3NF)** | Memiliki 4 tabel master (`user`, `category`, `products`, `transactions`) dan 1 tabel relasi (`transaction_details`). | Pemisahan entitas meminimalkan redundansi data. Tabel `transaction_details` memecah relasi *many-to-many* antara transaksi dan produk agar sesuai standar 3NF. |
+| **Constraint Wajib & Tambahan** | PK dan FK di seluruh tabel. Constraint tambahan: `UNIQUE(username)` pada tabel `user` dan `CHECK(stok_aktual >= 0)` pada `products`. | `UNIQUE` mencegah duplikasi akun kasir. `CHECK` memastikan integritas stok agar tidak pernah minus (bernilai negatif) meskipun terjadi kesalahan input kuantitas di frontend. |
+| **Fungsi / Trigger / Stored Procedure** | **Trigger:** `trigger_kurangi_stok` yang memanggil fungsi `kurangi_stok_otomatis()` setiap kali ada insert di `transaction_details`. | Mengamankan integritas data di level *database*. Jika pemotongan stok dilakukan di *backend* (PHP), ada risiko stok tidak terpotong saat koneksi terputus. Dengan trigger, pemotongan stok dijamin 100% konsisten secara atomik. |
+| **Join, Agregasi, Subquery, CTE** | (Akan diimplementasikan pada modul Laporan & Dashboard). Menggunakan agregasi `SUM` dan `JOIN` untuk melihat total penjualan per produk/kategori. | Menghasilkan laporan analitik yang komprehensif bagi pemilik toko (HORECA supplier) untuk melihat performa penjualan sirup DRIPP harian/bulanan. |
+| **Data Uji Realistis** | Menggunakan data asli dari katalog produk MKP Store (Dripp Syrup, Dripp Powder, Multibev, dll) beserta harga dan kategori nyatanya. | Memastikan aplikasi mendemonstrasikan kondisi operasional yang nyata sesuai *business rules* dari mitra HORECA. |

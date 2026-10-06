@@ -1,5 +1,5 @@
--- 1. Tabel user (catatan: 'user' perlu tanda kutip karena merupakan kata bawaan sistem)
-create table "user" (
+-- 1. tabel master
+create table users (
     id_user serial primary key,
     nama varchar(100) not null,
     jenis_kelamin varchar(15) not null,
@@ -8,48 +8,60 @@ create table "user" (
     role varchar(20) not null
 );
 
--- 2. Tabel category
 create table category (
     id_category serial primary key,
     nama_category varchar(50) not null
 );
 
--- 3. Tabel products
 create table products (
     id_product varchar(20) primary key,
     nama_barang varchar(150) not null,
     harga_beli integer not null,
     harga_jual integer not null,
-    stok_aktual integer not null default 0,
-    category_id_category integer not null,
-    foreign key (category_id_category) references category(id_category) on delete cascade
+    stok_aktual integer not null check (stok_aktual >= 0),
+    categoryid_category integer references category(id_category) on delete cascade
 );
 
--- 4. Tabel restocks
+-- 2. tabel transaksi
+create table transactions (
+    id_transaksi varchar(30) primary key,
+    waktu_transaksi timestamp default current_timestamp,
+    total_harga integer not null,
+    userid_user integer references users(id_user),
+    nama_pelanggan varchar(50),
+    kontak_pelanggan varchar(15),
+    status_pembayaran smallint not null,
+    jatuh_tempo date,
+    diskon integer
+);
+
+create table transaction_details (
+    id_detail serial primary key,
+    kuantitas integer not null,
+    subtotal_harga integer not null,
+    transactionsid_transaksi varchar(30) references transactions(id_transaksi) on delete cascade,
+    productsid_product varchar(20) references products(id_product) on delete cascade
+);
+
+-- 3. tabel inventory
 create table restocks (
     id_restock serial primary key,
     waktu_masuk timestamp default current_timestamp,
     nama_vendor varchar(100) not null,
     kuantitas integer not null,
-    product_id_product varchar(20) not null,
-    user_id_user integer not null,
-    foreign key (product_id_product) references products(id_product) on delete cascade,
-    foreign key (user_id_user) references "user"(id_user) on delete cascade
+    productsid_product varchar(20) references products(id_product) on delete cascade,
+    userid_user integer references users(id_user)
 );
 
--- 5. Tabel defects
 create table defects (
     id_defect serial primary key,
     waktu_lapor timestamp default current_timestamp,
     kuantitas integer not null,
     keterangan_rusak varchar(255),
-    product_id_product varchar(20) not null,
-    user_id_user integer not null,
-    foreign key (product_id_product) references products(id_product) on delete cascade,
-    foreign key (user_id_user) references "user"(id_user) on delete cascade
+    productsid_product varchar(20) references products(id_product) on delete cascade,
+    userid_user integer references users(id_user)
 );
 
--- 6. Tabel stock_opname
 create table stock_opname (
     id_opname serial primary key,
     waktu_opname timestamp default current_timestamp,
@@ -57,46 +69,36 @@ create table stock_opname (
     stok_fisik integer not null,
     selisih integer,
     status_validasi varchar(255) not null,
-    user_id_user integer not null,
-    product_id_product varchar(20) not null,
-    foreign key (product_id_product) references products(id_product) on delete cascade,
-    foreign key (user_id_user) references "user"(id_user) on delete cascade
+    userid_user integer references users(id_user),
+    productsid_product varchar(20) references products(id_product) on delete cascade
 );
 
--- 7. Tabel transactions
-create table transactions (
-    id_transaksi varchar(30) primary key,
-    waktu_transaksi timestamp default current_timestamp,
-    total_harga integer not null,
-    user_id_user integer not null,
-    nama_pelanggan varchar(50),
-    kontak_pelanggan varchar(15),
-    status_pembayaran smallint default 0,
-    jatuh_tempo date,
-    diskon integer,
-    foreign key (user_id_user) references "user"(id_user) on delete cascade
-);
+-- 4. requirement pbl: view dan join multi-table
+create view v_laporan_penjualan as
+select 
+    t.waktu_transaksi,
+    t.id_transaksi,
+    p.nama_barang,
+    td.kuantitas,
+    td.subtotal_harga,
+    u.nama as kasir
+from transaction_details td
+join transactions t on td.transactionsid_transaksi = t.id_transaksi
+join products p on td.productsid_product = p.id_product
+join users u on t.userid_user = u.id_user;
 
--- 8. Tabel transaction_details
-create table transaction_details (
-    id_detail serial primary key,
-    kuantitas integer not null,
-    subtotal_harga integer not null,
-    transactions_id_transaksi varchar(30) not null,
-    product_id_product varchar(20) not null,
-    foreign key (transactions_id_transaksi) references transactions(id_transaksi) on delete cascade,
-    foreign key (product_id_product) references products(id_product) on delete cascade
-);
+-- 5. requirement pbl: trigger pemotongan stok otomatis
+create or replace function kurangi_stok_otomatis()
+returns trigger as $$
+begin
+    update products
+    set stok_aktual = stok_aktual - new.kuantitas
+    where id_product = new.productsid_product;
+    return new;
+end;
+$$ language plpgsql;
 
--- DATA DUMMY
-insert into "user" (nama, jenis_kelamin, username, password, role) values 
-('Zicco Muhammad', 'Laki-Laki', 'admin_zicco', '12345', 'super_admin'),
-('Zulfikar Almiski', 'Laki-Laki', 'admin_zul', '12345', 'admin'),
-('Daffa Febrianto', 'Laki-Laki', 'kasir_daffa', '12345', 'kasir'),
-('Zahra Aulia', 'Perempuan', 'gudang_zahra', '12345', 'staf_gudang');
-
-insert into category (nama_category) values ('Sirup'), ('Bubuk Minuman');
-
-insert into products (id_product, nama_barang, harga_beli, harga_jual, stok_aktual, category_id_category) values
-('PRD-001', 'Berry Syrup', 18000, 22000, 50, 1),
-('PRD-002', 'Matcha Powder', 60000, 72000, 20, 2);
+create trigger trigger_kurangi_stok
+after insert on transaction_details
+for each row
+execute function kurangi_stok_otomatis();
