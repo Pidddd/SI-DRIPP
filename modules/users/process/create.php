@@ -28,8 +28,8 @@ if (empty($nama) || empty($username) || empty($password_mentah)) {
 // enkripsi password sebelum masuk ke database
 $password_hashed = password_hash($password_mentah, PASSWORD_DEFAULT);
 
-// query insert ke tabel user (menggunakan tanda kutip ganda pada "user" karena user adalah keyword bawaan postgresql)
-$query = 'insert into "user" (nama, jenis_kelamin, username, password, role) values ($1, $2, $3, $4, $5)';
+// query insert ke tabel users
+$query = 'insert into users (nama, jenis_kelamin, username, password, role) values ($1, $2, $3, $4, $5)';
 
 // eksekusi query dengan aman
 $result = pg_query_params($conn, $query, array($nama, $jenis_kelamin, $username, $password_hashed, $role));
