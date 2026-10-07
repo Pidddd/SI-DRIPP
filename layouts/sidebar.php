@@ -9,21 +9,25 @@
 
 $menu = [
     'Operasional' => [
-        ['key' => 'dashboard',    'label' => 'Dashboard',        'icon' => 'home',      'href' => 'modules/dashboard/index.php',    'roles' => ['super_admin', 'admin'],                  'built' => true],
-        ['key' => 'transactions', 'label' => 'Kasir (POS)',      'icon' => 'cart',      'href' => 'modules/transactions/index.php', 'roles' => ['super_admin', 'admin', 'kasir'],          'built' => true],
+        ['key' => 'dashboard',    'label' => 'Dashboard',        'icon' => 'home',      'href' => 'modules/dashboard/index.php',     'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'transactions', 'label' => 'Kasir (POS)',      'icon' => 'cart',      'href' => 'modules/transactions/index.php',  'roles' => ['super_admin', 'admin', 'kasir'],          'built' => true],
         ['key' => 'tx_history',   'label' => 'Riwayat Transaksi','icon' => 'clock',     'href' => 'modules/transactions/history.php','roles' => ['super_admin', 'admin', 'kasir'],         'built' => true],
-        ['key' => 'receivables',  'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/receivables/index.php',      'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'receivables',  'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/receivables/index.php',   'roles' => ['super_admin', 'admin'],                  'built' => true],
+    ],
+    'Master Data' => [
+        ['key' => 'categories',   'label' => 'Kategori Produk',  'icon' => 'tag',       'href' => 'modules/categories/index.php',    'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'products',     'label' => 'Master Produk',    'icon' => 'box',       'href' => 'modules/products/index.php',      'roles' => ['super_admin', 'admin'],                  'built' => false],
     ],
     'Gudang & Logistik' => [
-        ['key' => 'inventory',    'label' => 'Inventaris Stok',  'icon' => 'box',       'href' => 'modules/inventory/index.php',    'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
-        ['key' => 'defects',      'label' => 'Barang Defect',    'icon' => 'alert',     'href' => 'modules/inventory/defect.php',   'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
-        ['key' => 'stock_opname', 'label' => 'Stock Opname',     'icon' => 'clipboard', 'href' => 'modules/inventory/opname.php',   'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
+        ['key' => 'inventory',    'label' => 'Inventaris Stok',  'icon' => 'box',       'href' => 'modules/inventory/index.php',     'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
+        ['key' => 'defects',      'label' => 'Barang Defect',    'icon' => 'alert',     'href' => 'modules/inventory/defect.php',    'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
+        ['key' => 'stock_opname', 'label' => 'Stock Opname',     'icon' => 'clipboard', 'href' => 'modules/inventory/opname.php',    'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
     ],
     'Laporan & Keuangan' => [
-        ['key' => 'reports',      'label' => 'Rekap Penjualan',  'icon' => 'report',    'href' => 'modules/reports/index.php',      'roles' => ['super_admin'],                           'built' => true],
+        ['key' => 'reports',      'label' => 'Rekap Penjualan',  'icon' => 'report',    'href' => 'modules/reports/index.php',       'roles' => ['super_admin'],                           'built' => true],
     ],
     'Administrasi' => [
-        ['key' => 'users',        'label' => 'Manajemen Akun',   'icon' => 'users',     'href' => 'modules/users/index.php',        'roles' => ['super_admin'],                           'built' => true],
+        ['key' => 'users',        'label' => 'Manajemen Akun',   'icon' => 'users',     'href' => 'modules/users/index.php',         'roles' => ['super_admin'],                           'built' => true],
     ],
 ];
 ?>
@@ -48,7 +52,7 @@ $menu = [
         <div class="nav-label"><?= e($group) ?></div>
         <?php foreach ($visible as $it): ?>
           <?php if ($it['built']): ?>
-            <a class="nav-link <?= $active === $it['key'] ? 'active' : '' ?>" href="<?= $root . $it['href'] ?>" id="nav-<?= e($it['key']) ?>">
+            <a class="nav-link <?= $active === $it['key'] ? 'active' : '' ?>" href="<?= BASE_URL . $it['href'] ?>" id="nav-<?= e($it['key']) ?>">
               <?= icon($it['icon']) ?><span><?= e($it['label']) ?></span>
             </a>
           <?php else: ?>

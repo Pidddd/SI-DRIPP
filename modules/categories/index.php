@@ -11,6 +11,9 @@ require_once '../../config/auth_guard.php';
 // Memanggil fungsi dari auth_guard.php untuk mengamankan halaman
 cek_hak_akses(['super_admin', 'admin']);
 
+// Ambil seluruh kategori dari database (nama tabel di skema: category)
+$result = pg_query($conn, 'SELECT * FROM category ORDER BY id_category ASC');
+
 $page_title = 'Daftar Kategori Produk';
 $page_sub   = 'Kelola pengelompokan katalog produk MKP Store';
 $active     = 'categories';
@@ -46,17 +49,35 @@ require_once '../../layouts/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="mono">1</td>
-                        <td><span class="badge info">KAT-001</span></td>
-                        <td><strong>DRIPP Syrup</strong></td>
-                        <td>
-                            <div class="row-actions">
-                                <a href="edit.php?id=1"><button type="button" class="btn btn-ghost btn-sm">Edit</button></a>
-                                <a href="process/delete.php?id=1"><button type="button" class="btn btn-danger-soft btn-sm">Hapus</button></a>
-                            </div>
-                        </td>
-                    </tr>
+                    <?php if (!$result): ?>
+                        <tr>
+                            <td colspan="4" class="muted" style="text-align:center; padding: 28px;">
+                                Gagal mengambil data kategori dari database.
+                            </td>
+                        </tr>
+                    <?php else: ?>
+                        <?php $no = 1; ?>
+                        <?php while ($row = pg_fetch_assoc($result)): ?>
+                            <tr>
+                                <td class="mono"><?= $no++ ?></td>
+                                <td><span class="badge info">KAT-<?= str_pad($row['id_category'], 3, '0', STR_PAD_LEFT) ?></span></td>
+                                <td><strong><?= htmlspecialchars($row['nama_category']) ?></strong></td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a href="edit.php?id=<?= urlencode($row['id_category']) ?>"><button type="button" class="btn btn-ghost btn-sm">Edit</button></a>
+                                        <a href="process/delete.php?id=<?= urlencode($row['id_category']) ?>"><button type="button" class="btn btn-danger-soft btn-sm">Hapus</button></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                        <?php if ($no === 1): ?>
+                            <tr>
+                                <td colspan="4" class="muted" style="text-align:center; padding: 28px;">
+                                    Belum ada kategori. Klik "+ Tambah Kategori Produk" untuk menambahkan.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
