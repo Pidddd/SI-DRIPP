@@ -1,4 +1,5 @@
 <?php
+
 /**
  * BACKEND MODUL AUTH - PROSES LOGOUT
  * File: modules/auth/process/logout.php
