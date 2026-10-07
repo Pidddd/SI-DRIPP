@@ -1,17 +1,16 @@
+<?php
 /**
  * UI MODUL AUTH - HALAMAN LOGIN
  * File: modules/auth/login.php
  * Fungsi: Menampilkan antarmuka form login.
- * Aksi Form: Mengarah ke process_login.php (Method POST)
+ * Aksi Form: Mengarah ke process/login.php (Method POST)
  */
-
-<?php
 
 // Panggil bootstrap untuk mengecek session
 require_once '../../config/bootstrap.php';
 
 // Jika user sudah login, jangan biarkan masuk ke halaman login lagi
-if (isset($_SESSION['ID_User'])) {
+if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
     header("Location: " . BASE_URL . "modules/dashboard/index.php");
     exit();
 }
