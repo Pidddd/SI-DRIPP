@@ -14,6 +14,7 @@ cek_hak_akses(['super_admin', 'admin']);
 // Memanggil Header dan Sidebar standar aplikasi
 require_once '../../layouts/header.php';
 require_once '../../layouts/sidebar.php';
+
 ?>
 
 <main class="main-content" style="margin-left: 20px;">
