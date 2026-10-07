@@ -83,81 +83,72 @@ SI-DRIPP/
 │       ├── auto-reviewer.yml        (Robot pengecek kode GitHub)
 │       └── php-test.yml             (Robot pengetes kode GitHub)
 │
-├── assets/                          (Folder khusus Frontend / Tampilan)
+├── assets/
 │   ├── css/
-│   │   └── style.css                (File desain warna dan tata letak)
-│   ├── img/
-│   │   └── .gitkeep                 (Tempat nyimpan logo/gambar)
+│   │   └── style.css          <-- Custom styling (Tema Toska MKP & Bento Grid)
+│   ├── images/
+│   │   └── Logo.jpeg          <-- Logo perusahaan MKP Store
 │   └── js/
-│       └── app.js                   (File javascript untuk interaksi UI)
-│
-├── components/                      (Folder potongan UI yang dipakai berulang)
-│   ├── footer.php                   (Tag penutup HTML & pemanggil JS)
-│   ├── header.php                   (Tag pembuka HTML, Navbar atas, pemanggil CSS)
-│   └── sidebar.php                  (Menu navigasi kiri, dinamis sesuai role)
-│
-├── config/                          (Folder Inti / Mesin Backend)
-│   ├── auth_guard.php               (Polisi Penjaga: Cek session & cegah akses ilegal)
-│   ├── bootstrap.php                (File Utama: Jalankan session, panggil guard & db)
-│   ├── database.example.php         (Template koneksi DB yang di-push ke GitHub - PASSWORD KOSONG)
-│   └── helper.php                   (Kumpulan fungsi bantuan: format_rupiah, sanitasi)
-│
-├── docs/                            (Dokumen referensi tim)
-│   └── sidripp_database.sql         (File SQL untuk di-import ke phpMyAdmin)
-│
-├── modules/                         (Ruang Kerja Utama Fitur Aplikasi)
-│   │
-│   ├── auth/                        (Modul Login)
-│   │   ├── login.php                (UI: Halaman form login)
-│   │   └── process/                 (Backend: Folder khusus pemrosesan)
-│   │       ├── login.php            (Cek password ke DB, set session)
-│   │       └── logout.php           (Hancurkan session, tendang ke luar)
-│   │
-│   ├── categories/                  (Modul Master Kategori)
-│   │   ├── create.php               (UI: Form tambah kategori)
-│   │   ├── index.php                (UI: Tabel daftar kategori)
+│       └── app.js             <-- Logika interaktif frontend (modal, alert, dll)
+├── config/
+│   ├── auth_guard.php         <-- Middleware pengecekan session & pembatasan akses role
+│   ├── bootstrap.php          <-- File inisialisasi awal (konstanta BASE_URL, mode dev, dll)
+│   ├── database.php           <-- Koneksi ke database PostgreSQL
+│   └── helper.php             <-- Fungsi bantuan (format Rupiah, tanggal, dll)
+├── docs/
+│   └── sidripp_database.sql   <-- Skema dan data dummy database PostgreSQL
+├── layouts/
+│   ├── footer.php             <-- Penutup HTML & pemanggilan JS global
+│   ├── header.php             <-- Pembuka HTML, head tags & pemanggilan CSS
+│   ├── mock_data.php          <-- [HANYA UNTUK PROTOTYPE] Dummy data statis
+│   └── sidebar.php            <-- Navigasi menu utama
+├── modules/
+│   ├── auth/                  <-- Modul Autentikasi
+│   │   ├── login.php
 │   │   └── process/
-│   │       └── create.php           (Backend: INSERT kategori ke DB)
-│   │
-│   ├── dashboard/                   (Modul Halaman Utama setelah Login)
-│   │   └── index.php                (UI: Menampilkan ringkasan/widget statistik)
-│   │
-│   ├── inventory/                   (Modul Gudang)
-│   │   ├── defects.php              (UI: Form laporan barang rusak)
-│   │   ├── stock_in.php             (UI: Form barang masuk dari vendor)
-│   │   ├── stock_opname.php         (UI: Form pengecekan stok fisik vs sistem)
+│   │       ├── login.php
+│   │       └── logout.php
+│   ├── categories/            <-- Modul Kategori (Tugas Inas)
+│   │   ├── index.php
+│   │   ├── create.php
 │   │   └── process/
-│   │       ├── defects.php          (Backend: Simpan data defect & kurangi stok aktual)
-│   │       ├── stock_in.php         (Backend: Tambah stok aktual produk)
-│   │       └── stock_opname.php     (Backend: Hitung selisih & simpan histori)
-│   │
-│   ├── products/                    (Modul Master Produk)
-│   │   ├── create.php               (UI: Form tambah produk baru)
-│   │   ├── index.php                (UI: Tabel katalog produk)
+│   │       └── create.php
+│   ├── dashboard/             <-- Modul Dasbor Analitik
+│   │   └── index.php
+│   ├── inventory/             <-- Modul Gudang & Logistik
+│   │   ├── index.php          <-- Halaman utama stok fisik
+│   │   ├── defect.php         <-- Halaman pencatatan barang rusak/cacat
+│   │   ├── opname.php         <-- Halaman audit fisik (stock opname)
+│   │   ├── stock_in.php       <-- Halaman penerimaan barang dari vendor
+│   │   └── process/           <-- Logika backend mutasi stok
+│   │       ├── defects.php
+│   │       ├── stock_in.php
+│   │       └── stock_opname.php
+│   ├── products/              <-- Modul Master Produk (Tugas Timothy)
+│   │   ├── index.php
+│   │   ├── create.php
 │   │   └── process/
-│   │       └── create.php           (Backend: INSERT produk baru ke DB)
-│   │
-│   ├── receivables/                 (Modul Piutang / Belum Lunas)
-│   │   ├── index.php                (UI: Tabel daftar transaksi yang belum lunas)
+│   │       └── create.php
+│   ├── receivables/           <-- Modul Manajemen Piutang HORECA (TOP) & Pelunasan
+│   │   ├── index.php          <-- UI Manajemen Piutang TOP & WhatsApp
 │   │   └── process/
-│   │       └── update_status.php    (Backend: Ubah status dari Belum Lunas jadi Lunas)
-│   │
-│   ├── reports/                     (Modul Laporan / Cetak PDF)
-│   │   ├── index.php                (UI: Tampilan filter tanggal laporan)
+│   │       └── update_status.php
+│   ├── reports/               <-- Modul Rekap & Laporan
+│   │   ├── index.php
 │   │   └── process/
-│   │       └── export_pdf.php       (Backend: Query raksasa & generate PDF)
-│   │
-│   ├── transactions/                (Modul Kasir / POS)
-│   │   ├── index.php                (UI: Layar kasir tempat milih barang & input qty)
-│   │   ├── print_invoice.php        (UI: Tampilan struk nota untuk di-print)
+│   │       ├── delete_report.php
+│   │       └── export_pdf.php
+│   ├── transactions/          <-- Modul Kasir & Transaksi POS
+│   │   ├── index.php          <-- Layar POS
+│   │   ├── history.php        <-- Riwayat Transaksi
+│   │   ├── print_invoice.php  <-- Cetak Struk/Faktur
 │   │   └── process/
-│   │       └── checkout.php         (Backend: INSERT transaksi, hitung diskon MOQ, potong stok)
-│   │
-│   └── users/                       (Modul Manajemen Pengguna & Role)
-│       ├── create.php               (UI: Form tambah akun)
-│       ├── index.php                (UI: Tabel daftar user (Admin, Kasir, dll))
+│   │       └── checkout.php   <-- Logika kalkulasi, diskon, & simpan transaksi
+│   └── users/                 <-- Modul Manajemen Akses & Pegawai
+│       ├── index.php
+│       ├── create.php
 │       └── process/
-│           └── create.php           (Backend: INSERT user baru ke DB)
+│           └── create.php
 │
 ├── .gitignore                       (Aturan: Daftar file yang DILARANG masuk GitHub)
 ├── AI-GUIDE.md                      (Prompt wajib jika tim mau pakai ChatGPT/Gemini)
