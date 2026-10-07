@@ -18,6 +18,7 @@ if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,20 +26,21 @@ if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
   <!-- Perbaikan Path CSS -->
   <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
-<body>
-  
-    <div class="login-card">
 
-      <div class="brand">
-        <span class="title">SI-DRIPP</span>
+<body>
+
+  <div class="login-card">
+
+    <div class="brand">
+      <span class="title">SI-DRIPP</span>
     </div>
     <p class="subtitle">Sistem Inventaris & Penjualan Grosir HORECA</p>
 
     <!-- Tangkap Pesan Error dari Backend (Jika ada) -->
-    <?php if(isset($_GET['error'])): ?>
-        <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
-            <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
-        </div>
+    <?php if (isset($_GET['error'])): ?>
+      <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
+        <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
+      </div>
     <?php endif; ?>
 
     <!-- Perbaikan action menuju folder process/ -->
@@ -58,12 +60,13 @@ if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
       <button type="submit" class="btn-submit">Masuk ke Sistem</button>
     </form>
 
-      <div class="card-footer-links">
-        <a href="../../index.php">&larr; Halaman Utama</a>
-        <!-- Link Daftar Akun dihapus sesuai aturan proposal (Sistem Tertutup) -->
-      </div>
-
-      <p class="copyright">&copy; 2026 SI-DRIPP Project Based Learning</p>
+    <div class="card-footer-links">
+      <a href="../../index.php">&larr; Halaman Utama</a>
+      <!-- Link Daftar Akun dihapus sesuai aturan proposal (Sistem Tertutup) -->
     </div>
+
+    <p class="copyright">&copy; 2026 SI-DRIPP Project Based Learning</p>
+  </div>
 </body>
+
 </html>
