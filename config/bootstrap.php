@@ -28,8 +28,13 @@ if (file_exists(BASE_PATH . 'config/helper.php')) {
     require_once BASE_PATH . 'config/helper.php';
 }
 
-// 5. URL Dasar Aplikasi (Opsional, untuk mempermudah redirect)
-// Sesuaikan 'SI-DRIPP-dev' dengan nama folder root di XAMPP/htdocs Anda
-$base_url = 'http://localhost/SI-DRIPP-dev/'; 
+// 5. URL Dasar Aplikasi (Otomatis mendeteksi localhost:8000 maupun subfolder XAMPP/Laragon)
+$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+$host     = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
+$doc_root = isset($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])) : '';
+$app_root = str_replace('\\', '/', realpath(dirname(__DIR__)));
+$sub_dir  = ($doc_root && strpos($app_root, $doc_root) === 0)
+            ? substr($app_root, strlen($doc_root))
+            : '';
+$base_url = $protocol . $host . rtrim($sub_dir, '/') . '/';
 define('BASE_URL', $base_url);
-?>
