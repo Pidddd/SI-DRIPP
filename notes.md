@@ -3,7 +3,7 @@
 - **`assets/`** (Frontend - Kumpulan file pendukung desain visual)
   - `css/style.css` (Frontend - Mengatur warna dan tata letak)
   - `js/app.js` (Frontend - Mengatur interaksi browser seperti pop-up/klik)
-  - `images/` (Frontend - Tempat menyimpan logo dan gambar aplikasi)
+  - `img/` (Frontend - Tempat menyimpan logo dan gambar aplikasi)
 
 - **`layouts/`** (Frontend - Kerangka UI global yang dipanggil di semua modul)
   - `header.php` (Frontend - Tag pembuka HTML, head tags & pemanggilan CSS)

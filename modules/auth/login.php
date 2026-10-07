@@ -1,4 +1,5 @@
 <?php
+
 /**
  * UI MODUL AUTH - HALAMAN LOGIN
  * File: modules/auth/login.php
@@ -10,9 +11,9 @@
 require_once '../../config/bootstrap.php';
 
 // Jika user sudah login, jangan biarkan masuk ke halaman login lagi
-if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
-    header("Location: " . BASE_URL . "modules/dashboard/index.php");
-    exit();
+if (isset($_SESSION['id_user'])) {
+  header("Location: " . BASE_URL . "modules/dashboard/index.php");
+  exit();
 }
 ?>
 
@@ -36,10 +37,15 @@ if (isset($_SESSION['id_user']) || isset($_SESSION['ID_User'])) {
     </div>
     <p class="subtitle">Sistem Inventaris & Penjualan Grosir HORECA</p>
 
-    <!-- Tangkap Pesan Error dari Backend (Jika ada) -->
+    <!-- Tangkap Pesan Error / Info dari Backend (Jika ada) -->
     <?php if (isset($_GET['error'])): ?>
       <div class="alert alert-danger" style="color: red; margin-bottom: 15px;">
         <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
+      </div>
+    <?php endif; ?>
+    <?php if (isset($_GET['pesan'])): ?>
+      <div class="alert alert-success" style="color: #088395; margin-bottom: 15px;">
+        <?= str_replace('_', ' ', htmlspecialchars($_GET['pesan'])) ?>
       </div>
     <?php endif; ?>
 

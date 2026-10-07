@@ -22,6 +22,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 $root       = isset($root) ? $root : '../../';
+if (!defined('BASE_URL')) {
+    define('BASE_URL', $root);
+}
 $page_title = isset($page_title) ? $page_title : 'SI-DRIPP';
 $page_sub   = isset($page_sub) ? $page_sub : '';
 $active     = isset($active) ? $active : '';
@@ -109,7 +112,7 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
               </a>
             <?php endforeach; ?>
             <div class="pm-sep"></div>
-            <a class="pm-link" href="<?= $root ?>modules/auth/login.php?logout=1"><?= icon('logout', 18) ?> Keluar</a>
+            <a class="pm-link" href="<?= BASE_URL ?>modules/auth/process/logout.php"><?= icon('logout', 18) ?> Keluar</a>
           </div>
         </details>
       </div>

@@ -1,7 +1,7 @@
 <?php
 /**
  * UI MODUL MANAJEMEN PIUTANG & TOP (TERM OF PAYMENT)
- * File: modules/piutang/index.php
+ * File: modules/receivables/index.php
  * Fungsi: Monitoring piutang pelanggan kafe/resto HORECA, peringatan jatuh tempo,
  *         dan pengiriman draf pesan penagihan otomatis via WhatsApp (wa.me).
  * SOP: Urutan default piutang otomatis diprioritaskan dari yang paling dekat/lewat tempo.
@@ -10,7 +10,7 @@
 $root       = '../../';
 $page_title = 'Manajemen Piutang';
 $page_sub   = 'Pengawasan Term of Payment (TOP) & penagihan tagihan kafe/resto';
-$active     = 'piutang';
+$active     = 'receivables';
 $allowed    = ['super_admin', 'admin'];
 
 require $root . 'layouts/header.php';

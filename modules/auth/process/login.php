@@ -49,7 +49,6 @@ session_regenerate_id(true);
 
 // 7. Simpan data pengguna ke dalam session
 $_SESSION['id_user']       = (int)$user['id_user'];
-$_SESSION['ID_User']       = (int)$user['id_user']; // Alias kompatibilitas
 $_SESSION['nama']          = $user['nama'];
 $_SESSION['username']      = $user['username'];
 $_SESSION['role']          = $user['role'];
