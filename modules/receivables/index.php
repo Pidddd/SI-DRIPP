@@ -10,7 +10,7 @@
 $root       = '../../';
 $page_title = 'Manajemen Piutang';
 $page_sub   = 'Pengawasan Term of Payment (TOP) & penagihan tagihan kafe/resto';
-$active     = 'piutang';
+$active     = 'receivables';
 $allowed    = ['super_admin', 'admin'];
 
 require $root . 'layouts/header.php';

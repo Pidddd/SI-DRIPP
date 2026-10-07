@@ -1,4 +1,5 @@
 <?php
+
 /**
  * UI MODUL AUTH - HALAMAN LOGIN
  * File: modules/auth/login.php
@@ -11,8 +12,8 @@ require_once '../../config/bootstrap.php';
 
 // Jika user sudah login, jangan biarkan masuk ke halaman login lagi
 if (isset($_SESSION['id_user'])) {
-    header("Location: " . BASE_URL . "modules/dashboard/index.php");
-    exit();
+  header("Location: " . BASE_URL . "modules/dashboard/index.php");
+  exit();
 }
 ?>
 

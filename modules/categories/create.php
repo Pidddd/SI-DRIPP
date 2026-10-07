@@ -25,7 +25,7 @@ require_once '../../layouts/header.php';
     <a href="index.php" class="btn btn-ghost">&larr; Kembali ke Daftar Kategori</a>
   </div>
 
-  <?php if (isset($_GET['error'])): ?>
+    <?php if (isset($_GET['error'])): ?>
     <div class="card" style="border-color: var(--danger); background: var(--danger-bg); color: var(--danger); margin-bottom: 16px; padding: 12px 18px;">
       <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
     </div>

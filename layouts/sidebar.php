@@ -12,7 +12,7 @@ $menu = [
         ['key' => 'dashboard',    'label' => 'Dashboard',        'icon' => 'home',      'href' => 'modules/dashboard/index.php',    'roles' => ['super_admin', 'admin'],                  'built' => true],
         ['key' => 'transactions', 'label' => 'Kasir (POS)',      'icon' => 'cart',      'href' => 'modules/transactions/index.php', 'roles' => ['super_admin', 'admin', 'kasir'],          'built' => true],
         ['key' => 'tx_history',   'label' => 'Riwayat Transaksi','icon' => 'clock',     'href' => 'modules/transactions/history.php','roles' => ['super_admin', 'admin', 'kasir'],         'built' => true],
-        ['key' => 'piutang',      'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/receivables/index.php',  'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'receivables',  'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/receivables/index.php',      'roles' => ['super_admin', 'admin'],                  'built' => true],
     ],
     'Gudang & Logistik' => [
         ['key' => 'inventory',    'label' => 'Inventaris Stok',  'icon' => 'box',       'href' => 'modules/inventory/index.php',    'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
