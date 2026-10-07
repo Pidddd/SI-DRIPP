@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$nama_category = trim($_POST['nama_category']);
+$nama_category = isset($_POST['nama_category']) ? trim($_POST['nama_category']) : '';
 
 if (empty($nama_category)) {
     header("Location: ../create.php?error=kategori_kosong");

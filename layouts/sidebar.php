@@ -12,7 +12,7 @@ $menu = [
         ['key' => 'dashboard',    'label' => 'Dashboard',        'icon' => 'home',      'href' => 'modules/dashboard/index.php',    'roles' => ['super_admin', 'admin'],                  'built' => true],
         ['key' => 'transactions', 'label' => 'Kasir (POS)',      'icon' => 'cart',      'href' => 'modules/transactions/index.php', 'roles' => ['super_admin', 'admin', 'kasir'],          'built' => true],
         ['key' => 'tx_history',   'label' => 'Riwayat Transaksi','icon' => 'clock',     'href' => 'modules/transactions/history.php','roles' => ['super_admin', 'admin', 'kasir'],         'built' => true],
-        ['key' => 'piutang',      'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/piutang/index.php',      'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'piutang',      'label' => 'Manajemen Piutang','icon' => 'wallet',    'href' => 'modules/receivables/index.php',  'roles' => ['super_admin', 'admin'],                  'built' => true],
     ],
     'Gudang & Logistik' => [
         ['key' => 'inventory',    'label' => 'Inventaris Stok',  'icon' => 'box',       'href' => 'modules/inventory/index.php',    'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],
@@ -30,7 +30,7 @@ $menu = [
 <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
   <a class="brand" href="<?= $root . $me['home'] ?>">
     <span class="brand-mark">
-      <img src="<?= $root ?>assets/images/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+      <img src="<?= BASE_URL ?>assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
       <span class="brand-fallback-text" style="display:none; font-weight:800; font-size:11px; color:#fff; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:2px;">MKP Store</span>
     </span>
     <span class="brand-text">
