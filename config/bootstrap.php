@@ -38,4 +38,3 @@ $sub_dir  = ($doc_root && strpos($app_root, $doc_root) === 0)
             : '';
 $base_url = $protocol . $host . rtrim($sub_dir, '/') . '/';
 define('BASE_URL', $base_url);
-?>
