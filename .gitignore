@@ -20,3 +20,8 @@ composer.lock
 
 # Database credentials - JANGAN di-commit
 config/database.php
+
+# File db_pass.local.php
+config/db_pass.local.php
+.env
+*.log

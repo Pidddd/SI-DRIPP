@@ -1,4 +1,5 @@
 <?php
+
 /**
  * PROTOTYPE HELPERS & DUMMY DATA - MKP STORE
  * File: layouts/mock_data.php
@@ -7,29 +8,42 @@
  */
 
 /* ---------- Katalog Role ---------- */
-function role_catalog() {
+function role_catalog()
+{
     return [
         'super_admin' => [
-            'label' => 'Super Admin', 'short' => 'Owner',
-            'nama'  => 'Budi Santoso', 'username' => 'budi.owner', 'id' => 1,
+            'label' => 'Super Admin',
+            'short' => 'Owner',
+            'nama'  => 'Budi Santoso',
+            'username' => 'budi.owner',
+            'id' => 1,
             'home'  => 'modules/dashboard/index.php',
             'desc'  => 'Akses penuh + data finansial',
         ],
         'admin' => [
-            'label' => 'Admin', 'short' => 'Admin',
-            'nama'  => 'Rina Wulandari', 'username' => 'rina.admin', 'id' => 2,
+            'label' => 'Admin',
+            'short' => 'Admin',
+            'nama'  => 'Rina Wulandari',
+            'username' => 'rina.admin',
+            'id' => 2,
             'home'  => 'modules/dashboard/index.php',
             'desc'  => 'Operasional & stok tanpa omzet/profit',
         ],
         'kasir' => [
-            'label' => 'Kasir', 'short' => 'Kasir',
-            'nama'  => 'Dimas Prasetyo', 'username' => 'dimas.kasir', 'id' => 3,
+            'label' => 'Kasir',
+            'short' => 'Kasir',
+            'nama'  => 'Dimas Prasetyo',
+            'username' => 'dimas.kasir',
+            'id' => 3,
             'home'  => 'modules/transactions/index.php',
             'desc'  => 'Transaksi penjualan & POS kasir',
         ],
         'staf_gudang' => [
-            'label' => 'Staf Gudang', 'short' => 'Gudang',
-            'nama'  => 'Agus Hermawan', 'username' => 'agus.gudang', 'id' => 5,
+            'label' => 'Staf Gudang',
+            'short' => 'Gudang',
+            'nama'  => 'Agus Hermawan',
+            'username' => 'agus.gudang',
+            'id' => 5,
             'home'  => 'modules/inventory/index.php',
             'desc'  => 'Stok fisik gudang & logistik',
         ],
@@ -37,28 +51,35 @@ function role_catalog() {
 }
 
 /* ---------- Format & Util ---------- */
-function e($s) {
+function e($s)
+{
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
-function rupiah($n) {
-    return 'Rp ' . number_format((float)$n, 0, ',', '.');
+if (!function_exists('rupiah')) {
+    function rupiah($n)
+    {
+        return 'Rp ' . number_format((float)$n, 0, ',', '.');
+    }
 }
 
-function rupiah_short($n) {
+function rupiah_short($n)
+{
     if ($n >= 1000000) return 'Rp ' . rtrim(rtrim(number_format($n / 1000000, 1, ',', '.'), '0'), ',') . ' jt';
     if ($n >= 1000)    return 'Rp ' . number_format($n / 1000, 0, ',', '.') . ' rb';
     return 'Rp ' . $n;
 }
 
-function tgl_id($ts = null) {
+function tgl_id($ts = null)
+{
     $ts = $ts ?: time();
-    $bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-    $hari  = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    $bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+    $hari  = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
     return $hari[(int)date('w', $ts)] . ', ' . date('j', $ts) . ' ' . $bulan[(int)date('n', $ts) - 1] . ' ' . date('Y', $ts);
 }
 
-function salam() {
+function salam()
+{
     $h = (int)date('G');
     if ($h < 11) return 'Selamat pagi';
     if ($h < 15) return 'Selamat siang';
@@ -66,19 +87,22 @@ function salam() {
     return 'Selamat malam';
 }
 
-function role_badge($role) {
+function role_badge($role)
+{
     $roles = role_catalog();
     $label = isset($roles[$role]) ? $roles[$role]['label'] : $role;
     return '<span class="badge role-' . e($role) . '"><i class="dot"></i>' . e($label) . '</span>';
 }
 
-function role_url($role) {
+function role_url($role)
+{
     $q = $_GET;
     $q['as'] = $role;
     return strtok($_SERVER['REQUEST_URI'], '?') . '?' . http_build_query($q);
 }
 
-function initials($nama) {
+function initials($nama)
+{
     $parts = preg_split('/\s+/', trim($nama));
     $i = strtoupper(substr($parts[0], 0, 1));
     if (count($parts) > 1) $i .= strtoupper(substr($parts[count($parts) - 1], 0, 1));
@@ -86,7 +110,8 @@ function initials($nama) {
 }
 
 /* ---------- Ikon (inline SVG, gaya outline) ---------- */
-function icon($name, $size = 20) {
+function icon($name, $size = 20)
+{
     $p = [
         'home'     => '<path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
         'cart'     => '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/>',
@@ -110,7 +135,7 @@ function icon($name, $size = 20) {
         'edit'     => '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
         'key'      => '<circle cx="7.5" cy="15.5" r="4.5"/><path d="M10.7 12.3L21 2M16 7l3 3"/>',
         'tag'      => '<path d="M20.6 13.4l-7.2 7.2a2 2 0 0 1-2.8 0L2 12V2h10l8.6 8.6a2 2 0 0 1 0 2.8z"/><circle cx="7" cy="7" r="1.5"/>',
-        'clipboard'=> '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 14l2 2 4-4"/>',
+        'clipboard' => '<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2M9 14l2 2 4-4"/>',
         'coin'     => '<circle cx="12" cy="12" r="10"/><path d="M14.8 9a2.8 2.8 0 0 0-2.8-1.5c-1.7 0-3 .9-3 2.2s1.3 1.9 3 2.3 3 1 3 2.3-1.3 2.2-3 2.2A2.8 2.8 0 0 1 9.2 15M12 6v2M12 16v2"/>',
         'pie'      => '<path d="M21.2 15.9A10 10 0 1 1 8 2.8"/><path d="M22 12A10 10 0 0 0 12 2v10z"/>',
         'clock'    => '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
@@ -127,7 +152,8 @@ function icon($name, $size = 20) {
 }
 
 /* ---------- Ilustrasi Produk (SVG mockup foto) ---------- */
-function bottle_svg($c1, $c2, $label, $sub = '760 ml', $type = 'syrup', $brand = 'DRIPP') {
+function bottle_svg($c1, $c2, $label, $sub = '760 ml', $type = 'syrup', $brand = 'DRIPP')
+{
     static $n = 0;
     $n++;
     $id = 'bg' . $n;
@@ -205,7 +231,8 @@ function bottle_svg($c1, $c2, $label, $sub = '760 ml', $type = 'syrup', $brand =
  * 4. DRIPP Powder 760g (Rp 156.000): Red Velvet, Chocolate
  * 5. Ramoe (Rp 12.500)
  */
-function mock_products() {
+function mock_products()
+{
     return [
         // --- 1. DRIPP Syrup 760ml (Rp 111.000) ---
         ['id' => 'DRP-CRM-760', 'nama' => 'DRIPP Caramel',            'brand' => 'DRIPP',    'flavor' => 'Caramel',      'cat' => 'DRIPP Syrup', 'satuan' => 'Botol 760ml', 'sub' => '760 ml', 'beli' => 88000,  'jual' => 111000, 'stok' => 36, 'min' => 24, 'c1' => '#F0B35A', 'c2' => '#B8651B', 'rak' => 'A-01', 'upd' => 'Hari ini, 08:30'],
@@ -216,8 +243,8 @@ function mock_products() {
         ['id' => 'DRP-LYC-760', 'nama' => 'DRIPP Lychee',             'brand' => 'DRIPP',    'flavor' => 'Lychee',       'cat' => 'DRIPP Syrup', 'satuan' => 'Botol 760ml', 'sub' => '760 ml', 'beli' => 88000,  'jual' => 111000, 'stok' => 30, 'min' => 24, 'c1' => '#FAD2DC', 'c2' => '#DC6F8C', 'rak' => 'A-06', 'upd' => 'Hari ini, 07:45'],
 
         // --- 2. DRIPP Fruit Pulp (Rp 166.500) ---
-        ['id' => 'DRP-PLP-BLU', 'nama' => 'DRIPP Fruit Pulp Blueberry','brand' => 'DRIPP',    'flavor' => 'Blueberry',    'cat' => 'Fruit Pulp',  'satuan' => 'Botol 760ml', 'sub' => 'Pulp 760ml', 'beli' => 132000, 'jual' => 166500, 'stok' => 18, 'min' => 20, 'c1' => '#A5B4FC', 'c2' => '#4338CA', 'rak' => 'B-01', 'upd' => '5 Okt, 11:20'],
-        ['id' => 'DRP-PLP-HNM', 'nama' => 'DRIPP Fruit Pulp Harum Manis','brand' => 'DRIPP',  'flavor' => 'Harum Manis',  'cat' => 'Fruit Pulp',  'satuan' => 'Botol 760ml', 'sub' => 'Pulp 760ml', 'beli' => 132000, 'jual' => 166500, 'stok' => 24, 'min' => 20, 'c1' => '#FDE047', 'c2' => '#D97706', 'rak' => 'B-02', 'upd' => 'Hari ini, 10:00'],
+        ['id' => 'DRP-PLP-BLU', 'nama' => 'DRIPP Fruit Pulp Blueberry', 'brand' => 'DRIPP',    'flavor' => 'Blueberry',    'cat' => 'Fruit Pulp',  'satuan' => 'Botol 760ml', 'sub' => 'Pulp 760ml', 'beli' => 132000, 'jual' => 166500, 'stok' => 18, 'min' => 20, 'c1' => '#A5B4FC', 'c2' => '#4338CA', 'rak' => 'B-01', 'upd' => '5 Okt, 11:20'],
+        ['id' => 'DRP-PLP-HNM', 'nama' => 'DRIPP Fruit Pulp Harum Manis', 'brand' => 'DRIPP',  'flavor' => 'Harum Manis',  'cat' => 'Fruit Pulp',  'satuan' => 'Botol 760ml', 'sub' => 'Pulp 760ml', 'beli' => 132000, 'jual' => 166500, 'stok' => 24, 'min' => 20, 'c1' => '#FDE047', 'c2' => '#D97706', 'rak' => 'B-02', 'upd' => 'Hari ini, 10:00'],
 
         // --- 3. Multibev Syrup 1L (Rp 78.800) ---
         ['id' => 'MBV-BTS-1000', 'nama' => 'Multibev Syrup Butterscotch 1L', 'brand' => 'Multibev', 'flavor' => 'Butterscotch', 'cat' => 'Multibev 1L', 'satuan' => 'Botol 1 Liter', 'sub' => '1000 ml', 'beli' => 63000, 'jual' => 78800, 'stok' => 40, 'min' => 24, 'c1' => '#FDE68A', 'c2' => '#CA8A04', 'rak' => 'C-01', 'upd' => 'Hari ini, 08:00'],
@@ -232,14 +259,16 @@ function mock_products() {
     ];
 }
 
-function stok_status($p) {
+function stok_status($p)
+{
     if ($p['stok'] <= 0)          return ['Habis', 'danger'];
     if ($p['stok'] < $p['min'])   return ['Menipis (< 2 Karton)', 'danger'];
     if ($p['stok'] <= ($p['min'] + 6)) return ['Waspada', 'warn'];
     return ['Aman', 'success'];
 }
 
-function product_art($p) {
+function product_art($p)
+{
     $type = 'syrup';
     if (isset($p['cat'])) {
         if ($p['cat'] === 'Powder') $type = 'powder';
