@@ -15,6 +15,7 @@
  * Role disimulasikan lewat $_SESSION['role'] (ganti via ?as=<role>).
  */
 
+require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/mock_data.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -101,7 +102,7 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
               <span class="avatar lg"><?= e(initials($me['nama'])) ?></span>
               <div>
                 <strong><?= e($me['nama']) ?></strong>
-                <div class="muted" style="font-size:12px">@<?= e($me['username']) ?></div>
+                <div class="muted text-xs">@<?= e($me['username']) ?></div>
               </div>
             </div>
             <div class="pm-label"><?= icon('flask', 13) ?> Switch Role (Simulasi)</div>

@@ -37,11 +37,11 @@ if (isset($_SESSION['id_user'])) {
     <div class="login-art">
       <div class="brand">
         <span class="brand-mark">
-          <img src="../../assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <span class="brand-fallback-text" style="display:none; align-items:center; justify-content:center; width:100%; height:100%;">MKP</span>
+          <img src="../../assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.classList.add('is-hidden'); this.nextElementSibling.style.display='flex';">
+          <span class="brand-fallback-box">MKP</span>
         </span>
         <span class="brand-text">
-          <strong style="color:#fff;">SI-DRIPP</strong>
+          <strong class="text-white">SI-DRIPP</strong>
           <span>MKP Store · Malang</span>
         </span>
       </div>
@@ -51,7 +51,7 @@ if (isset($_SESSION['id_user'])) {
         <p>Pengelolaan stok gudang real-time, kasir Point of Sales, dan pemantauan piutang (TOP) terpusat untuk CV Mitra Kembar Pradipta.</p>
       </div>
 
-      <div style="font-size: 12px; color: rgba(255, 255, 255, .65); position: relative; z-index: 1;">
+      <div class="login-art-copy">
         &copy; 2026 CV Mitra Kembar Pradipta · SI-DRIPP
       </div>
     </div>
@@ -62,12 +62,12 @@ if (isset($_SESSION['id_user'])) {
 
       <!-- Tangkap Pesan Error / Info dari Backend (Jika ada) -->
       <?php if (isset($_GET['error'])): ?>
-        <div class="callout" style="background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA; margin-bottom: 18px;">
+        <div class="callout danger">
           <strong>Gagal Masuk:</strong> <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
         </div>
       <?php endif; ?>
       <?php if (isset($_GET['pesan'])): ?>
-        <div class="callout" style="background: var(--success-bg); color: var(--success); border: 1px solid #A7F3D0; margin-bottom: 18px;">
+        <div class="callout success">
           <?= str_replace('_', ' ', htmlspecialchars($_GET['pesan'])) ?>
         </div>
       <?php endif; ?>
@@ -83,12 +83,12 @@ if (isset($_SESSION['id_user'])) {
           <input type="password" id="password" name="password" class="input" placeholder="********" required>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg btn-block" style="margin-top: 8px;">Masuk ke Sistem</button>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Masuk ke Sistem</button>
       </form>
 
       <div class="login-foot">
-        <a href="../../index.php" style="color: var(--primary); font-weight: 600;">&larr; Halaman Utama</a>
-        <div style="margin-top: 8px;">&copy; 2026 SI-DRIPP Project Based Learning</div>
+        <a href="../../index.php" class="text-primary fw-semibold">&larr; Halaman Utama</a>
+        <div class="mt-2">&copy; 2026 SI-DRIPP Project Based Learning</div>
       </div>
     </div>
 
