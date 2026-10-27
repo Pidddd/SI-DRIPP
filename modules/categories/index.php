@@ -30,13 +30,13 @@ require_once '../../layouts/header.php';
     </div>
 
     <?php if (isset($_GET['pesan'])): ?>
-        <div class="card" style="border-color: var(--success); background: var(--success-bg); color: var(--success); margin-bottom: 16px; padding: 12px 18px;">
+        <div class="card alert-card success">
             <?= str_replace('_', ' ', htmlspecialchars($_GET['pesan'])) ?>
         </div>
     <?php endif; ?>
 
     <?php if (isset($_GET['error'])): ?>
-        <div class="card" style="border-color: var(--danger); background: var(--danger-bg); color: var(--danger); margin-bottom: 16px; padding: 12px 18px;">
+        <div class="card alert-card danger">
             <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
         </div>
     <?php endif; ?>
@@ -55,7 +55,7 @@ require_once '../../layouts/header.php';
                 <tbody>
                     <?php if (!$result || pg_num_rows($result) == 0): ?>
                         <tr>
-                            <td colspan="4" class="muted" style="text-align:center; padding: 28px;">
+                            <td colspan="4" class="table-empty">
                                 Belum ada kategori. Klik "+ Tambah Kategori Produk" untuk menambahkan.
                             </td>
                         </tr>
