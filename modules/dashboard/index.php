@@ -47,7 +47,7 @@ require_once '../../layouts/header.php';
 ?>
 
 <?php if (isset($_GET['error'])): ?>
-  <div class="callout" style="background: var(--danger-bg); color: var(--danger); border: 1px solid #FECACA;">
+  <div class="callout danger">
     <?= e(str_replace('_', ' ', $_GET['error'])) ?>
   </div>
 <?php endif; ?>

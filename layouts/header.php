@@ -16,6 +16,7 @@
  * Role disimulasikan lewat $_SESSION['role'] (ganti via ?as=<role>).
  */
 
+require_once __DIR__ . '/../config/bootstrap.php';
 require_once __DIR__ . '/mock_data.php';
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -147,8 +148,17 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
               <div class="forbidden-actions">
                 <a class="btn btn-primary" href="<?= $root . $me['home'] ?>"><?= icon('home', 18) ?> Ke Halaman Utama Saya</a>
                 <a class="btn btn-ghost" href="<?= e(role_url($allowed[0])) ?>"><?= icon('shield', 18) ?> Simulasikan <?= e($roles[$allowed[0]]['label']) ?></a>
-              </div>
-            </div>
+                <?= icon('chevron', 16) ?>
+                </span>
+                </summary>
+                <div class="profile-menu">
+                  <div class="pm-head">
+                    <span class="avatar lg"><?= e(initials($me['nama'])) ?></span>
+                    <div>
+                      <strong><?= e($me['nama']) ?></strong>
+                      <div class="muted text-xs">@<?= e($me['username']) ?></div>
+                    </div>
+                  </div>
           </section>
         <?php
           require __DIR__ . '/footer.php';

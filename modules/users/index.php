@@ -2,7 +2,7 @@
 /**
  * MODUL PENGGUNA — MANAJEMEN AKUN & HAK AKSES (RBAC)
  * File: modules/users/index.php
- * Fungsi: Antarmuka Daftar Pengguna statis bergaya Bento Grid Toska MKP Store.
+ * Fungsi: Menampilkan daftar akun personel dari Supabase PostgreSQL beserta aksi Edit & Hapus.
  */
 
 $root       = '../../';
@@ -12,7 +12,33 @@ $active     = 'users';
 $allowed    = ['super_admin'];
 
 require_once __DIR__ . '/../../layouts/header.php';
+
+// Ambil daftar pengguna dari tabel users di Supabase
+$q_users   = "SELECT id_user, nama, jenis_kelamin, username, role FROM users ORDER BY id_user ASC";
+$res_users = pg_query($conn, $q_users);
+$jml_user  = $res_users ? pg_num_rows($res_users) : 0;
 ?>
+
+<?php if (isset($_GET['pesan'])): ?>
+  <div class="callout success rise">
+    <?= icon('check', 18) ?>
+    <div>
+      <?php
+        if ($_GET['pesan'] === 'sukses_tambah_pegawai') echo 'Akun pengguna baru berhasil ditambahkan ke dalam sistem.';
+        elseif ($_GET['pesan'] === 'sukses_update_pegawai') echo 'Data akun pengguna berhasil diperbarui.';
+        elseif ($_GET['pesan'] === 'sukses_hapus_pegawai') echo 'Akun pengguna berhasil dihapus dari sistem.';
+        else echo e($_GET['pesan']);
+      ?>
+    </div>
+  </div>
+<?php endif; ?>
+
+<?php if (isset($_GET['error'])): ?>
+  <div class="callout danger rise">
+    <?= icon('alert', 18) ?>
+    <div><?= e($_GET['error']) ?></div>
+  </div>
+<?php endif; ?>
 
 <!-- Bar Aksi Atas -->
 <div class="page-actions rise">
@@ -20,26 +46,26 @@ require_once __DIR__ . '/../../layouts/header.php';
     <span class="badge info"><i class="dot"></i>Sistem Otentikasi Role-Based Access Control (RBAC)</span>
   </div>
   <div class="grow"></div>
-  <button type="button" class="btn btn-primary" onclick="alert('Memuat form pendaftaran pengguna baru...')">
+  <a href="<?= BASE_URL ?>modules/users/create.php" class="btn btn-primary">
     <?= icon('plus', 18) ?> Tambah Pengguna Baru
-  </button>
+  </a>
 </div>
 
 <!-- Tabel Daftar Pengguna -->
 <div class="card flush rise">
-  <div class="card-head pad">
+  <div class="card-head pad pb-4">
     <div>
       <h2>Daftar Akun Personel MKP Store</h2>
       <p>Daftar pengguna aktif yang memiliki otorisasi akses ke dalam Sistem Informasi SI-DRIPP</p>
     </div>
-    <span class="badge success"><i class="dot"></i>3 Akun Aktif</span>
+    <span class="badge success"><i class="dot"></i><?= (int)$jml_user ?> Akun Terdaftar</span>
   </div>
 
   <div class="table-wrap">
     <table class="table">
       <thead>
         <tr>
-          <th>No</th>
+          <th class="col-no">No</th>
           <th>Username</th>
           <th>Nama Lengkap</th>
           <th>Role</th>
@@ -48,98 +74,41 @@ require_once __DIR__ . '/../../layouts/header.php';
         </tr>
       </thead>
       <tbody>
-        <!-- Baris 1: Zicco Muhammad -->
-        <tr>
-          <td class="mono muted">1</td>
-          <td class="mono"><strong>@zicco.muhammad</strong></td>
-          <td>
-            <div class="cell-user">
-              <span class="avatar sm">ZM</span>
-              <div>
-                <strong>Zicco Muhammad</strong>
-                <span>Owner / Super Admin MKP Store</span>
-              </div>
-            </div>
-          </td>
-          <td>
-            <span class="badge role-super_admin"><i class="dot"></i>Super Admin</span>
-          </td>
-          <td>
-            <span class="badge success"><i class="dot"></i>Aktif</span>
-          </td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="alert('Memuat data form edit...')">
-                <?= icon('edit', 14) ?> Edit
-              </button>
-              <button type="button" class="btn btn-danger-soft btn-sm" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan akun ini?')">
-                <?= icon('power', 14) ?> Nonaktifkan
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Baris 2: Zulfikar Almiski -->
-        <tr>
-          <td class="mono muted">2</td>
-          <td class="mono"><strong>@zulfikar.almiski</strong></td>
-          <td>
-            <div class="cell-user">
-              <span class="avatar sm">ZA</span>
-              <div>
-                <strong>Zulfikar Almiski</strong>
-                <span>Staf Kasir & Pelayanan Front-Desk</span>
-              </div>
-            </div>
-          </td>
-          <td>
-            <span class="badge role-kasir"><i class="dot"></i>Kasir</span>
-          </td>
-          <td>
-            <span class="badge success"><i class="dot"></i>Aktif</span>
-          </td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="alert('Memuat data form edit...')">
-                <?= icon('edit', 14) ?> Edit
-              </button>
-              <button type="button" class="btn btn-danger-soft btn-sm" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan akun ini?')">
-                <?= icon('power', 14) ?> Nonaktifkan
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Baris 3: Daffa Febrianto -->
-        <tr>
-          <td class="mono muted">3</td>
-          <td class="mono"><strong>@daffa.febrianto</strong></td>
-          <td>
-            <div class="cell-user">
-              <span class="avatar sm">DF</span>
-              <div>
-                <strong>Daffa Febrianto</strong>
-                <span>Staf Logistik & Gudang HORECA</span>
-              </div>
-            </div>
-          </td>
-          <td>
-            <span class="badge role-staf_gudang"><i class="dot"></i>Staf Gudang</span>
-          </td>
-          <td>
-            <span class="badge success"><i class="dot"></i>Aktif</span>
-          </td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="alert('Memuat data form edit...')">
-                <?= icon('edit', 14) ?> Edit
-              </button>
-              <button type="button" class="btn btn-danger-soft btn-sm" onclick="return confirm('Apakah Anda yakin ingin menonaktifkan akun ini?')">
-                <?= icon('power', 14) ?> Nonaktifkan
-              </button>
-            </div>
-          </td>
-        </tr>
+        <?php if ($res_users && $jml_user > 0): ?>
+          <?php $no = 1; while ($u = pg_fetch_assoc($res_users)):
+              $role_norm = normalisasi_role($u['role']);
+          ?>
+            <tr>
+              <td class="mono muted"><?= $no++ ?></td>
+              <td class="mono"><strong>@<?= e($u['username']) ?></strong></td>
+              <td>
+                <div class="cell-user">
+                  <span class="avatar sm"><?= e(initials($u['nama'])) ?></span>
+                  <div>
+                    <strong><?= e($u['nama']) ?></strong>
+                    <span><?= e($u['jenis_kelamin']) ?></span>
+                  </div>
+                </div>
+              </td>
+              <td><?= role_badge($role_norm) ?></td>
+              <td><span class="badge success"><i class="dot"></i>Aktif</span></td>
+              <td class="text-right">
+                <div class="row-actions">
+                  <a href="<?= BASE_URL ?>modules/users/create.php?edit=<?= (int)$u['id_user'] ?>" class="btn btn-soft btn-sm">
+                    <?= icon('edit', 14) ?> Edit
+                  </a>
+                  <a href="<?= BASE_URL ?>modules/users/process/create.php?hapus_id=<?= (int)$u['id_user'] ?>" class="btn btn-danger-soft btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus akun @<?= e($u['username']) ?>?')">
+                    <?= icon('trash', 14) ?> Hapus
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <?php endwhile; ?>
+        <?php else: ?>
+          <tr>
+            <td colspan="6" class="table-empty">Belum ada akun pengguna yang terdaftar.</td>
+          </tr>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>

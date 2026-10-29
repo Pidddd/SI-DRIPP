@@ -2,7 +2,7 @@
 /**
  * MODUL TRANSAKSI — RIWAYAT TRANSAKSI PENJUALAN
  * File: modules/transactions/history.php
- * Fungsi: Antarmuka Riwayat Transaksi statis dengan fitur cetak nota interaktif.
+ * Fungsi: Menampilkan arsip nota penjualan dari Supabase menggunakan Multi-table JOIN.
  */
 
 $root       = '../../';
@@ -12,13 +12,24 @@ $active     = 'tx_history';
 $allowed    = ['super_admin', 'admin', 'kasir'];
 
 require_once __DIR__ . '/../../layouts/header.php';
+
+// Query Multi-table JOIN (transactions + users + subquery jumlah item)
+$q_history = "SELECT t.id_transaksi, t.waktu_transaksi, t.nama_pelanggan, t.kontak_pelanggan,
+                     t.total_harga, t.diskon, t.status_pembayaran, u.nama AS nama_kasir,
+                     (SELECT COALESCE(SUM(td.kuantitas), 0)
+                      FROM transaction_details td
+                      WHERE td.transactionsid_transaksi = t.id_transaksi) AS total_botol
+              FROM transactions t
+              LEFT JOIN users u ON t.userid_user = u.id_user
+              ORDER BY t.waktu_transaksi DESC";
+$res_history   = pg_query($conn, $q_history);
+$total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
 ?>
 
-<!-- Bar Aksi & Filter -->
+<!-- Bar Aksi & Info -->
 <div class="page-actions rise">
   <div>
-    <span class="badge info"><i class="dot"></i>4 Transaksi Tercatat Hari Ini</span>
-    <span class="badge success"><i class="dot"></i>3 Lunas · 1 Piutang Tempo</span>
+    <span class="badge info"><i class="dot"></i><?= (int)$total_riwayat ?> Transaksi Tercatat di Database</span>
   </div>
   <div class="grow"></div>
   <a href="<?= BASE_URL ?>modules/transactions/index.php" class="btn btn-primary">
@@ -26,14 +37,14 @@ require_once __DIR__ . '/../../layouts/header.php';
   </a>
 </div>
 
-<!-- Tabel Riwayat Transaksi Statis -->
+<!-- Tabel Riwayat Transaksi Dinamis -->
 <div class="card flush rise">
-  <div class="card-head pad">
+  <div class="card-head pad pb-4">
     <div>
       <h2>Daftar Riwayat Transaksi Penjualan</h2>
-      <p>Klik tombol Cetak Nota pada kolom aksi untuk mencetak struk/invoice melalui dialog printer</p>
+      <p>Klik tombol Cetak Nota pada kolom aksi untuk membuka halaman struk invoice resmi</p>
     </div>
-    <span class="badge neutral">Periode: Oktober 2026</span>
+    <span class="badge neutral">Data Live Supabase</span>
   </div>
 
   <div class="table-wrap">
@@ -43,87 +54,47 @@ require_once __DIR__ . '/../../layouts/header.php';
           <th>No Invoice</th>
           <th>Tanggal</th>
           <th>Pelanggan</th>
+          <th>Kasir</th>
           <th>Status Bayar</th>
-          <th class="text-right">Total</th>
+          <th class="text-right">Total Tagihan</th>
           <th class="text-right">Aksi</th>
         </tr>
       </thead>
       <tbody>
-        <!-- Transaksi 1 -->
-        <tr>
-          <td class="mono"><strong>#INV-20261008-001</strong></td>
-          <td class="nowrap">08 Okt 2026 · 09:15 WIB</td>
-          <td>
-            <strong>Kopi Studio 24 — Soekarno Hatta</strong>
-            <div class="muted">Mitra HORECA (14 Botol · Diskon Grosir)</div>
-          </td>
-          <td><span class="badge success"><i class="dot"></i>Lunas (QRIS)</span></td>
-          <td class="text-right mono"><strong>Rp 1.600.000</strong></td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="window.print()">
-                <?= icon('report', 15) ?> Cetak Nota
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Transaksi 2 -->
-        <tr>
-          <td class="mono"><strong>#INV-20261008-002</strong></td>
-          <td class="nowrap">08 Okt 2026 · 10:40 WIB</td>
-          <td>
-            <strong>Lafayette Coffee & Eatery — Kayutangan</strong>
-            <div class="muted">Mitra HORECA (24 Botol · 2 Karton)</div>
-          </td>
-          <td><span class="badge warn"><i class="dot"></i>Piutang Tempo</span></td>
-          <td class="text-right mono"><strong>Rp 2.544.000</strong></td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="window.print()">
-                <?= icon('report', 15) ?> Cetak Nota
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Transaksi 3 -->
-        <tr>
-          <td class="mono"><strong>#INV-20261007-019</strong></td>
-          <td class="nowrap">07 Okt 2026 · 16:20 WIB</td>
-          <td>
-            <strong>Nakoa Cafe — Bondowoso Malang</strong>
-            <div class="muted">Mitra HORECA (12 Botol · 1 Karton)</div>
-          </td>
-          <td><span class="badge success"><i class="dot"></i>Lunas (Transfer)</span></td>
-          <td class="text-right mono"><strong>Rp 1.272.000</strong></td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="window.print()">
-                <?= icon('report', 15) ?> Cetak Nota
-              </button>
-            </div>
-          </td>
-        </tr>
-
-        <!-- Transaksi 4 -->
-        <tr>
-          <td class="mono"><strong>#INV-20261007-018</strong></td>
-          <td class="nowrap">07 Okt 2026 · 13:05 WIB</td>
-          <td>
-            <strong>Pelanggan Walk-In (Retail B2C)</strong>
-            <div class="muted">Pembelian Eceran (3 Botol DRIPP Syrup)</div>
-          </td>
-          <td><span class="badge success"><i class="dot"></i>Lunas (Tunai)</span></td>
-          <td class="text-right mono"><strong>Rp 333.000</strong></td>
-          <td class="text-right">
-            <div class="row-actions">
-              <button type="button" class="btn btn-soft btn-sm" onclick="window.print()">
-                <?= icon('report', 15) ?> Cetak Nota
-              </button>
-            </div>
-          </td>
-        </tr>
+        <?php if ($res_history && $total_riwayat > 0): ?>
+          <?php while ($trx = pg_fetch_assoc($res_history)):
+              $lunas = (int)$trx['status_pembayaran'] === 1;
+          ?>
+            <tr>
+              <td class="mono"><strong>#<?= e($trx['id_transaksi']) ?></strong></td>
+              <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($trx['waktu_transaksi']))) ?></td>
+              <td>
+                <strong><?= e($trx['nama_pelanggan'] ?: 'Pelanggan Umum') ?></strong>
+                <div class="muted text-xs"><?= (int)$trx['total_botol'] ?> Unit · Kontak: <?= e($trx['kontak_pelanggan'] ?: '-') ?></div>
+              </td>
+              <td><?= e($trx['nama_kasir'] ?? 'Kasir') ?></td>
+              <td>
+                <?php if ($lunas): ?>
+                  <span class="badge success"><i class="dot"></i>Lunas</span>
+                <?php else: ?>
+                  <span class="badge warn"><i class="dot"></i>Piutang Tempo</span>
+                <?php endif; ?>
+              </td>
+              <td class="text-right mono"><strong><?= rupiah($trx['total_harga']) ?></strong></td>
+              <td class="text-right">
+                <div class="row-actions">
+                  <a href="<?= BASE_URL ?>modules/transactions/print_invoice.php?id=<?= urlencode($trx['id_transaksi']) ?>" class="btn btn-soft btn-sm">
+                    <?= icon('report', 15) ?> Cetak Nota
+                  </a>
+                </div>
+              </td>
+            </tr>
+          <?php endwhile; ?>
+        <?php else: ?>
+          <tr>
+            <td colspan="7" class="table-empty">Belum ada riwayat transaksi penjualan yang tercatat.</td>
+          </tr>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>

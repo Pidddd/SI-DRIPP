@@ -38,12 +38,12 @@ require_once '../../layouts/header.php';
   </div>
 
   <?php if (isset($_GET['error'])): ?>
-    <div class="card" style="border-color: var(--danger); background: var(--danger-bg); color: var(--danger); margin-bottom: 16px; padding: 12px 18px;">
+    <div class="card alert-card danger">
       <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
     </div>
   <?php endif; ?>
 
-  <div class="card" style="max-width: 640px;">
+  <div class="card card-form">
     <div class="card-head">
       <div>
         <h2><?= $is_edit ? 'Form Edit Kategori Produk' : 'Form Tambah Kategori Produk' ?></h2>
@@ -66,7 +66,7 @@ require_once '../../layouts/header.php';
         <textarea id="deskripsi" name="deskripsi" class="textarea" placeholder="Keterangan singkat kategori..."></textarea>
       </div>
 
-      <div style="display: flex; gap: 10px; padding-top: 8px;">
+      <div class="form-actions">
         <button type="submit" class="btn btn-primary"><?= $is_edit ? 'Simpan Perubahan' : 'Simpan' ?></button>
         <button type="reset" class="btn btn-ghost">Reset</button>
       </div>

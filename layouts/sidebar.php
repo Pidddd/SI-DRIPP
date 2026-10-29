@@ -34,8 +34,8 @@ $menu = [
 <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
   <a class="brand" href="<?= $root . $me['home'] ?>">
     <span class="brand-mark">
-      <img src="<?= BASE_URL ?>assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-      <span class="brand-fallback-text" style="display:none; font-weight:800; font-size:11px; color:#fff; align-items:center; justify-content:center; width:100%; height:100%; text-align:center; padding:2px;">MKP Store</span>
+      <img src="<?= BASE_URL ?>assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.classList.add('is-hidden'); this.nextElementSibling.style.display='flex';">
+      <span class="brand-fallback-box">MKP Store</span>
     </span>
     <span class="brand-text">
       <strong>SI-DRIPP</strong>

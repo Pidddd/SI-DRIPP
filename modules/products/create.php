@@ -53,12 +53,12 @@ require_once '../../layouts/header.php';
     </div>
 
     <?php if (isset($_GET['error'])): ?>
-        <div class="card" style="border-color: var(--danger); background: var(--danger-bg); color: var(--danger); margin-bottom: 16px; padding: 12px 18px;">
+        <div class="card alert-card danger">
             <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
         </div>
     <?php endif; ?>
 
-    <div class="card" style="max-width: 680px;">
+    <div class="card card-form">
         <div class="card-head">
             <div>
                 <h2><?= $is_edit ? 'Form Edit Produk' : 'Form Tambah Produk' ?></h2>
@@ -115,7 +115,7 @@ require_once '../../layouts/header.php';
                 <small class="muted">Masukkan jumlah stok botol yang tersedia di gudang saat ini (minimal 0).</small>
             </div>
 
-            <div style="display: flex; gap: 10px; padding-top: 8px;">
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary"><?= $is_edit ? 'Simpan Perubahan' : 'Simpan Produk' ?></button>
                 <button type="reset" class="btn btn-ghost">Reset</button>
             </div>
