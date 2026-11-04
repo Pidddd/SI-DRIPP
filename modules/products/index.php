@@ -81,7 +81,7 @@ require_once '../../layouts/header.php';
                                 <td>
                                     <div class="cell-user">
                                         <span class="thumb">
-                                            <?= bottle_svg('#0A99AE', '#06616E', substr($row['nama_barang'], 0, 10), '760 ml', $tipe_svg, 'DRIPP', $row['id_product']) ?>
+                                            <?= bottle_svg('#D97706', '#78350F', substr($row['nama_barang'], 0, 10), '760 ml', $tipe_svg, 'DRIPP', $row['id_product']) ?>
                                         </span>
                                         <div>
                                             <strong><?= htmlspecialchars($row['nama_barang']) ?></strong>
