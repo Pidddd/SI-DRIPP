@@ -46,6 +46,9 @@ if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
 }
 
 /* --- Default role bila belum ada session --- */
+if (isset($_SESSION['role'])) {
+  $_SESSION['role'] = normalisasi_role($_SESSION['role']);
+}
 if (!isset($_SESSION['role']) || !isset($roles[$_SESSION['role']])) {
   $_SESSION['role']    = 'super_admin';
   $_SESSION['id_user'] = $roles['super_admin']['id'];

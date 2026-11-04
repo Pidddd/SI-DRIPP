@@ -17,20 +17,22 @@ if (!isset($_SESSION['id_user']) || empty($_SESSION['id_user'])) {
 /**
  * Menormalisasi variasi penulisan nama role ke standar snake_case sistem
  */
-function normalisasi_role($role_str) {
-    $clean = strtolower(trim((string)$role_str));
-    $map = [
-        'super admin'  => 'super_admin',
-        'super_admin'  => 'super_admin',
-        'owner'        => 'super_admin',
-        'admin'        => 'admin',
-        'kasir'        => 'kasir',
-        'staff gudang' => 'staf_gudang',
-        'staf gudang'  => 'staf_gudang',
-        'staf_gudang'  => 'staf_gudang',
-        'gudang'       => 'staf_gudang',
-    ];
-    return isset($map[$clean]) ? $map[$clean] : $clean;
+if (!function_exists('normalisasi_role')) {
+    function normalisasi_role($role_str) {
+        $clean = strtolower(trim((string)$role_str));
+        $map = [
+            'super admin'  => 'super_admin',
+            'super_admin'  => 'super_admin',
+            'owner'        => 'super_admin',
+            'admin'        => 'admin',
+            'kasir'        => 'kasir',
+            'staff gudang' => 'staf_gudang',
+            'staf gudang'  => 'staf_gudang',
+            'staf_gudang'  => 'staf_gudang',
+            'gudang'       => 'staf_gudang',
+        ];
+        return isset($map[$clean]) ? $map[$clean] : $clean;
+    }
 }
 
 function cek_hak_akses($allowed_roles) {
