@@ -232,6 +232,8 @@ img, svg { display: block; max-width: 100%; }
 }
 .pm-role:hover { background: var(--bg-soft); color: var(--primary); }
 .pm-role.active { background: var(--bg-soft); color: var(--primary); font-weight: 700; }
+.pm-role.is-locked { opacity: .45; color: var(--faint); cursor: not-allowed; user-select: none; }
+.pm-role.is-locked:hover { background: transparent; color: var(--faint); }
 .pm-sep { height: 1px; background: var(--line); margin: 10px 0; }
 .pm-link { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: var(--radius-sm); color: var(--danger); font-weight: 550; }
 .pm-link:hover { background: var(--danger-bg); }
@@ -653,6 +655,8 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 }
 .rs-btn:hover { background: rgba(255, 255, 255, .12); color: #fff; }
 .rs-btn.active { background: var(--caramel-grad); color: #fff; box-shadow: 0 6px 16px -4px var(--teal-shadow); }
+.rs-btn.is-locked { opacity: .38; color: rgba(255, 255, 255, .55); cursor: not-allowed; user-select: none; }
+.rs-btn.is-locked:hover { background: transparent; color: rgba(255, 255, 255, .55); }
 
 /* ---------- 16. 403 Forbidden ---------- */
 .forbidden { min-height: 62vh; display: grid; place-items: center; }

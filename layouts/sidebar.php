@@ -1,11 +1,15 @@
 <?php
 /**
- * LAYOUT SIDEBAR DINAMIS (PROTOTYPE)
+ * LAYOUT SIDEBAR DINAMIS
  * File: layouts/sidebar.php
- * Fungsi: Menu navigasi yang di-filter berdasarkan $_SESSION['role'].
- * Dipanggil dari layouts/header.php (variabel $root, $role, $me, $active tersedia).
- * Item dengan 'built' => false ditandai "Soon" (halaman belum dibuat di prototype).
+ * Fungsi: Menu navigasi yang di-filter berdasarkan mode role aktif ($view_role).
+ *         Saat Super Admin melakukan Switch Role ke Kasir / Staf Gudang / Admin,
+ *         sidebar menyesuaikan tampilan menu sesuai role yang dipilih,
+ *         namun akun asli Super Admin di kanan atas tidak ikut terganti.
  */
+
+$sidebar_role = (isset($view_role) && !empty($view_role)) ? $view_role : $role;
+$sidebar_info = isset($roles[$sidebar_role]) ? $roles[$sidebar_role] : $me;
 
 $menu = [
     'Operasional' => [
@@ -32,7 +36,7 @@ $menu = [
 ];
 ?>
 <aside class="sidebar" id="sidebar" aria-label="Navigasi utama">
-  <a class="brand" href="<?= $root . $me['home'] ?>">
+  <a class="brand" href="<?= $root . $sidebar_info['home'] ?>">
     <span class="brand-mark">
       <img src="<?= BASE_URL ?>assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.classList.add('is-hidden'); this.nextElementSibling.style.display='flex';">
       <span class="brand-fallback-box">MKP Store</span>
@@ -45,7 +49,7 @@ $menu = [
 
   <nav class="nav">
     <?php foreach ($menu as $group => $items):
-        $visible = array_filter($items, function ($it) use ($role) { return in_array($role, $it['roles'], true); });
+        $visible = array_filter($items, function ($it) use ($sidebar_role) { return in_array($sidebar_role, $it['roles'], true); });
         if (!$visible) continue;
     ?>
       <div class="nav-group">
@@ -68,8 +72,8 @@ $menu = [
   <div class="sidebar-foot">
     <div class="role-line">
       <span class="eyebrow">Role Aktif</span>
-      <?= role_badge($role) ?>
+      <?= role_badge($sidebar_role) ?>
     </div>
-    <small><?= e($me['desc']) ?></small>
+    <small><?= e($sidebar_info['desc']) ?></small>
   </div>
 </aside>

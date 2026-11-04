@@ -1,19 +1,16 @@
 <?php
 
 /**
- * LAYOUT HEADER (PROTOTYPE)
+ * LAYOUT HEADER
  * File: layouts/header.php
  * Fungsi : Membuka dokumen HTML, memuat sidebar, dan merender topbar
- *          (profil user aktif, penanda role, switch role simulasi).
+ *          (profil user aktif, penanda role, switch role untuk Super Admin).
  *
- * Variabel yang diset oleh halaman sebelum require:
- *   $root       (string) path relatif ke root project, mis. '../../'
- *   $page_title (string) judul halaman (menjadi <h1>)
- *   $page_sub   (string) subjudul opsional
- *   $active     (string) key menu sidebar yang aktif
- *   $allowed    (array)  daftar role yang boleh mengakses (kosong = semua)
- *
- * Role disimulasikan lewat $_SESSION['role'] (ganti via ?as=<role>).
+ * Aturan RBAC & Switch Role:
+ *   1. Super Admin memiliki hak akses penuh ke seluruh halaman & fitur semua role
+ *      tanpa mengganti identitas akun aslinya.
+ *   2. Admin, Kasir, dan Staf Gudang hanya dapat mengakses fitur di ranah role
+ *      mereka masing-masing (tombol role lain terkunci/disabled).
  */
 
 require_once __DIR__ . '/../config/bootstrap.php';
@@ -34,15 +31,31 @@ $allowed    = isset($allowed) ? $allowed : [];
 
 $roles = role_catalog();
 
-/* --- Switch role simulasi: ?as=kasir  -> set session lalu redirect bersih --- */
-if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
-  $_SESSION['role']    = $_GET['as'];
-  $_SESSION['id_user'] = $roles[$_GET['as']]['id'];
-  unset($_SESSION['nama'], $_SESSION['username']);
-  $q = $_GET;
-  unset($q['as']);
-  header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?') . ($q ? '?' . http_build_query($q) : ''));
-  exit();
+/* --- Sinkronisasi & Pemulihan Akun Asli dari Database --- */
+if (isset($conn) && $conn) {
+  // Jika session username kosong (misal akibat bug switch role lama atau sesi awal),
+  // pulihkan otomatis ke akun Super Admin dari tabel users
+  if (empty($_SESSION['username'])) {
+    $res_sa = pg_query($conn, "SELECT id_user, nama, username, role FROM users ORDER BY CASE WHEN LOWER(role) IN ('super_admin', 'super admin', 'owner') THEN 0 ELSE 1 END, id_user ASC LIMIT 1");
+    if ($res_sa && pg_num_rows($res_sa) > 0) {
+      $row_sa = pg_fetch_assoc($res_sa);
+      $_SESSION['id_user']  = (int)$row_sa['id_user'];
+      $_SESSION['nama']     = $row_sa['nama'];
+      $_SESSION['username'] = $row_sa['username'];
+      $_SESSION['role']     = normalisasi_role($row_sa['role']);
+    }
+  } else {
+    // Jika user sudah login riil, pastikan id_user & role selalu merujuk ke data asli akunnya di DB
+    $cek_uid = isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0;
+    $res_uid = pg_query_params($conn, "SELECT id_user, nama, username, role FROM users WHERE id_user = $1 LIMIT 1", [$cek_uid]);
+    if ($res_uid && pg_num_rows($res_uid) > 0) {
+      $row_u = pg_fetch_assoc($res_uid);
+      $_SESSION['id_user']  = (int)$row_u['id_user'];
+      $_SESSION['nama']     = $row_u['nama'];
+      $_SESSION['username'] = $row_u['username'];
+      $_SESSION['role']     = normalisasi_role($row_u['role']);
+    }
+  }
 }
 
 /* --- Default role bila belum ada session --- */
@@ -50,26 +63,42 @@ if (isset($_SESSION['role'])) {
   $_SESSION['role'] = normalisasi_role($_SESSION['role']);
 }
 if (!isset($_SESSION['role']) || !isset($roles[$_SESSION['role']])) {
-  $_SESSION['role']    = 'super_admin';
-  $_SESSION['id_user'] = $roles['super_admin']['id'];
+  $_SESSION['role']     = 'super_admin';
+  $_SESSION['id_user']  = $roles['super_admin']['id'];
+  $_SESSION['nama']     = $roles['super_admin']['nama'];
+  $_SESSION['username'] = $roles['super_admin']['username'];
 }
 
-/* --- Pastikan $_SESSION['id_user'] merujuk ke id_user yang valid di tabel users Supabase --- */
-if (isset($conn) && $conn) {
-  $cek_uid = isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0;
-  $res_uid = pg_query_params($conn, "SELECT id_user FROM users WHERE id_user = $1 LIMIT 1", [$cek_uid]);
-  if (!$res_uid || pg_num_rows($res_uid) === 0) {
-    $res_first_uid = pg_query($conn, "SELECT id_user FROM users ORDER BY id_user ASC LIMIT 1");
-    if ($res_first_uid && pg_num_rows($res_first_uid) > 0) {
-      $_SESSION['id_user'] = (int)pg_fetch_result($res_first_uid, 0, 0);
-    }
+$role          = $_SESSION['role'];
+$is_superadmin = ($role === 'super_admin');
+
+/* --- Switch Role Navigasi (?as=<role>) ---
+ * Hanya Super Admin yang diizinkan berpindah ruang kerja lintas role,
+ * dan AKUN ASLI Super Admin TIDAK IKUT TERGANTI.
+ */
+if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
+  $target_role = $_GET['as'];
+  if ($is_superadmin) {
+    $_SESSION['view_role'] = $target_role;
+    header('Location: ' . $root . $roles[$target_role]['home']);
+    exit();
+  } else {
+    // Role selain Super Admin terkunci di ranahnya sendiri
+    $_SESSION['view_role'] = $role;
+    $q = $_GET;
+    unset($q['as']);
+    header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?') . ($q ? '?' . http_build_query($q) : ''));
+    exit();
   }
 }
 
-$role = $_SESSION['role'];
-$me   = $roles[$role];
+/* --- Role tampilan aktif pada bar Switch Role --- */
+$view_role = ($is_superadmin && isset($_SESSION['view_role']) && isset($roles[$_SESSION['view_role']]))
+  ? $_SESSION['view_role']
+  : $role;
 
-// Jika user login secara riil melalui database, gunakan nama & username aslinya
+/* --- Profil akun asli yang sedang login (TIDAK berubah saat switch role) --- */
+$me = $roles[$role];
 if (isset($_SESSION['nama']) && !empty($_SESSION['nama'])) {
   $me['nama'] = $_SESSION['nama'];
 }
@@ -77,7 +106,8 @@ if (isset($_SESSION['username']) && !empty($_SESSION['username'])) {
   $me['username'] = $_SESSION['username'];
 }
 
-$is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
+/* --- Super Admin memiliki akses penuh ke seluruh halaman (tidak pernah 403) --- */
+$is_forbidden = !$is_superadmin && !empty($allowed) && !in_array($role, $allowed, true);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -111,7 +141,7 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
 
         <div class="topbar-right">
           <span class="date-chip"><?= icon('clock', 16) ?><?= e(tgl_id()) ?></span>
-          <?= role_badge($role) ?>
+          <?= role_badge($view_role) ?>
 
           <details class="profile" id="profile-menu">
             <summary>
@@ -132,12 +162,22 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
                   <div class="muted text-xs">@<?= e($me['username']) ?></div>
                 </div>
               </div>
-              <div class="pm-label"><?= icon('flask', 13) ?> Switch Role (Simulasi)</div>
+              <div class="pm-label">
+                <?= icon('shield', 13) ?>
+                <?= $is_superadmin ? 'Akses Lintas Role (Super Admin)' : 'Ranah Akses Role Anda' ?>
+              </div>
               <?php foreach ($roles as $key => $r): ?>
-                <a class="pm-role <?= $key === $role ? 'active' : '' ?>" href="<?= e(role_url($key)) ?>">
-                  <span><?= e($r['label']) ?></span>
-                  <?php if ($key === $role): ?><?= icon('check', 16) ?><?php endif; ?>
-                </a>
+                <?php if ($is_superadmin || $key === $role): ?>
+                  <a class="pm-role <?= $key === $view_role ? 'active' : '' ?>" href="<?= e(role_url($key)) ?>">
+                    <span><?= e($r['label']) ?></span>
+                    <?php if ($key === $view_role): ?><?= icon('check', 16) ?><?php endif; ?>
+                  </a>
+                <?php else: ?>
+                  <span class="pm-role is-locked" title="Terkunci — Hanya dapat diakses sesuai role masing-masing">
+                    <span><?= e($r['label']) ?></span>
+                    <?= icon('lock', 14) ?>
+                  </span>
+                <?php endif; ?>
               <?php endforeach; ?>
               <div class="pm-sep"></div>
               <a class="pm-link" href="<?= BASE_URL ?>modules/auth/process/logout.php"><?= icon('logout', 18) ?> Keluar</a>
@@ -148,7 +188,7 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
 
       <div class="content">
         <?php
-        /* --- Proteksi akses: tampilkan 403 Forbidden mockup bila role tidak diizinkan --- */
+        /* --- Proteksi akses: tampilkan 403 Forbidden bila role non-Super Admin mengakses luar ranahnya --- */
         if ($is_forbidden):
           $need = array_map(function ($r) use ($roles) {
             return $roles[$r]['label'];
@@ -163,7 +203,6 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
               <div class="forbidden-who">Anda masuk sebagai <?= role_badge($role) ?></div>
               <div class="forbidden-actions">
                 <a class="btn btn-primary" href="<?= $root . $me['home'] ?>"><?= icon('home', 18) ?> Ke Halaman Utama Saya</a>
-                <a class="btn btn-ghost" href="<?= e(role_url($allowed[0])) ?>"><?= icon('shield', 18) ?> Simulasikan <?= e($roles[$allowed[0]]['label']) ?></a>
               </div>
             </div>
           </section>

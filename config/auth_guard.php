@@ -41,6 +41,12 @@ function cek_hak_akses($allowed_roles) {
     }
 
     $user_role = normalisasi_role($_SESSION['role']);
+
+    // Super Admin memiliki hak akses penuh ke seluruh role dan seluruh fitur tanpa terkecuali
+    if ($user_role === 'super_admin') {
+        return;
+    }
+
     $normalized_allowed = array_map('normalisasi_role', (array)$allowed_roles);
 
     if (!in_array($user_role, $normalized_allowed, true)) {
