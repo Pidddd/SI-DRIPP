@@ -15,8 +15,40 @@ cek_hak_akses(['super_admin', 'admin']);
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['hapus_id'])) {
     $hapus_id = trim($_GET['hapus_id']);
     if ($hapus_id !== '') {
+        // Ambil nama barang sebelum dihapus untuk membersihkan index.json & file foto
+        $res_find = pg_query_params($conn, "SELECT id_product, nama_barang FROM products WHERE id_product = $1 LIMIT 1", array($hapus_id));
+        $nama_hapus = '';
+        if ($res_find && pg_num_rows($res_find) > 0) {
+            $row_find = pg_fetch_assoc($res_find);
+            $nama_hapus = $row_find['nama_barang'];
+        }
+
         $res_del = pg_query_params($conn, "DELETE FROM products WHERE id_product = $1", array($hapus_id));
         if ($res_del) {
+            // Hapus file fisik foto produk di assets/img/products/
+            $clean_id = preg_replace('/[^A-Za-z0-9_-]/', '', $hapus_id);
+            $target_dir = dirname(__DIR__, 3) . '/assets/img/products';
+            $allowed_ext = ['jpg', 'jpeg', 'png', 'webp'];
+            foreach ($allowed_ext as $ext) {
+                $file_path = $target_dir . '/' . $clean_id . '.' . $ext;
+                if (is_file($file_path)) {
+                    @unlink($file_path);
+                }
+            }
+
+            // Bersihkan entri mapping di index.json
+            $map_file = $target_dir . '/index.json';
+            if (is_file($map_file)) {
+                $decoded = json_decode((string) file_get_contents($map_file), true);
+                if (is_array($decoded)) {
+                    $key_id    = strtolower(trim($hapus_id));
+                    $key_nama  = strtolower(trim($nama_hapus));
+                    $key_short = strtolower(trim(substr($nama_hapus, 0, 10)));
+                    unset($decoded[$key_id], $decoded[$key_nama], $decoded[$key_short]);
+                    @file_put_contents($map_file, json_encode($decoded, JSON_PRETTY_PRINT));
+                }
+            }
+
             header("Location: ../index.php?pesan=sukses_hapus_produk");
             exit();
         }
