@@ -38,6 +38,7 @@ $roles = role_catalog();
 if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
   $_SESSION['role']    = $_GET['as'];
   $_SESSION['id_user'] = $roles[$_GET['as']]['id'];
+  unset($_SESSION['nama'], $_SESSION['username']);
   $q = $_GET;
   unset($q['as']);
   header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?') . ($q ? '?' . http_build_query($q) : ''));
@@ -48,6 +49,18 @@ if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
 if (!isset($_SESSION['role']) || !isset($roles[$_SESSION['role']])) {
   $_SESSION['role']    = 'super_admin';
   $_SESSION['id_user'] = $roles['super_admin']['id'];
+}
+
+/* --- Pastikan $_SESSION['id_user'] merujuk ke id_user yang valid di tabel users Supabase --- */
+if (isset($conn) && $conn) {
+  $cek_uid = isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0;
+  $res_uid = pg_query_params($conn, "SELECT id_user FROM users WHERE id_user = $1 LIMIT 1", [$cek_uid]);
+  if (!$res_uid || pg_num_rows($res_uid) === 0) {
+    $res_first_uid = pg_query($conn, "SELECT id_user FROM users ORDER BY id_user ASC LIMIT 1");
+    if ($res_first_uid && pg_num_rows($res_first_uid) > 0) {
+      $_SESSION['id_user'] = (int)pg_fetch_result($res_first_uid, 0, 0);
+    }
+  }
 }
 
 $role = $_SESSION['role'];
@@ -113,7 +126,7 @@ $is_forbidden = !empty($allowed) && !in_array($role, $allowed, true);
                 <span class="avatar lg"><?= e(initials($me['nama'])) ?></span>
                 <div>
                   <strong><?= e($me['nama']) ?></strong>
-                  <div class="muted" style="font-size:12px">@<?= e($me['username']) ?></div>
+                  <div class="muted text-xs">@<?= e($me['username']) ?></div>
                 </div>
               </div>
               <div class="pm-label"><?= icon('flask', 13) ?> Switch Role (Simulasi)</div>
