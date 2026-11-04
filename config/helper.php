@@ -27,3 +27,22 @@ if (!function_exists('tgl_indo')) {
         return $pecahkan[2] . ' ' . $bulan[(int)$pecahkan[1]] . ' ' . $pecahkan[0];
     }
 }
+
+// Fungsi normalisasi variasi penulisan nama role ke standar snake_case sistem
+if (!function_exists('normalisasi_role')) {
+    function normalisasi_role($role_str) {
+        $clean = strtolower(trim((string)$role_str));
+        $map = [
+            'super admin'  => 'super_admin',
+            'super_admin'  => 'super_admin',
+            'owner'        => 'super_admin',
+            'admin'        => 'admin',
+            'kasir'        => 'kasir',
+            'staff gudang' => 'staf_gudang',
+            'staf gudang'  => 'staf_gudang',
+            'staf_gudang'  => 'staf_gudang',
+            'gudang'       => 'staf_gudang',
+        ];
+        return isset($map[$clean]) ? $map[$clean] : $clean;
+    }
+}
