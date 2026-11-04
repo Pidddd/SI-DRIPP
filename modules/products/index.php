@@ -2,7 +2,7 @@
 /**
  * UI MODUL MASTER PRODUK - SI-DRIPP ADMIN
  * File: modules/products/index.php
- * Fungsi: Menampilkan layar tabel katalog produk beserta kategori, harga, stok, dan aksi Edit/Hapus.
+ * Fungsi: Menampilkan layar tabel katalog produk beserta thumbnail foto produk, kategori, harga, stok, dan aksi Edit/Hapus.
  */
 
 require_once '../../config/bootstrap.php';
@@ -70,13 +70,19 @@ require_once '../../layouts/header.php';
                         <?php $no = 1; ?>
                         <?php while ($row = pg_fetch_assoc($result)): ?>
                             <?php
-                            $stok = (int) $row['stok_aktual'];
+                            $stok       = (int) $row['stok_aktual'];
                             $stok_badge = $stok > 10 ? 'success' : ($stok > 0 ? 'warn' : 'danger');
+                            $kat_lower  = strtolower((string) ($row['nama_category'] ?? ''));
+                            $tipe_svg   = (strpos($kat_lower, 'powder') !== false) ? 'powder'
+                                        : ((strpos($kat_lower, 'pulp') !== false) ? 'pulp' : 'syrup');
                             ?>
                             <tr>
                                 <td class="mono"><?= $no++ ?></td>
                                 <td>
                                     <div class="cell-user">
+                                        <span class="thumb">
+                                            <?= bottle_svg('#0A99AE', '#06616E', substr($row['nama_barang'], 0, 10), '760 ml', $tipe_svg, 'DRIPP', $row['id_product']) ?>
+                                        </span>
                                         <div>
                                             <strong><?= htmlspecialchars($row['nama_barang']) ?></strong>
                                             <span class="mono">Kode: <?= htmlspecialchars($row['id_product']) ?></span>

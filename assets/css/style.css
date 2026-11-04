@@ -590,6 +590,25 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 }
 .bottle { max-height: 100%; max-width: 100%; display: block; }
 .thumb .bottle { height: 46px; width: auto; max-width: 100%; }
+.thumb .product-real-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.input-file {
+  padding: 7px 12px; height: auto; cursor: pointer;
+}
+.input-file::file-selector-button {
+  margin-right: 12px; padding: 6px 14px; border-radius: 8px;
+  border: 1px solid var(--amber-200); background: var(--bg-soft);
+  color: var(--primary); font-weight: 650; font-size: 12px;
+  cursor: pointer; transition: all .2s var(--ease);
+}
+.input-file::file-selector-button:hover {
+  background: var(--primary); color: #fff; border-color: var(--primary);
+}
+.photo-preview-box {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 12px;
+  background: var(--bg-soft); border: 1px solid var(--line);
+}
+.photo-preview-box small { display: block; margin-top: 2px; }
 .row-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: center; }
 .table-tools { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 18px 22px; }
 
@@ -681,14 +700,47 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .product-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-hover); border-color: var(--amber-200); }
 .product-card.out { opacity: .72; }
 .product-photo {
-  position: relative; height: 170px; display: grid; place-items: center;
-  background: radial-gradient(circle at 50% 40%, var(--card) 0%, var(--bg-soft) 85%);
+  position: relative; height: 196px; padding: 0;
+  display: grid; place-items: center; overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, var(--card) 0%, var(--bg-soft) 88%);
   border-bottom: 1px solid var(--line);
 }
-.product-photo .bottle { height: 138px; width: auto; filter: drop-shadow(0 12px 14px rgba(6, 35, 41, .16)); transition: transform .4s var(--spring); }
+.product-photo::after {
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 56px;
+  background: linear-gradient(180deg, rgba(6, 35, 41, .38) 0%, rgba(6, 35, 41, 0) 100%);
+  pointer-events: none; z-index: 2;
+}
+.product-photo .bottle { height: 142px; width: auto; margin-top: 18px; filter: drop-shadow(0 12px 14px rgba(6, 35, 41, .16)); transition: transform .4s var(--spring); position: relative; z-index: 1; }
+.product-photo .product-real-img {
+  width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important;
+  margin-top: 0 !important; padding: 0; border: 0; border-radius: 0;
+  object-fit: cover; object-position: center;
+  filter: none; box-shadow: none;
+  transition: transform .45s var(--spring);
+  position: absolute; inset: 0; z-index: 1;
+}
 .product-card:hover .product-photo .bottle { transform: translateY(-5px) rotate(-4deg) scale(1.06); }
-.product-photo .badge { position: absolute; top: 10px; right: 10px; }
-.product-photo .cat-tag { position: absolute; top: 10px; left: 10px; background: var(--card); backdrop-filter: blur(4px); font-size: 10.5px; }
+.product-card:hover .product-photo .product-real-img { transform: scale(1.07); }
+.product-photo .badge {
+  position: absolute; top: 10px; right: 10px; z-index: 3;
+  box-shadow: 0 4px 12px rgba(4, 20, 24, .28), 0 0 0 1.5px rgba(255, 255, 255, .92);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font-weight: 750;
+}
+.product-photo .badge.success { background: rgba(209, 250, 229, .96); color: #065F46; }
+.product-photo .badge.warn { background: rgba(254, 243, 199, .96); color: #92400E; }
+.product-photo .badge.danger { background: rgba(254, 226, 226, .96); color: #991B1B; }
+.product-photo .cat-tag {
+  position: absolute; top: 10px; left: 10px; z-index: 3;
+  background: rgba(255, 255, 255, .95); color: #0F172A;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  font-size: 10.5px; font-weight: 750;
+  box-shadow: 0 4px 12px rgba(4, 20, 24, .28), 0 0 0 1.5px rgba(255, 255, 255, .95);
+}
+[data-theme="dark"] .product-photo .cat-tag {
+  background: rgba(15, 39, 46, .92); color: #F1F5F9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .45), 0 0 0 1px rgba(168, 227, 234, .28);
+}
 .product-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .product-body h3 { font-size: 14.5px; font-weight: 700; letter-spacing: -0.01em; }
 .product-body .meta { font-size: 12px; color: var(--muted); }
