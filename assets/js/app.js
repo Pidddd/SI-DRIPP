@@ -21,6 +21,23 @@
   }
   window.sidrippToast = toast;
 
+  /* ---------- Dark Mode / Light Mode Toggle ---------- */
+  var btnTheme = $('#btn-theme-toggle');
+  if (btnTheme) {
+    btnTheme.addEventListener('click', function () {
+      var html = document.documentElement;
+      var isDark = html.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      if (next === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+      } else {
+        html.removeAttribute('data-theme');
+      }
+      try { localStorage.setItem('sidripp_theme', next); } catch (e) {}
+      toast(next === 'dark' ? 'Mode Gelap (Dark Mode) diaktifkan' : 'Mode Terang (Light Mode) diaktifkan');
+    });
+  }
+
   /* ---------- Sidebar mobile ---------- */
   document.addEventListener('click', function (e) {
     if (e.target.closest('[data-nav-toggle]')) document.body.classList.toggle('nav-open');
