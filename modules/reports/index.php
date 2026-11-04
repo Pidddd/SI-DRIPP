@@ -2,7 +2,8 @@
 /**
  * MODUL LAPORAN — REKAP PENJUALAN & LABA KOTOR (BASIS DATA LANJUT / PBL)
  * File: modules/reports/index.php
- * Fungsi: Mengonsumsi Database VIEW (v_laporan_penjualan) & Agregasi GROUP BY / HAVING.
+ * Fungsi: Mengonsumsi Database VIEW (v_laporan_penjualan) & Agregasi GROUP BY / HAVING,
+ *         serta proteksi Retensi Data Audit dengan PIN Otorisasi Owner (Revisi Dosen Poin 5).
  */
 
 $root       = '../../';
@@ -72,6 +73,14 @@ $res_view = pg_query_params($conn, $q_view_penjualan, [$tgl_mulai, $tgl_akhir]);
   </div>
   <?php unset($_SESSION['error']); ?>
 <?php endif; ?>
+
+<!-- Peringatan Kebijakan Retensi Data Audit (Revisi Dosen Poin 5) -->
+<div class="callout amber rise">
+  <?= icon('shield', 20) ?>
+  <div>
+    <strong>Kebijakan Retensi Data Audit MKP Store:</strong> Seluruh rekaman transaksi finansial bersifat permanen untuk keperluan audit akuntansi. Penghapusan arsip transaksi dikunci dan wajib menggunakan <strong>PIN Otorisasi Owner (<code>kode_pemulihan</code>)</strong>.
+  </div>
+</div>
 
 <!-- Filter Periode Laporan Dinamis -->
 <div class="card mb-5 rise">
@@ -186,12 +195,14 @@ $res_view = pg_query_params($conn, $q_view_penjualan, [$tgl_mulai, $tgl_akhir]);
           <th class="text-center">Qty</th>
           <th class="text-right">Subtotal</th>
           <th>Kasir</th>
-          <th class="text-right">Aksi</th>
+          <th class="text-right">Aksi Audit</th>
         </tr>
       </thead>
       <tbody>
         <?php if ($res_view && pg_num_rows($res_view) > 0): ?>
-          <?php while ($v = pg_fetch_assoc($res_view)): ?>
+          <?php $idx_row = 1; while ($v = pg_fetch_assoc($res_view)):
+              $form_del_id = 'form-del-trx-' . $idx_row++;
+          ?>
             <tr>
               <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($v['waktu_transaksi']))) ?></td>
               <td class="mono"><strong>#<?= e($v['id_transaksi']) ?></strong></td>
@@ -200,12 +211,18 @@ $res_view = pg_query_params($conn, $q_view_penjualan, [$tgl_mulai, $tgl_akhir]);
               <td class="text-right mono"><strong><?= rupiah($v['subtotal_harga']) ?></strong></td>
               <td><?= e($v['kasir']) ?></td>
               <td class="text-right">
-                <form action="<?= BASE_URL ?>modules/reports/process/delete_report.php" method="POST">
-                  <input type="hidden" name="id_transaksi" value="<?= e($v['id_transaksi']) ?>">
-                  <button type="submit" class="btn btn-danger-soft btn-sm" onclick="return confirm('Hapus arsip transaksi #<?= e($v['id_transaksi']) ?> dari laporan?')">
-                    <?= icon('trash', 14) ?> Hapus
-                  </button>
-                </form>
+                <div class="row-actions">
+                  <a href="<?= BASE_URL ?>modules/transactions/print_invoice.php?id=<?= urlencode($v['id_transaksi']) ?>" class="btn btn-soft btn-sm">
+                    <?= icon('report', 14) ?> Nota
+                  </a>
+                  <form id="<?= e($form_del_id) ?>" action="<?= BASE_URL ?>modules/reports/process/delete_report.php" method="POST" onsubmit="return konfirmasiHapusDenganPin(this, '<?= e(addslashes($v['id_transaksi'])) ?>')">
+                    <input type="hidden" name="id_transaksi" value="<?= e($v['id_transaksi']) ?>">
+                    <input type="hidden" name="pin_otorisasi" value="">
+                    <button type="submit" class="btn btn-danger-soft btn-sm">
+                      <?= icon('lock', 14) ?> Hapus (PIN)
+                    </button>
+                  </form>
+                </div>
               </td>
             </tr>
           <?php endwhile; ?>
@@ -218,5 +235,24 @@ $res_view = pg_query_params($conn, $q_view_penjualan, [$tgl_mulai, $tgl_akhir]);
     </table>
   </div>
 </div>
+
+<script>
+function konfirmasiHapusDenganPin(formEl, idTransaksi) {
+  const pesanPrompt =
+    "PERINGATAN RETENSI DATA AUDIT (Revisi Poin 5):\n" +
+    "Sesuai SOP MKP Store, data transaksi historis dilindungi untuk audit akuntansi.\n\n" +
+    "Jika transaksi #" + idTransaksi + " ini adalah data uji coba yang wajib dihapus, masukkan PIN Otorisasi Owner / Kode Pemulihan:";
+  const pinInput = window.prompt(pesanPrompt, "");
+  if (pinInput === null) {
+    return false;
+  }
+  if (pinInput.trim() === "") {
+    alert("Penghapusan dibatalkan: PIN Otorisasi Owner wajib diisi.");
+    return false;
+  }
+  formEl.querySelector('input[name="pin_otorisasi"]').value = pinInput.trim();
+  return true;
+}
+</script>
 
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
