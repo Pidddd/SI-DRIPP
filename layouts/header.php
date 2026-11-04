@@ -121,6 +121,14 @@ $is_forbidden = !$is_superadmin && !empty($allowed) && !in_array($role, $allowed
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?= $root ?>assets/css/style.css">
+  <script>
+    (function() {
+      try {
+        var t = localStorage.getItem('sidripp_theme');
+        if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
 <body>
@@ -142,6 +150,10 @@ $is_forbidden = !$is_superadmin && !empty($allowed) && !in_array($role, $allowed
         <div class="topbar-right">
           <span class="date-chip"><?= icon('clock', 16) ?><?= e(tgl_id()) ?></span>
           <?= role_badge($view_role) ?>
+          <button type="button" class="theme-toggle" id="btn-theme-toggle" title="Ganti Mode Terang / Gelap" aria-label="Ganti Mode Terang / Gelap">
+            <span class="ico-sun"><?= icon('sun', 18) ?></span>
+            <span class="ico-moon"><?= icon('moon', 18) ?></span>
+          </button>
 
           <details class="profile" id="profile-menu">
             <summary>
