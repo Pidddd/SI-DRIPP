@@ -123,13 +123,40 @@ require_once '../../layouts/header.php';
                         </span>
                         <div>
                             <strong class="text-xs">Foto Produk Aktif Saat Ini</strong>
-                            <small class="muted">Pilih file gambar baru di bawah jika ingin mengganti foto produk ini.</small>
+                            <small class="muted">Pilih file gambar baru jika ingin mengganti foto produk ini.</small>
                         </div>
                     </div>
                 <?php endif; ?>
-                <input type="file" id="foto_produk" name="foto_produk" class="input input-file" accept=".jpg,.jpeg,.png,.webp">
+
+                <label for="foto_produk" class="upload-dropzone">
+                    <input type="file" id="foto_produk" name="foto_produk" class="upload-input-hidden" accept=".jpg,.jpeg,.png,.webp" onchange="previewUploadFoto(this)">
+                    <div class="upload-btn-chip">
+                        <?= icon('download', 16) ?>
+                        <span id="label-pilih-foto">Pilih Berkas Foto</span>
+                    </div>
+                    <div class="upload-text-info">
+                        <span id="nama-file-foto" class="upload-filename">Belum ada file dipilih</span>
+                        <small class="muted">Format: JPG, PNG, WebP (Maks. 2MB)</small>
+                    </div>
+                </label>
                 <small class="muted">Jika dikosongkan, sistem otomatis menampilkan ilustrasi botol/pouch DRIPP sebagai fallback.</small>
             </div>
+
+            <script>
+            function previewUploadFoto(input) {
+                var labelName = document.getElementById('nama-file-foto');
+                var chipLabel = document.getElementById('label-pilih-foto');
+                if (input.files && input.files[0]) {
+                    labelName.textContent = input.files[0].name + ' (' + Math.round(input.files[0].size / 1024) + ' KB)';
+                    labelName.classList.add('has-file');
+                    chipLabel.textContent = 'Ganti Foto';
+                } else {
+                    labelName.textContent = 'Belum ada file dipilih';
+                    labelName.classList.remove('has-file');
+                    chipLabel.textContent = 'Pilih Berkas Foto';
+                }
+            }
+            </script>
 
             <div class="callout amber">
                 <div>

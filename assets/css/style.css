@@ -790,17 +790,61 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .bottle { max-height: 100%; max-width: 100%; display: block; }
 .thumb .bottle { height: 46px; width: auto; max-width: 100%; }
 .thumb .product-real-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-.input-file {
-  padding: 7px 12px; height: auto; cursor: pointer;
+/* Modern Custom File Upload Dropzone (100% Kontrol Penuh, Menghilangkan tombol default browser yang kaku) */
+.upload-dropzone {
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 18px; border-radius: 14px;
+  background: var(--input-bg);
+  border: 1.5px dashed var(--line-strong);
+  cursor: pointer;
+  transition: all .24s var(--ease);
+  position: relative;
 }
-.input-file::file-selector-button {
-  margin-right: 12px; padding: 6px 14px; border-radius: 8px;
-  border: 1px solid var(--amber-200); background: var(--bg-soft);
-  color: var(--primary); font-weight: 650; font-size: 12px;
-  cursor: pointer; transition: all .2s var(--ease);
+.upload-dropzone:hover {
+  border-color: var(--primary);
+  background: var(--amber-50);
+  box-shadow: 0 4px 14px -4px rgba(184, 101, 27, 0.14);
 }
-.input-file::file-selector-button:hover {
-  background: var(--primary); color: #fff; border-color: var(--primary);
+.upload-input-hidden {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0, 0, 0, 0); border: 0;
+}
+.upload-btn-chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 16px; border-radius: 10px;
+  background: #FFFFFF; color: var(--primary-dark);
+  font-weight: 750; font-size: 13px;
+  border: 1.5px solid var(--amber-300);
+  box-shadow: 0 2px 8px -1px rgba(184, 101, 27, 0.16);
+  flex-shrink: 0;
+  transition: all .2s var(--ease);
+}
+.upload-dropzone:hover .upload-btn-chip {
+  background: var(--gold-grad); color: #FFFFFF;
+  border-color: transparent;
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 16px -2px var(--teal-shadow);
+}
+[data-theme="dark"] .upload-btn-chip {
+  background: #1E293B; color: #BAE6FD;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+[data-theme="dark"] .upload-dropzone:hover .upload-btn-chip {
+  background: var(--gold-grad); color: #FFFFFF;
+}
+.upload-text-info {
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.upload-filename {
+  font-size: 13.5px; font-weight: 600; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.upload-filename.has-file {
+  color: var(--primary-dark); font-weight: 750;
+}
+[data-theme="dark"] .upload-filename.has-file {
+  color: #38BDF8;
 }
 .photo-preview-box {
   display: flex; align-items: center; gap: 12px;
