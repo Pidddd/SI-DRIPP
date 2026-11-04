@@ -2,7 +2,7 @@
 /**
  * UI MODUL MASTER PRODUK - FORM TAMBAH & EDIT PRODUK
  * File: modules/products/create.php
- * Fungsi: Menampilkan form pendaftaran produk baru atau edit produk beserta input stok awal.
+ * Fungsi: Menampilkan form pendaftaran produk baru atau edit produk beserta upload foto produk.
  */
 
 require_once '../../config/bootstrap.php';
@@ -41,7 +41,7 @@ if (!$is_edit) {
 }
 
 $page_title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
-$page_sub   = $is_edit ? 'Perbarui informasi harga, kategori, atau stok produk' : 'Daftarkan item baru ke dalam katalog produk MKP Store';
+$page_sub   = $is_edit ? 'Perbarui informasi harga, kategori, atau foto produk' : 'Daftarkan item baru ke dalam katalog produk MKP Store';
 $active     = 'products';
 
 require_once '../../layouts/header.php';
@@ -66,7 +66,7 @@ require_once '../../layouts/header.php';
             </div>
         </div>
 
-        <form action="process/create.php" method="POST">
+        <form action="process/create.php" method="POST" enctype="multipart/form-data">
             <?php if ($is_edit): ?>
                 <input type="hidden" name="mode" value="edit">
             <?php endif; ?>
@@ -110,9 +110,36 @@ require_once '../../layouts/header.php';
             </div>
 
             <div class="field">
-                <label for="stok"><?= $is_edit ? 'Stok Aktual (Botol)' : 'Stok Awal (Botol)' ?></label>
-                <input type="number" id="stok" name="stok" class="input mono" value="<?= (int) $prod['stok_aktual'] ?>" min="0" required>
-                <small class="muted">Masukkan jumlah stok botol yang tersedia di gudang saat ini (minimal 0).</small>
+                <label for="foto_produk">Foto Produk (Opsional &mdash; JPG, PNG, WebP)</label>
+                <?php
+                $foto_saat_ini = function_exists('cari_foto_produk')
+                    ? cari_foto_produk($prod['id_product'], $prod['nama_barang'])
+                    : '';
+                ?>
+                <?php if ($is_edit && $foto_saat_ini !== ''): ?>
+                    <div class="photo-preview-box mb-3">
+                        <span class="thumb">
+                            <img src="../../<?= htmlspecialchars($foto_saat_ini) ?>" alt="<?= htmlspecialchars($prod['nama_barang']) ?>" class="bottle product-real-img">
+                        </span>
+                        <div>
+                            <strong class="text-xs">Foto Produk Aktif Saat Ini</strong>
+                            <small class="muted">Pilih file gambar baru di bawah jika ingin mengganti foto produk ini.</small>
+                        </div>
+                    </div>
+                <?php endif; ?>
+                <input type="file" id="foto_produk" name="foto_produk" class="input input-file" accept=".jpg,.jpeg,.png,.webp">
+                <small class="muted">Jika dikosongkan, sistem otomatis menampilkan ilustrasi botol/pouch DRIPP sebagai fallback.</small>
+            </div>
+
+            <div class="callout amber">
+                <div>
+                    <strong>Kebijakan Manajemen Stok (SOP Gudang):</strong><br>
+                    <?php if ($is_edit): ?>
+                        Stok aktual saat ini tercatat sebanyak <strong><?= (int) $prod['stok_aktual'] ?> unit</strong>. Penambahan atau pengurangan stok fisik wajib dilakukan melalui menu <strong>Inventaris Stok / Stock Opname</strong> oleh Staf Gudang.
+                    <?php else: ?>
+                        Produk baru otomatis didaftarkan dengan <strong>Stok Awal = 0 unit</strong>. Penambahan stok barang masuk dilakukan melalui menu <strong>Inventaris Stok</strong>.
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="form-actions">

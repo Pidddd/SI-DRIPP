@@ -153,9 +153,17 @@ function icon($name, $size = 20)
     return '<svg class="ico" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . $d . '</svg>';
 }
 
-/* ---------- Ilustrasi Produk (SVG mockup foto) ---------- */
-function bottle_svg($c1, $c2, $label, $sub = '760 ml', $type = 'syrup', $brand = 'DRIPP')
+/* ---------- Ilustrasi Produk (Hybrid: Foto Real Produk + Fallback SVG) ---------- */
+function bottle_svg($c1, $c2, $label, $sub = '760 ml', $type = 'syrup', $brand = 'DRIPP', $id_product = '')
 {
+    if (function_exists('cari_foto_produk')) {
+        $foto_rel = (string)cari_foto_produk($id_product, $label);
+        if ($foto_rel !== '') {
+            $base = isset($GLOBALS['root']) ? $GLOBALS['root'] : (defined('BASE_URL') ? BASE_URL : '../../');
+            return '<img src="' . e($base . $foto_rel) . '" alt="' . e($brand . ' ' . $label) . '" class="bottle product-real-img">';
+        }
+    }
+
     static $n = 0;
     $n++;
     $id = 'bg' . $n;

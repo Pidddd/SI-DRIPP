@@ -83,7 +83,6 @@ $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
               <td class="mono"><strong>@<?= e($u['username']) ?></strong></td>
               <td>
                 <div class="cell-user">
-                  <span class="avatar sm"><?= e(initials($u['nama'])) ?></span>
                   <div>
                     <strong><?= e($u['nama']) ?></strong>
                     <span><?= e($u['jenis_kelamin']) ?></span>
