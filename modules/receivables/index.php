@@ -4,6 +4,7 @@
  * File: modules/receivables/index.php
  * Fungsi: Monitoring piutang pelanggan kafe/resto HORECA dari Supabase PostgreSQL,
  *         peringatan jatuh tempo, pengiriman draf WA, & validasi pelunasan.
+ * Revisi Poin 8: Prioritas urutan teratas & highlight merah menyala untuk tagihan overdue.
  */
 
 $root       = '../../';
@@ -15,12 +16,18 @@ $allowed    = ['super_admin', 'admin'];
 require_once __DIR__ . '/../../layouts/header.php';
 
 // Ambil transaksi piutang (status_pembayaran = 2) maupun riwayat yang sudah lunas namun punya jatuh_tempo
+// Revisi Dosen Poin 8: Prioritas teratas untuk tagihan overdue menggunakan CASE WHEN
 $q_piutang = "SELECT t.id_transaksi, t.waktu_transaksi, t.total_harga, t.nama_pelanggan,
                      t.kontak_pelanggan, t.status_pembayaran, t.jatuh_tempo, u.nama AS kasir
               FROM transactions t
               LEFT JOIN users u ON t.userid_user = u.id_user
               WHERE t.status_pembayaran = 2 OR t.jatuh_tempo IS NOT NULL
-              ORDER BY t.status_pembayaran DESC, t.jatuh_tempo ASC NULLS LAST, t.waktu_transaksi DESC";
+              ORDER BY CASE 
+                         WHEN t.status_pembayaran = 2 AND COALESCE(t.jatuh_tempo, (t.waktu_transaksi::date + INTERVAL '14 days')::date) < CURRENT_DATE THEN 0 
+                         WHEN t.status_pembayaran = 2 THEN 1 
+                         ELSE 2 
+                       END ASC, 
+                       COALESCE(t.jatuh_tempo, (t.waktu_transaksi::date + INTERVAL '14 days')::date) ASC";
 $res_piutang = pg_query($conn, $q_piutang);
 
 $daftar_piutang = [];
@@ -142,7 +149,7 @@ if ($res_piutang) {
                   "Mohon konfirmasi apabila pembayaran telah dilakukan. Terima kasih."
               );
           ?>
-            <tr>
+            <tr class="<?= $row['is_overdue'] ? 'tr-overdue-glow' : '' ?>">
               <td class="mono muted"><?= $no++ ?></td>
               <td>
                 <strong class="mono">#<?= e($row['id_transaksi']) ?></strong>
