@@ -1312,6 +1312,27 @@ body.login-body {
 .col-status { width: 170px; }
 .col-aksi-wide { width: 230px; text-align: center !important; }
 .tr-danger { color: var(--danger); background: var(--danger-bg); }
+.tr-overdue-glow {
+  background-color: rgba(239, 68, 68, 0.09) !important;
+  box-shadow: inset 4.5px 0 0 #EF4444 !important;
+}
+.tr-overdue-glow td {
+  background-color: rgba(239, 68, 68, 0.09) !important;
+  border-bottom-color: rgba(239, 68, 68, 0.25) !important;
+}
+.tr-overdue-glow:hover td {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+}
+[data-theme="dark"] .tr-overdue-glow {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+}
+[data-theme="dark"] .tr-overdue-glow td {
+  background-color: rgba(239, 68, 68, 0.16) !important;
+  border-bottom-color: rgba(239, 68, 68, 0.38) !important;
+}
+[data-theme="dark"] .tr-overdue-glow:hover td {
+  background-color: rgba(239, 68, 68, 0.24) !important;
+}
 
 .btn-success { background: var(--success); color: #FFFFFF; }
 .btn-success:hover { filter: brightness(0.93); color: #FFFFFF; }
