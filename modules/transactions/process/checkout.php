@@ -20,6 +20,18 @@ $userid_user         = !empty($_POST['userid_user']) ? (int)$_POST['userid_user'
 $customerid_customer = !empty($_POST['customerid_customer']) ? (int)$_POST['customerid_customer'] : null;
 $nama_pelanggan      = trim($_POST['nama_pelanggan'] ?? 'Pelanggan Walk-In');
 $kontak_pelanggan    = trim($_POST['kontak_pelanggan'] ?? '-');
+
+// Jika customerid_customer ada, sinkronkan snapshot nama_pt dan no_telp langsung dari tabel customers
+if (!empty($customerid_customer)) {
+    $q_cust = "SELECT nama_pt, no_telp FROM customers WHERE id_customer = $1 LIMIT 1";
+    $res_cust = pg_query_params($conn, $q_cust, [$customerid_customer]);
+    if ($res_cust && pg_num_rows($res_cust) > 0) {
+        $c_data = pg_fetch_assoc($res_cust);
+        $nama_pelanggan   = $c_data['nama_pt'];
+        $kontak_pelanggan = $c_data['no_telp'];
+    }
+}
+
 $status_pembayaran   = isset($_POST['status_pembayaran']) ? (int)$_POST['status_pembayaran'] : 1;
 $jatuh_tempo         = ($status_pembayaran === 2 && !empty($_POST['jatuh_tempo'])) ? $_POST['jatuh_tempo'] : null;
 $diskon              = isset($_POST['diskon']) ? max(0, (int)$_POST['diskon']) : 0;
