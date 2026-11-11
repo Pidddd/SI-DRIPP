@@ -38,6 +38,22 @@ $res_highlight = pg_query($conn, "SELECT p.id_product, p.nama_barang, p.harga_ju
                                   ORDER BY p.stok_aktual ASC, p.nama_barang ASC 
                                   LIMIT 5");
 
+// WBS 3.1.2 (PIC Toriq): Query daftar produk dengan stok kritis (< 24 Botol / < 2 Karton)
+$query_kritis = "SELECT p.id_product, p.nama_barang, p.stok_aktual, c.nama_category 
+                 FROM products p 
+                 LEFT JOIN category c ON p.categoryid_category = c.id_category 
+                 WHERE p.stok_aktual < 24 
+                 ORDER BY p.stok_aktual ASC, p.nama_barang ASC";
+$res_kritis = pg_query($conn, $query_kritis);
+
+$produk_kritis = [];
+if ($res_kritis && pg_num_rows($res_kritis) > 0) {
+    while ($row_kritis = pg_fetch_assoc($res_kritis)) {
+        $produk_kritis[] = $row_kritis;
+    }
+}
+$total_produk_kritis = count($produk_kritis);
+
 $stat_cards = [
     ['label' => 'Total Produk',     'value' => $total_produk,    'icon' => 'box',  'hint' => 'item terdaftar di katalog'],
     ['label' => 'Total Kategori',   'value' => $total_kategori,  'icon' => 'tag',  'hint' => 'kategori produk aktif'],
