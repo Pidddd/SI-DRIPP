@@ -1339,6 +1339,68 @@ body.login-body {
 .invoice-box { max-width: 780px; margin: 24px auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
 .invoice-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--line); padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
 .invoice-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+/* Komponen Stepper & Tombol Kontrol Stok Massal (Zero Inline CSS) */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-soft);
+  padding: 3px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+}
+.btn-step {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 750;
+  border-radius: 8px;
+  border: 1px solid var(--line-strong);
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all .18s var(--ease);
+}
+.btn-step:hover {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.input-stepper {
+  width: 58px;
+  height: 28px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13.5px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  color: var(--ink);
+  -moz-appearance: textfield;
+}
+.input-stepper::-webkit-inner-spin-button,
+.input-stepper::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.input-stepper:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--teal-shadow);
+}
+
+.table-input-compact {
+  width: 100%;
+  min-width: 130px;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
 @media print {
   .sidebar, .topbar, .page-actions, .role-switcher, .theme-toggle, .no-print { display: none !important; }
   .main { margin-left: 0 !important; }

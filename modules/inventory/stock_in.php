@@ -1,13 +1,16 @@
 <?php
 /**
- * UI MODUL INVENTARIS — PENERIMAAN BARANG MASUK (RESTOCK)
+ * UI MODUL INVENTARIS — PENERIMAAN BARANG MASUK (RESTOCK BATCH BARU)
  * File: modules/inventory/stock_in.php
  * Fungsi: Form input penambahan stok barang masuk dari vendor/pabrik ke gudang.
+ * Revisi Dosen Poin 2 & 3:
+ *   - Penambahan input kode_batch (contoh: BATCH-202611-01)
+ *   - Penambahan input date expired_date untuk pencatatan kedatangan batch baru.
  */
 
 $root       = '../../';
-$page_title = 'Input Restock Barang Masuk';
-$page_sub   = 'Catat penambahan stok fisik dari vendor langsung ke database gudang · MKP Store';
+$page_title = 'Input Restock Barang Masuk (Batch Baru)';
+$page_sub   = 'Catat penambahan stok fisik dan batch kedatangan dari vendor ke database gudang · MKP Store';
 $active     = 'inventory';
 $allowed    = ['super_admin', 'admin', 'staf_gudang'];
 
@@ -38,10 +41,10 @@ $res_products = pg_query($conn, $query_products);
 <div class="card card-form rise">
   <div class="card-head">
     <div>
-      <h2>Form Penerimaan Barang Masuk (Restock)</h2>
-      <p>Pilih produk dan masukkan jumlah kedatangan barang dari vendor penyuplai</p>
+      <h2>Form Penerimaan Barang Masuk (Batch Baru)</h2>
+      <p>Pilih produk, catat kode batch pabrik, tanggal kedaluwarsa, serta kuantitas kedatangan barang</p>
     </div>
-    <span class="badge info"><i class="dot"></i>Transaksi Gudang</span>
+    <span class="badge info"><i class="dot"></i>Batch &amp; FEFO</span>
   </div>
 
   <form action="<?= BASE_URL ?>modules/inventory/process/stock_in.php" method="POST">
@@ -64,14 +67,26 @@ $res_products = pg_query($conn, $query_products);
       <input type="text" name="nama_vendor" id="nama_vendor" class="input" placeholder="Contoh: PT. Denali Prima, Pabrik Cikarang" required>
     </div>
 
+    <div class="form-row">
+      <div class="field">
+        <label for="kode_batch">Kode Batch Pabrik</label>
+        <input type="text" name="kode_batch" id="kode_batch" class="input mono" placeholder="Contoh: BATCH-202611-01" required>
+      </div>
+
+      <div class="field">
+        <label for="expired_date">Tanggal Kedaluwarsa (Expired Date)</label>
+        <input type="date" name="expired_date" id="expired_date" class="input" min="<?= date('Y-m-d') ?>" required>
+      </div>
+    </div>
+
     <div class="field">
       <label for="kuantitas">Jumlah Masuk (Botol / Satuan)</label>
-      <input type="number" name="kuantitas" id="kuantitas" class="input mono" min="1" placeholder="Masukkan jumlah kuantitas" required>
+      <input type="number" name="kuantitas" id="kuantitas" class="input mono" min="1" placeholder="Masukkan jumlah kuantitas botol" required>
     </div>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">
-        <?= icon('check', 18) ?> Simpan Data Restock
+        <?= icon('check', 18) ?> Simpan Data Restock Batch
       </button>
       <a href="<?= BASE_URL ?>modules/inventory/index.php" class="btn btn-ghost">
         Batal
