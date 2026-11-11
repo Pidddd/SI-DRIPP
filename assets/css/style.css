@@ -1361,15 +1361,63 @@ body.login-body {
 .invoice-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--line); padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
 .invoice-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
 
-/* Bulk Stepper Control (Gudang & Defect) */
-.qty-stepper { display: inline-flex; align-items: center; background: var(--bg-soft); border-radius: 10px; padding: 2px; border: 1px solid var(--line); }
-.btn-step { width: 28px; height: 28px; border: 0; border-radius: 8px; background: var(--card); display: grid; place-items: center; color: var(--ink); font-weight: 700; cursor: pointer; transition: all .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-.btn-step:hover:not(:disabled) { background: var(--amber-100); color: var(--primary); transform: scale(1.05); }
-.btn-step:disabled { opacity: 0.4; cursor: not-allowed; }
-.input-step { width: 44px; text-align: center; border: 0; background: transparent; font-weight: 700; font-size: 13px; color: var(--ink); -moz-appearance: textfield; }
-.input-step::-webkit-outer-spin-button, .input-step::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.input-step:focus { outline: none; }
-.input-step:disabled { opacity: 0.5; }
+/* Komponen Kasir POS Mitra PT & Modal Dialog (Revisi Poin 6 - Zero Inline CSS) */
+.cart-customer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.btn-add-mitra {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: var(--amber-100);
+  color: var(--primary-dark);
+  border: 1px solid var(--amber-300);
+  cursor: pointer;
+  transition: all .2s var(--ease);
+}
+.btn-add-mitra:hover {
+  background: var(--gold-grad);
+  color: #FFFFFF;
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+[data-theme="dark"] .btn-add-mitra {
+  background: rgba(30, 41, 59, 0.8);
+  color: #BAE6FD;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.customer-meta-box {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: rise .3s var(--spring) both;
+}
+.customer-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.customer-meta-row strong,
+.customer-meta-row span {
+  word-break: break-word;
+}
+.modal-body-pad {
+  padding: 8px 0 16px;
+}
+
 @media print {
   .sidebar, .topbar, .page-actions, .role-switcher, .theme-toggle, .no-print { display: none !important; }
   .main { margin-left: 0 !important; }
