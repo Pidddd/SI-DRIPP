@@ -37,7 +37,7 @@ if (isset($_SESSION['id_user'])) {
     <div class="login-art">
       <div class="brand">
         <span class="brand-mark">
-          <img src="../../assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.classList.add('is-hidden'); this.nextElementSibling.style.display='flex';">
+          <img src="../../assets/img/Logo.jpeg" alt="MKP Store" class="brand-logo" onerror="this.classList.add('is-hidden'); this.nextElementSibling.classList.add('is-active');">
           <span class="brand-fallback-box">MKP</span>
         </span>
         <span class="brand-text">
@@ -81,6 +81,9 @@ if (isset($_SESSION['id_user'])) {
         <div class="field">
           <label for="password">Password</label>
           <input type="password" id="password" name="password" class="input" placeholder="********" required>
+          <div class="text-right mt-2">
+            <a href="forgot_password.php" class="text-xs text-primary fw-semibold">Lupa Password?</a>
+          </div>
         </div>
 
         <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Masuk ke Sistem</button>
