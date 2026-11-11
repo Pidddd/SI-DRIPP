@@ -2,7 +2,12 @@
 /**
  * MODUL TRANSAKSI — KASIR / POINT OF SALE (POS)
  * File: modules/transactions/index.php
- * Fungsi: Antarmuka Kasir (POS) dinamis yang terhubung ke tabel products Supabase dan mengirim form ke checkout.php.
+ * Fungsi: Antarmuka Kasir (POS) dinamis yang terhubung ke tabel products & customers Supabase.
+ * Revisi Dosen Poin 6:
+ *   - Query data pelanggan / mitra PT dari tabel customers.
+ *   - Searchable Dropdown / Select Mitra PT dengan tombol "+ Mitra Baru".
+ *   - Auto-fill detail data PT (Nama PT, Nama PJ, NIK PJ, Telp/WA, Alamat Toko) via JS.
+ *   - Pop-up Modal pendaftaran Mitra PT baru ke process/create_customer.php.
  */
 
 $root       = '../../';
@@ -13,7 +18,7 @@ $allowed    = ['super_admin', 'admin', 'kasir'];
 
 require_once __DIR__ . '/../../layouts/header.php';
 
-// Ambil katalog produk dari Supabase beserta kategori
+// 1. Ambil katalog produk dari Supabase beserta kategori
 $q_katalog   = "SELECT p.id_product, p.nama_barang, p.harga_jual, p.stok_aktual, c.nama_category
                 FROM products p
                 LEFT JOIN category c ON p.categoryid_category = c.id_category
@@ -25,13 +30,26 @@ if ($res_katalog) {
         $katalog_arr[] = $item;
     }
 }
+
+// 2. Ambil seluruh data Mitra PT dari tabel customers (Revisi Poin 6)
+$q_customers   = "SELECT id_customer, nama_pt, nama_pj, nik_pj, no_telp, alamat_toko
+                  FROM customers
+                  ORDER BY nama_pt ASC";
+$res_customers = pg_query($conn, $q_customers);
+$customers_arr = [];
+if ($res_customers) {
+    while ($cust = pg_fetch_assoc($res_customers)) {
+        $customers_arr[] = $cust;
+    }
+}
 ?>
 
+<!-- Notifikasi Transaksi & Pendaftaran Mitra Baru -->
 <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'transaksi_sukses'): ?>
   <div class="callout success rise">
     <?= icon('check', 18) ?>
     <div>
-      <strong>Transaksi Berhasil Disimpan!</strong> Data transaksi dan pemotongan stok otomatis telah tercatat di Supabase.
+      <strong>Transaksi Berhasil Disimpan!</strong> Pemotongan stok otomatis telah tercatat di Supabase.
       <?php if (!empty($_GET['id'])): ?>
         <a href="<?= BASE_URL ?>modules/transactions/print_invoice.php?id=<?= urlencode($_GET['id']) ?>" class="btn btn-soft btn-sm ml-2">
           <?= icon('report', 14) ?> Cetak Struk #<?= e($_GET['id']) ?>
@@ -41,10 +59,19 @@ if ($res_katalog) {
   </div>
 <?php endif; ?>
 
+<?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'mitra_sukses'): ?>
+  <div class="callout success rise">
+    <?= icon('check', 18) ?>
+    <div>
+      <strong>Mitra Baru Berhasil Didaftarkan!</strong> Data mitra PT telah tersimpan di Supabase dan langsung dipilih pada keranjang transaksi.
+    </div>
+  </div>
+<?php endif; ?>
+
 <?php if (isset($_GET['error'])): ?>
   <div class="callout danger rise">
     <?= icon('alert', 18) ?>
-    <div>Transaksi gagal diproses: <?= e($_GET['error']) ?></div>
+    <div>Gagal memproses: <?= e($_GET['error']) ?></div>
   </div>
 <?php endif; ?>
 
@@ -55,7 +82,7 @@ if ($res_katalog) {
     <div class="card-head">
       <div>
         <h2>Katalog Produk MKP Store</h2>
-        <p>Pilih produk dari database untuk dimasukkan ke keranjang transaksi kasir</p>
+        <p>Pilih produk sirup / bubuk dari database untuk dimasukkan ke keranjang kasir</p>
       </div>
       <span class="badge info"><i class="dot"></i><?= count($katalog_arr) ?> Produk Aktif</span>
     </div>
@@ -63,7 +90,7 @@ if ($res_katalog) {
     <div class="pos-tools">
       <div class="input-icon">
         <?= icon('search', 18) ?>
-        <input type="text" id="pos-search" class="input" placeholder="Cari nama produk atau kategori..." oninput="filterKatalogPos()" aria-label="Cari produk">
+        <input type="text" id="pos-search" class="input" placeholder="Cari nama produk, SKU, atau kategori..." oninput="filterKatalogPos()" aria-label="Cari produk">
       </div>
     </div>
 
@@ -117,10 +144,14 @@ if ($res_katalog) {
     </div>
   </div>
 
-  <!-- ==================== KOLOM KANAN: KERANJANG & FORM CHECKOUT ==================== -->
+  <!-- ==================== KOLOM KANAN: KERANJANG & CHECKOUT MITRA ==================== -->
   <aside class="card flush cart" aria-label="Keranjang Belanja Kasir">
     <form action="<?= BASE_URL ?>modules/transactions/process/checkout.php" method="POST" id="form-checkout" onsubmit="return validasiCheckout()">
       <input type="hidden" name="userid_user" value="<?= (int)($_SESSION['id_user'] ?? 1) ?>">
+      
+      <!-- Input Hidden Snapshot Pelanggan untuk Kompatibilitas Database -->
+      <input type="hidden" id="nama_pelanggan" name="nama_pelanggan" value="Pelanggan Walk-In">
+      <input type="hidden" id="kontak_pelanggan" name="kontak_pelanggan" value="-">
 
       <div class="cart-head">
         <div>
@@ -130,14 +161,65 @@ if ($res_katalog) {
         <span class="badge info" id="cart-badge-count">0 Item (0 Unit)</span>
       </div>
 
+      <!-- Area Pemilihan Pelanggan / Mitra PT (Revisi Poin 6) -->
       <div class="cart-customer">
-        <div class="field field-compact">
-          <label for="nama_pelanggan">Nama Pelanggan / Mitra HORECA</label>
-          <input type="text" id="nama_pelanggan" name="nama_pelanggan" class="input" placeholder="Contoh: Kopi Studio 24 - Suhat" required>
+        <div class="cart-customer-header">
+          <label for="select_customer" class="label">Mitra PT / Pelanggan HORECA</label>
+          <button type="button" class="btn-add-mitra" onclick="bukaModalMitra()" title="Daftarkan mitra usaha baru">
+            <?= icon('plus', 13) ?> + Mitra Baru
+          </button>
         </div>
-        <div class="field field-tight">
-          <label for="kontak_pelanggan">No. WhatsApp / Kontak</label>
-          <input type="text" id="kontak_pelanggan" name="kontak_pelanggan" class="input mono" placeholder="081234567890" maxlength="15" required>
+
+        <div class="field field-compact">
+          <select id="select_customer" name="customerid_customer" class="select" onchange="pilihMitra(this.value)">
+            <option value="">-- Pelanggan Walk-In / Non-Mitra PT --</option>
+            <?php foreach ($customers_arr as $c): ?>
+              <option value="<?= (int)$c['id_customer'] ?>"
+                      data-nama-pt="<?= e($c['nama_pt']) ?>"
+                      data-pj="<?= e($c['nama_pj']) ?>"
+                      data-nik="<?= e($c['nik_pj']) ?>"
+                      data-telp="<?= e($c['no_telp']) ?>"
+                      data-alamat="<?= e($c['alamat_toko']) ?>">
+                <?= e($c['nama_pt']) ?> (PJ: <?= e($c['nama_pj']) ?>)
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+
+        <!-- Box Auto-Fill Informasi Mitra PT Terpilih -->
+        <div id="box-detail-mitra" class="customer-meta-box is-hidden">
+          <div class="customer-meta-row">
+            <span class="muted text-xxs">Nama PT / Kafe:</span>
+            <strong id="disp-nama-pt" class="text-xs"></strong>
+          </div>
+          <div class="customer-meta-row">
+            <span class="muted text-xxs">Penanggung Jawab (PJ):</span>
+            <span id="disp-nama-pj" class="text-xs fw-semibold"></span>
+          </div>
+          <div class="customer-meta-row">
+            <span class="muted text-xxs">NIK PJ:</span>
+            <span id="disp-nik-pj" class="text-xs mono"></span>
+          </div>
+          <div class="customer-meta-row">
+            <span class="muted text-xxs">No. Telp / WA:</span>
+            <span id="disp-no-telp" class="text-xs mono"></span>
+          </div>
+          <div class="customer-meta-row">
+            <span class="muted text-xxs">Alamat Kedai:</span>
+            <span id="disp-alamat-toko" class="text-xs"></span>
+          </div>
+        </div>
+
+        <!-- Fallback Input Manual jika Pelanggan Walk-In (Non-Mitra PT) -->
+        <div id="box-manual-customer">
+          <div class="field field-compact">
+            <label for="input_manual_nama">Nama Pelanggan Walk-In</label>
+            <input type="text" id="input_manual_nama" class="input" placeholder="Contoh: Bpk. Dani (Kafe Soehat)" oninput="syncManualCustomer()">
+          </div>
+          <div class="field field-tight">
+            <label for="input_manual_kontak">No. WhatsApp / Kontak</label>
+            <input type="text" id="input_manual_kontak" class="input mono" placeholder="081234567890" maxlength="15" oninput="syncManualCustomer()">
+          </div>
         </div>
       </div>
 
@@ -206,11 +288,116 @@ if ($res_katalog) {
 
 </section>
 
+<!-- ==================== POP-UP MODAL TAMBAH MITRA PT BARU (Revisi Poin 6) ==================== -->
+<div id="modal-tambah-mitra" class="modal-backdrop hidden" aria-modal="true" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-head">
+      <div>
+        <h2>Tambah Pelanggan / Mitra PT Baru</h2>
+        <p>Daftarkan profil bisnis mitra HORECA resmi ke sistem MKP Store</p>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="tutupModalMitra()">&times;</button>
+    </div>
+
+    <form action="<?= BASE_URL ?>modules/transactions/process/create_customer.php" method="POST">
+      <div class="modal-body-pad">
+        <div class="field">
+          <label for="modal_nama_pt">Nama PT / Nama Usaha / Kafe *</label>
+          <input type="text" id="modal_nama_pt" name="nama_pt" class="input" placeholder="Contoh: PT. Kopi Bersama / Kopi Studio 24" required>
+        </div>
+
+        <div class="form-row">
+          <div class="field">
+            <label for="modal_nama_pj">Penanggung Jawab (PJ) *</label>
+            <input type="text" id="modal_nama_pj" name="nama_pj" class="input" placeholder="Nama lengkap PJ" required>
+          </div>
+          <div class="field">
+            <label for="modal_nik_pj">NIK / Identitas PJ *</label>
+            <input type="text" id="modal_nik_pj" name="nik_pj" class="input mono" placeholder="16 Digit NIK KTP" maxlength="20" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="modal_no_telp">No. Telepon / WhatsApp Toko *</label>
+          <input type="text" id="modal_no_telp" name="no_telp" class="input mono" placeholder="Contoh: 081234567890" maxlength="20" required>
+        </div>
+
+        <div class="field">
+          <label for="modal_alamat_toko">Alamat Toko / Kedai HORECA *</label>
+          <textarea id="modal_alamat_toko" name="alamat_toko" class="textarea" placeholder="Alamat lengkap outlet atau kedai mitra" required></textarea>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="btn btn-ghost" onclick="tutupModalMitra()">Batal</button>
+        <button type="submit" class="btn btn-primary">
+          <?= icon('check', 16) ?> Simpan Data Mitra
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 let keranjang = [];
 
 function formatRupiah(angka) {
   return 'Rp ' + Math.max(0, Math.round(angka)).toLocaleString('id-ID');
+}
+
+function bukaModalMitra() {
+  const modal = document.getElementById('modal-tambah-mitra');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function tutupModalMitra() {
+  const modal = document.getElementById('modal-tambah-mitra');
+  if (modal) modal.classList.add('hidden');
+}
+
+function pilihMitra(idCustomer) {
+  const select = document.getElementById('select_customer');
+  const boxDetail = document.getElementById('box-detail-mitra');
+  const boxManual = document.getElementById('box-manual-customer');
+  const hNama = document.getElementById('nama_pelanggan');
+  const hKontak = document.getElementById('kontak_pelanggan');
+
+  if (!idCustomer || idCustomer === '') {
+    boxDetail.classList.add('is-hidden');
+    boxManual.classList.remove('is-hidden');
+    syncManualCustomer();
+    return;
+  }
+
+  const selectedOpt = select.options[select.selectedIndex];
+  if (!selectedOpt) return;
+
+  const namaPt = selectedOpt.getAttribute('data-nama-pt') || '';
+  const pj = selectedOpt.getAttribute('data-pj') || '';
+  const nik = selectedOpt.getAttribute('data-nik') || '';
+  const telp = selectedOpt.getAttribute('data-telp') || '';
+  const alamat = selectedOpt.getAttribute('data-alamat') || '';
+
+  // Isi tampilan auto-fill readonly
+  document.getElementById('disp-nama-pt').textContent = namaPt;
+  document.getElementById('disp-nama-pj').textContent = pj;
+  document.getElementById('disp-nik-pj').textContent = nik;
+  document.getElementById('disp-no-telp').textContent = telp;
+  document.getElementById('disp-alamat-toko').textContent = alamat;
+
+  // Sinkronkan ke input hidden untuk disimpan di transaksi
+  hNama.value = namaPt;
+  hKontak.value = telp;
+
+  boxDetail.classList.remove('is-hidden');
+  boxManual.classList.add('is-hidden');
+}
+
+function syncManualCustomer() {
+  const namaManual = document.getElementById('input_manual_nama').value.trim();
+  const kontakManual = document.getElementById('input_manual_kontak').value.trim();
+  document.getElementById('nama_pelanggan').value = namaManual || 'Pelanggan Walk-In';
+  document.getElementById('kontak_pelanggan').value = kontakManual || '-';
 }
 
 function tambahKeKeranjang(id, nama, harga, stokMaks) {
@@ -323,6 +510,19 @@ function validasiCheckout() {
   }
   return confirm('Proses transaksi penjualan sekarang?');
 }
+
+// Inisialisasi otomatis jika ada parameter mitra baru dari URL
+window.addEventListener('DOMContentLoaded', function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedCust = urlParams.get('selected_customer');
+  if (selectedCust) {
+    const sel = document.getElementById('select_customer');
+    if (sel) {
+      sel.value = selectedCust;
+      pilihMitra(selectedCust);
+    }
+  }
+});
 </script>
 
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>

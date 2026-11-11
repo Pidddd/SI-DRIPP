@@ -2,7 +2,8 @@
 /**
  * MODUL TRANSAKSI — CETAK STRUK / INVOICE PENJUALAN
  * File: modules/transactions/print_invoice.php
- * Fungsi: Merender struk/invoice resmi berdasarkan id_transaksi dengan Multi-table JOIN.
+ * Fungsi: Merender struk/invoice resmi berdasarkan id_transaksi dengan Multi-table JOIN (transactions + users + customers + details + products).
+ * Revisi Dosen Poin 6: LEFT JOIN ke tabel customers agar Nama PJ dan Alamat Toko ikut tercetak di nota resmi.
  */
 
 $root       = '../../';
@@ -18,10 +19,12 @@ $header_trx = null;
 $detail_items = [];
 
 if ($id_trx !== '') {
-    // 1. Ambil header transaksi + nama kasir
-    $q_head = "SELECT t.*, u.nama AS nama_kasir
+    // 1. Ambil header transaksi + nama kasir + data pelanggan/mitra PT (Revisi Poin 6)
+    $q_head = "SELECT t.*, u.nama AS nama_kasir,
+                      c.nama_pt, c.nama_pj, c.nik_pj, c.no_telp AS telp_pt, c.alamat_toko
                FROM transactions t
                LEFT JOIN users u ON t.userid_user = u.id_user
+               LEFT JOIN customers c ON t.customerid_customer = c.id_customer
                WHERE t.id_transaksi = $1";
     $res_head = pg_query_params($conn, $q_head, [$id_trx]);
     if ($res_head && pg_num_rows($res_head) > 0) {
@@ -78,16 +81,22 @@ if ($id_trx !== '') {
 
     <div class="invoice-meta">
       <div>
-        <div class="muted text-xs">Kepada Pelanggan / Mitra:</div>
-        <strong><?= e($header_trx['nama_pelanggan'] ?: 'Pelanggan Walk-In') ?></strong>
-        <div class="text-xs muted">Kontak: <?= e($header_trx['kontak_pelanggan'] ?: '-') ?></div>
+        <div class="muted text-xs">Kepada Pelanggan / Mitra PT:</div>
+        <strong><?= e($header_trx['nama_pt'] ?: ($header_trx['nama_pelanggan'] ?: 'Pelanggan Walk-In')) ?></strong>
+        <?php if (!empty($header_trx['nama_pj'])): ?>
+          <div class="text-xs">Penanggung Jawab (PJ): <strong><?= e($header_trx['nama_pj']) ?></strong> (NIK: <?= e($header_trx['nik_pj']) ?>)</div>
+        <?php endif; ?>
+        <div class="text-xs muted">Kontak: <?= e($header_trx['kontak_pelanggan'] ?: ($header_trx['telp_pt'] ?? '-')) ?></div>
+        <?php if (!empty($header_trx['alamat_toko'])): ?>
+          <div class="text-xs muted">Alamat Toko: <?= e($header_trx['alamat_toko']) ?></div>
+        <?php endif; ?>
       </div>
       <div class="text-right">
         <div class="muted text-xs">Waktu Transaksi:</div>
         <strong><?= e(date('d M Y · H:i WIB', strtotime($header_trx['waktu_transaksi']))) ?></strong>
         <div class="text-xs muted">Kasir: <?= e($header_trx['nama_kasir'] ?? 'Admin Kasir') ?></div>
         <?php if (!empty($header_trx['jatuh_tempo'])): ?>
-          <div class="text-xs text-danger">Jatuh Tempo: <?= e($header_trx['jatuh_tempo']) ?></div>
+          <div class="text-xs text-danger">Jatuh Tempo: <?= e(date('d M Y', strtotime($header_trx['jatuh_tempo']))) ?></div>
         <?php endif; ?>
       </div>
     </div>
