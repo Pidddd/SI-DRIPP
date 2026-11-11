@@ -1,21 +1,25 @@
 <?php
 /**
- * UI MODUL INVENTORY - BARANG DEFECT
+ * UI MODUL INVENTORY - BARANG DEFECT (BULK INPUT)
  * File: modules/inventory/defect.php
- * Fungsi: Form pelaporan dan tabel riwayat barang rusak/cacat yang otomatis memotong stok aktual.
+ * Fungsi: Form pelaporan massal (Save All) dan riwayat barang rusak/cacat yang otomatis memotong stok aktual.
  */
 
 $root       = '../../';
 $page_title = 'Laporan Barang Defect';
-$page_sub   = 'Pencatatan dan riwayat barang rusak, pecah, atau kedaluwarsa di gudang · MKP Store';
+$page_sub   = 'Pencatatan massal dan riwayat barang rusak, pecah, atau kedaluwarsa di gudang · MKP Store';
 $active     = 'defects';
 $allowed    = ['super_admin', 'admin', 'staf_gudang'];
 
 require_once __DIR__ . '/../../layouts/header.php';
 
-// Ambil daftar produk yang stoknya > 0 untuk pilihan dropdown form defect
-$q_products = "SELECT id_product, nama_barang, stok_aktual FROM products ORDER BY nama_barang ASC";
+// Ambil seluruh daftar produk beserta nama kategorinya untuk Tabel Bulk Input
+$q_products = "SELECT p.id_product, p.nama_barang, p.stok_aktual, c.nama_category 
+               FROM products p 
+               LEFT JOIN category c ON p.categoryid_category = c.id_category 
+               ORDER BY p.nama_barang ASC";
 $res_products = pg_query($conn, $q_products);
+$total_products = $res_products ? pg_num_rows($res_products) : 0;
 
 // Ambil riwayat laporan barang defect menggunakan Multi-table JOIN (defects, products, users)
 $q_defects = "SELECT d.id_defect, d.waktu_lapor, d.kuantitas, d.keterangan_rusak,
@@ -28,6 +32,7 @@ $res_defects = pg_query($conn, $q_defects);
 $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
 ?>
 
+<!-- Flash Messages -->
 <?php if (isset($_SESSION['success'])): ?>
   <div class="callout success rise">
     <?= icon('check', 18) ?>
@@ -44,52 +49,92 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
   <?php unset($_SESSION['error']); ?>
 <?php endif; ?>
 
-<!-- Form Input Laporan Barang Defect -->
-<div class="card mb-5 rise">
-  <div class="card-head">
-    <div>
-      <h2>Catat Laporan Barang Defect / Rusak Baru</h2>
-      <p>Pencatatan barang rusak akan otomatis mengurangi stok aktual produk di gudang secara atomik</p>
-    </div>
-    <span class="badge warn"><i class="dot"></i>Potong Stok Otomatis</span>
+<!-- SOP Callout Info -->
+<div class="callout amber rise">
+  <?= icon('alert', 20) ?>
+  <div>
+    <strong>SOP Penanganan Barang Rusak / Defect:</strong><br>
+    Pencatatan barang cacat (pecah, bocor, segel rusak, atau kedaluwarsa) akan <strong>langsung memotong stok fisik aktual</strong> di gudang secara otomatis. Masukkan jumlah botol yang rusak pada baris produk terkait, lalu tekan tombol <strong>"Save All Laporan Defect"</strong>.
   </div>
-
-  <form action="<?= BASE_URL ?>modules/inventory/process/defects.php" method="POST">
-    <div class="form-row">
-      <div class="field">
-        <label for="id_product">Pilih Produk yang Rusak</label>
-        <select name="id_product" id="id_product" class="select" required>
-          <option value="">-- Pilih Produk --</option>
-          <?php if ($res_products): ?>
-            <?php while ($p = pg_fetch_assoc($res_products)): ?>
-              <option value="<?= e($p['id_product']) ?>">
-                <?= e($p['nama_barang']) ?> (Stok tersedia: <?= (int)$p['stok_aktual'] ?>)
-              </option>
-            <?php endwhile; ?>
-          <?php endif; ?>
-        </select>
-      </div>
-
-      <div class="field">
-        <label for="kuantitas">Jumlah Rusak (Botol / Satuan)</label>
-        <input type="number" name="kuantitas" id="kuantitas" class="input mono" min="1" placeholder="Contoh: 2" required>
-      </div>
-    </div>
-
-    <div class="field">
-      <label for="keterangan_rusak">Keterangan / Kronologi Kerusakan</label>
-      <input type="text" name="keterangan_rusak" id="keterangan_rusak" class="input" maxlength="255" placeholder="Contoh: Botol retak pada bagian leher saat bongkar muat ekspedisi" required>
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">
-        <?= icon('plus', 18) ?> Simpan Laporan Defect &amp; Potong Stok
-      </button>
-    </div>
-  </form>
 </div>
 
-<!-- Tabel Riwayat Laporan Barang Defect -->
+<!-- 1. Form Tabel Bulk Input Barang Defect -->
+<form action="<?= BASE_URL ?>modules/inventory/process/defects.php" method="POST">
+  <div class="card flush mb-5 rise">
+    <div class="card-head pad pb-4">
+      <div>
+        <h2>Tabel Input Massal Barang Defect (Save All)</h2>
+        <p>Total <?= (int)$total_products ?> produk aktif terdaftar di katalog gudang MKP Store</p>
+      </div>
+      <span class="badge warn"><i class="dot"></i>Potong Stok Otomatis</span>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-no">No</th>
+            <th>Nama Produk</th>
+            <th>Kategori</th>
+            <th>Stok Gudang</th>
+            <th>Jumlah Rusak</th>
+            <th>Keterangan / Kronologi Kerusakan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if ($res_products && $total_products > 0): ?>
+            <?php $no = 1; while ($p = pg_fetch_assoc($res_products)): 
+                $pid = e($p['id_product']);
+                $stok = (int)$p['stok_aktual'];
+                $is_empty = ($stok <= 0);
+            ?>
+              <tr>
+                <td class="mono muted"><?= $no++ ?></td>
+                <td>
+                  <strong><?= e($p['nama_barang']) ?></strong>
+                  <div class="muted text-xs">SKU: <?= $pid ?></div>
+                </td>
+                <td><span class="badge info"><?= e($p['nama_category'] ?? 'Umum') ?></span></td>
+                <td class="mono">
+                  <?php if ($is_empty): ?>
+                    <span class="badge danger"><i class="dot"></i>Habis (0)</span>
+                  <?php else: ?>
+                    <strong><?= $stok ?> Unit</strong>
+                  <?php endif; ?>
+                </td>
+                <td>
+                  <div class="qty-stepper">
+                    <button type="button" class="btn-step" onclick="stepDownDefect('<?= $pid ?>')" <?= $is_empty ? 'disabled' : '' ?>>−</button>
+                    <input type="number" id="qty_<?= $pid ?>" name="kuantitas[<?= $pid ?>]" class="input-step mono" value="0" min="0" max="<?= $stok ?>" <?= $is_empty ? 'disabled' : '' ?>>
+                    <button type="button" class="btn-step" onclick="stepUpDefect('<?= $pid ?>', <?= $stok ?>)" <?= $is_empty ? 'disabled' : '' ?>>+</button>
+                  </div>
+                </td>
+                <td>
+                  <input type="text" name="keterangan_rusak[<?= $pid ?>]" class="input" placeholder="Contoh: Pecah saat pengiriman / bocor / kadaluwarsa" maxlength="255" <?= $is_empty ? 'disabled' : '' ?>>
+                </td>
+              </tr>
+            <?php endwhile; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="6" class="table-empty">Belum ada data produk di katalog.</td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-foot-bar">
+      <span class="muted text-xs">
+        <?= icon('alert', 14) ?> Hanya baris dengan jumlah rusak &gt; 0 yang akan dicatat dan memotong stok produk.
+      </span>
+      <button type="submit" class="btn btn-primary">
+        <?= icon('check', 18) ?> Save All Laporan Defect
+      </button>
+    </div>
+  </div>
+</form>
+
+<!-- 2. Tabel Riwayat Laporan Barang Defect -->
 <div class="card flush rise">
   <div class="card-head pad pb-4">
     <div>
@@ -135,5 +180,27 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
     </table>
   </div>
 </div>
+
+<script>
+function stepDownDefect(id) {
+    var el = document.getElementById('qty_' + id);
+    if (el && !el.disabled) {
+        var val = parseInt(el.value, 10) || 0;
+        if (val > 0) {
+            el.value = val - 1;
+        }
+    }
+}
+
+function stepUpDefect(id, max) {
+    var el = document.getElementById('qty_' + id);
+    if (el && !el.disabled) {
+        var val = parseInt(el.value, 10) || 0;
+        if (val < max) {
+            el.value = val + 1;
+        }
+    }
+}
+</script>
 
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
