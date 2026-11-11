@@ -45,7 +45,7 @@ $res = pg_query_params($conn, $query, [$nama_pt, $nama_pj, $nik_pj, $no_telp, $a
 if ($res && pg_num_rows($res) > 0) {
     $row = pg_fetch_assoc($res);
     $new_id = (int)$row['id_customer'];
-    header("Location: {$halaman_pos}?pesan=mitra_sukses&selected_customer={$new_id}");
+    header("Location: {$halaman_pos}?pesan=mitra_baru_ditambahkan&selected_customer={$new_id}");
     exit();
 } else {
     $err = pg_last_error($conn);
