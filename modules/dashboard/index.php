@@ -4,6 +4,7 @@
  * File: modules/dashboard/index.php
  * Fungsi: Halaman tujuan setelah login. Menampilkan Hero Banner Artisan HORECA,
  *         ringkasan statistik (Total Produk, Total Kategori, Total Transaksi),
+ *         widget peringatan stok kritis gudang (< 24 Botol),
  *         navigasi cepat operasional, dan katalog unggulan dari PostgreSQL.
  */
 
@@ -38,7 +39,7 @@ $res_highlight = pg_query($conn, "SELECT p.id_product, p.nama_barang, p.harga_ju
                                   ORDER BY p.stok_aktual ASC, p.nama_barang ASC 
                                   LIMIT 5");
 
-// WBS 3.1.2 (PIC Toriq): Query daftar produk dengan stok kritis (< 24 Botol / < 2 Karton)
+// WBS 3.1.2: Query daftar produk dengan stok kritis (< 24 Botol / < 2 Karton)
 $query_kritis = "SELECT p.id_product, p.nama_barang, p.stok_aktual, c.nama_category 
                  FROM products p 
                  LEFT JOIN category c ON p.categoryid_category = c.id_category 
@@ -118,7 +119,86 @@ require_once '../../layouts/header.php';
     </div>
   <?php endforeach; ?>
 
-  <!-- 3. Bento Kiri: Pantauan Katalog & Stok Produk -->
+  <!-- 3. Tabel Widget Peringatan Stok Kritis Gudang (< 24 Botol / < 2 Karton) -->
+  <div class="card flush span-12 rise">
+    <div class="card-head pad pb-4">
+      <div>
+        <h2>Peringatan Stok Kritis Gudang (&lt; 24 Botol)</h2>
+        <p>Daftar produk dengan persediaan di bawah batas minimum operasional (&lt; 2 Karton / 24 Botol)</p>
+      </div>
+      <div class="row-actions">
+        <span class="badge <?= $total_produk_kritis > 0 ? 'danger' : 'success' ?>">
+          <i class="dot"></i><?= $total_produk_kritis ?> Produk Perlu Restock
+        </span>
+        <a href="<?= BASE_URL ?>modules/inventory/index.php" class="btn btn-primary btn-sm">
+          <?= icon('truck', 15) ?> Ke Inventaris Gudang &rarr;
+        </a>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-no">No</th>
+            <th>Kode SKU</th>
+            <th>Nama Produk</th>
+            <th>Kategori</th>
+            <th>Sisa Botol &amp; Karton</th>
+            <th>Status Stok</th>
+            <th class="text-right">Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php if ($total_produk_kritis > 0): ?>
+            <?php 
+            $no_kritis = 1;
+            foreach ($produk_kritis as $pk): 
+              $stok_botol  = (int)$pk['stok_aktual'];
+              $karton      = floor($stok_botol / 12);
+              $sisa_satuan = $stok_botol % 12;
+              $is_habis    = ($stok_botol <= 0);
+            ?>
+              <tr class="<?= $is_habis ? 'tr-overdue-glow' : '' ?>">
+                <td class="mono muted"><?= $no_kritis++ ?></td>
+                <td><span class="badge neutral mono"><?= e($pk['id_product']) ?></span></td>
+                <td>
+                  <strong><?= e($pk['nama_barang']) ?></strong>
+                </td>
+                <td>
+                  <span class="badge info"><?= e($pk['nama_category'] ?? 'Umum') ?></span>
+                </td>
+                <td class="mono">
+                  <strong class="<?= $is_habis ? 'text-danger' : 'text-primary' ?>"><?= $stok_botol ?> Botol</strong>
+                  <div class="muted text-xs"><?= $karton ?> Karton <?= $sisa_satuan > 0 ? "+ {$sisa_satuan} Botol" : '' ?></div>
+                </td>
+                <td>
+                  <?php if ($is_habis): ?>
+                    <span class="badge danger"><i class="dot"></i>Habis (0 Unit)</span>
+                  <?php else: ?>
+                    <span class="badge warn"><i class="dot"></i>Kritis (&lt; 2 Karton)</span>
+                  <?php endif; ?>
+                </td>
+                <td class="text-right">
+                  <a href="<?= BASE_URL ?>modules/inventory/index.php" class="btn btn-soft btn-sm">
+                    Restock <?= icon('plus', 14) ?>
+                  </a>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <tr>
+              <td colspan="7" class="table-empty">
+                <?= icon('check', 20) ?> Seluruh stok produk di gudang dalam kondisi aman (&ge; 24 botol).
+              </td>
+            </tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 4. Bento Kiri: Pantauan Katalog & Stok Produk -->
   <div class="card span-7 rise">
     <div class="card-head">
       <div>
@@ -153,7 +233,7 @@ require_once '../../layouts/header.php';
     </div>
   </div>
 
-  <!-- 4. Bento Kanan: Pintasan Cepat Operasional -->
+  <!-- 5. Bento Kanan: Pintasan Cepat Operasional -->
   <div class="card span-5 rise">
     <div class="card-head">
       <div>
