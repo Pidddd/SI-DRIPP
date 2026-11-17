@@ -34,7 +34,6 @@
         html.removeAttribute('data-theme');
       }
       try { localStorage.setItem('sidripp_theme', next); } catch (e) {}
-      toast(next === 'dark' ? 'Mode Gelap (Dark Mode) diaktifkan' : 'Mode Terang (Light Mode) diaktifkan');
     });
   }
 
