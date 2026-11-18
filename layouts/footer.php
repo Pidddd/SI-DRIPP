@@ -15,7 +15,8 @@ $footer_is_superadmin = ($footer_role === 'super_admin');
   </div><!-- /.main -->
 </div><!-- /.app -->
 
-<!-- Floating Role Switcher -->
+<?php if (in_array($footer_role, ['super_admin', 'admin'], true)): ?>
+<!-- Floating Role Switcher (Hanya untuk Super Admin & Admin) -->
 <nav class="role-switcher" id="role-switcher" aria-label="Navigasi ranah role">
   <span class="rs-label">
     <i class="pulse"></i><?= $footer_is_superadmin ? 'Akses · Role' : 'Role · Terkunci' ?>
@@ -32,6 +33,7 @@ $footer_is_superadmin = ($footer_role === 'super_admin');
     <?php endif; ?>
   <?php endforeach; ?>
 </nav>
+<?php endif; ?>
 
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
