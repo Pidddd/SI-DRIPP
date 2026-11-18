@@ -176,10 +176,6 @@ if ($mode === 'bulk_update') {
                 $ringkasan[] = "{$prod['nama_barang']} ({$tanda} botol)";
                 $jumlah_diubah++;
             }
-                $tanda = $delta > 0 ? "+{$delta}" : (string)$delta;
-                $ringkasan[] = "{$prod['nama_barang']} ({$tanda} botol)";
-                $jumlah_diubah++;
-            }
         }
 
         pg_query($conn, "COMMIT");
