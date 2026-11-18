@@ -39,6 +39,11 @@ if (!$is_edit) {
     $res_count          = pg_query($conn, "SELECT COUNT(*) FROM products");
     $next_num           = $res_count ? ((int) pg_fetch_result($res_count, 0, 0) + 1) : 1;
     $prod['id_product'] = 'PRD-' . str_pad($next_num, 3, '0', STR_PAD_LEFT);
+
+    // Tangkap category_id dari URL (jika ada pada mode tambah baru) agar dropdown otomatis terpilih
+    if (isset($_GET['category_id']) && (int)$_GET['category_id'] > 0) {
+        $prod['categoryid_category'] = (int)$_GET['category_id'];
+    }
 }
 
 $page_title = $is_edit ? 'Edit Produk' : 'Tambah Produk Baru';
