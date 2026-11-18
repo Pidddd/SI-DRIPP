@@ -871,6 +871,12 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   outline: none; background: var(--card); border-color: var(--primary);
   box-shadow: 0 0 0 4px rgba(8, 131, 149, .18);
 }
+.input:disabled, .select:disabled, .textarea:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  background: var(--bg-soft);
+  border-color: var(--line);
+}
 .input-icon { position: relative; }
 .input-icon .ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
 .input-icon .input { padding-left: 40px; }
@@ -1536,6 +1542,258 @@ body.login-body {
   padding: 16px 18px; border-radius: 12px;
   background: var(--card); border: 1px dashed var(--line-strong);
   color: var(--muted); font-size: 13px;
+}
+.batch-empty-box {
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1.5px dashed var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: rise .2s var(--ease) both;
+}
+.batch-empty-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.batch-empty-headline {
+  margin: 0 0 6px 0;
+  font-size: 13.5px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.batch-empty-desc {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.batch-empty-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+}
+.batch-head-tags {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.btn-sub-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 8px;
+  background: var(--amber-100);
+  border: 1px solid var(--primary);
+  color: var(--primary);
+  text-decoration: none;
+  transition: all .15s ease;
+}
+.btn-sub-add:hover {
+  background: var(--primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Vendor Selection Card & Item List (stock_in.php) */
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.field-hint {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 4px;
+  display: block;
+}
+.input-with-addon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.input-with-addon .input {
+  flex: 1;
+}
+.btn-addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+.btn-addon:hover {
+  background: var(--amber-100);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.vendor-box-card {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.vendor-mode-switch {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--line);
+}
+.vendor-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.vendor-radio-label input[type="radio"] {
+  accent-color: var(--primary);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+.vendor-input-group {
+  width: 100%;
+}
+
+/* ---------- Nested Accordion 2 Tingkat (Kategori -> Master Produk -> Batch FEFO) ---------- */
+.category-detail-box {
+  padding: 18px 24px 24px;
+  background: var(--bg);
+  border-top: 1px dashed var(--line-strong);
+  animation: rise .25s var(--ease) both;
+}
+.category-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.category-head-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 750;
+  color: var(--ink);
+}
+.table-nested-wrap {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+.table-nested-products {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.table-nested-products th {
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 750;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 11px 16px;
+  background: var(--table-head-bg);
+  border-bottom: 1.5px solid var(--line-strong);
+  white-space: nowrap;
+}
+.table-nested-products td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.table-nested-products tbody tr:hover td {
+  background: var(--table-hover-bg);
+}
+
+.accordion-nested-subrow td.nested-content {
+  padding: 0 !important;
+  background: var(--bg-soft) !important;
+  border-bottom: 1.5px solid var(--line-strong);
+}
+.nested-batch-box {
+  padding: 16px 20px 20px;
+  background: linear-gradient(180deg, var(--bg-soft) 0%, var(--card) 100%);
+  border-left: 4.5px solid var(--primary);
+  animation: rise .25s var(--ease) both;
+}
+[data-theme="dark"] .nested-batch-box {
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.7) 0%, var(--card) 100%);
+  border-left-color: #38BDF8;
+}
+.btn-accordion-sub {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--primary-dark);
+  border: 1px solid var(--amber-300);
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .2s var(--ease);
+}
+[data-theme="dark"] .btn-accordion-sub {
+  background: rgba(30, 41, 59, 0.8);
+  color: #BAE6FD;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.btn-accordion-sub:hover {
+  background: var(--gold-grad);
+  color: #FFFFFF;
+  border-color: transparent;
+  transform: translateY(-1px);
+}
+.btn-accordion-sub.active {
+  background: var(--primary);
+  color: #FFFFFF;
+  border-color: var(--primary);
+  box-shadow: 0 4px 10px -2px var(--teal-shadow);
+}
+.btn-accordion-sub .acc-icon {
+  display: inline-block;
+  font-size: 10px;
+  transition: transform .22s var(--ease);
+}
+.btn-accordion-sub.active .acc-icon {
+  transform: rotate(180deg);
 }
 
 @media print {

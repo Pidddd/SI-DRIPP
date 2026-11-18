@@ -5,7 +5,7 @@
  * File: modules/inventory/process/stock_in.php
  * PIC Backend: Toriq (WBS 3.4.1 & 3.4.4), UI: Timothy
  * Mendukung:
- *   1. Mode 'bulk_update' (array delta_stok[id_product]) dari modules/inventory/index.php
+ *   1. Mode 'bulk_update' (array delta_batch[id_restock] & fallback delta_stok[id_product]) dari modules/inventory/index.php
  *   2. Mode Restock Batch Baru (kode_batch, expired_date, nama_vendor, kuantitas) dari modules/inventory/stock_in.php
  */
 
@@ -29,7 +29,6 @@ $mode    = trim($_POST['mode'] ?? '');
 
 // ============================================================================
 // MODE 1: BULK MASS UPDATE DARI TABEL INVENTARIS STOK (index.php)
-// Mendukung penyesuaian granular per batch (delta_batch) & per produk (delta_stok)
 // ============================================================================
 if ($mode === 'bulk_update') {
     $delta_stok  = $_POST['delta_stok'] ?? [];
@@ -131,30 +130,30 @@ if ($mode === 'bulk_update') {
                 $id_product = trim((string)$id_product);
                 $delta      = (int)$val_delta;
 
-                // Abaikan produk yang tidak mengalami perubahan (delta == 0)
-                if ($id_product === '' || $delta === 0) {
-                    continue;
-                }
+            // Abaikan produk yang tidak mengalami perubahan (delta == 0)
+            if ($id_product === '' || $delta === 0) {
+                continue;
+            }
 
-                // Kunci baris produk untuk konsistensi data
-                $q_cek = "SELECT nama_barang, stok_aktual FROM products WHERE id_product = $1 FOR UPDATE";
-                $res_cek = pg_query_params($conn, $q_cek, [$id_product]);
-                $prod = $res_cek ? pg_fetch_assoc($res_cek) : false;
+            // Kunci baris produk untuk konsistensi data
+            $q_cek = "SELECT nama_barang, stok_aktual FROM products WHERE id_product = $1 FOR UPDATE";
+            $res_cek = pg_query_params($conn, $q_cek, [$id_product]);
+            $prod = $res_cek ? pg_fetch_assoc($res_cek) : false;
 
-                if (!$prod) {
-                    throw new Exception("Produk dengan SKU {$id_product} tidak ditemukan di sistem.");
-                }
+            if (!$prod) {
+                throw new Exception("Produk dengan SKU {$id_product} tidak ditemukan di sistem.");
+            }
 
                 $stok_sekarang = (int)$prod['stok_aktual'];
                 $stok_baru     = $stok_sekarang + $delta;
 
-                if ($stok_baru < 0) {
-                    throw new Exception("Pengurangan stok pada '{$prod['nama_barang']}' melebihi stok yang tersedia (sisa {$stok_sekarang}, dikurangi {$delta}).");
-                }
+            if ($stok_baru < 0) {
+                throw new Exception("Pengurangan stok pada '{$prod['nama_barang']}' melebihi stok yang tersedia (sisa {$stok_sekarang}, dikurangi {$delta}).");
+            }
 
-                // Update stok_aktual pada tabel products
-                $q_upd = "UPDATE products SET stok_aktual = $1 WHERE id_product = $2";
-                $res_upd = pg_query_params($conn, $q_upd, [$stok_baru, $id_product]);
+            // Update stok_aktual pada tabel products
+            $q_upd = "UPDATE products SET stok_aktual = $1 WHERE id_product = $2";
+            $res_upd = pg_query_params($conn, $q_upd, [$stok_baru, $id_product]);
 
                 if (!$res_upd) {
                     throw new Exception("Gagal memperbarui stok produk {$prod['nama_barang']}: " . pg_last_error($conn));
@@ -177,6 +176,10 @@ if ($mode === 'bulk_update') {
                 $ringkasan[] = "{$prod['nama_barang']} ({$tanda} botol)";
                 $jumlah_diubah++;
             }
+                $tanda = $delta > 0 ? "+{$delta}" : (string)$delta;
+                $ringkasan[] = "{$prod['nama_barang']} ({$tanda} botol)";
+                $jumlah_diubah++;
+            }
         }
 
         pg_query($conn, "COMMIT");
@@ -185,7 +188,7 @@ if ($mode === 'bulk_update') {
             $teks_info = count($ringkasan) <= 3 ? implode(', ', $ringkasan) : "{$jumlah_diubah} item berhasil disesuaikan";
             $_SESSION['success'] = "Perubahan stok berhasil disimpan: {$teks_info}.";
         } else {
-            $_SESSION['success'] = "Tidak ada produk yang diubah (semua penyesuaian bernilai 0).";
+            $_SESSION['success'] = "Tidak ada perubahan stok (semua penyesuaian bernilai 0).";
         }
 
     } catch (Exception $e) {
