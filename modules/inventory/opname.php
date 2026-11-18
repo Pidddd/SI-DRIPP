@@ -1,12 +1,13 @@
 <?php
 /**
- * MODUL INVENTARIS — STOCK OPNAME GUDANG
+ * MODUL INVENTARIS — STOCK OPNAME GUDANG (Accordion 1 Tingkat per Kategori)
  * File: modules/inventory/opname.php
- * Fungsi: Antarmuka Audit Perbandingan Stok Sistem vs Stok Fisik Gudang beserta penyesuaian ke Supabase.
+ * Fungsi: Audit perbandingan Stok Sistem vs Stok Fisik gudang MKP Store secara massal.
+ * Arsitektur: PHP Native Prosedural Murni (pg_query / pg_query_params). Zero Inline CSS.
  * Revisi Dosen Poin 2:
- *   - Form per-baris disatukan menjadi 1 form pembungkus seluruh tabel.
- *   - Tombol stepper [-] [input stok_fisik[id_product]] [+] pada tiap baris produk.
- *   - 1 Tombol utama "Save All Stock Opname".
+ *   - Accordion 1 Tingkat: Level 1 = Kategori, Level 2 = Master Produk per Kategori.
+ *   - 1 form pembungkus seluruh tabel + 1 tombol Save All Stock Opname.
+ *   - Stepper [-] [stok_fisik[id_product]] [+] dan input Catatan Validasi per produk.
  */
 
 $root       = '../../';
@@ -17,15 +18,51 @@ $allowed    = ['super_admin', 'admin', 'staf_gudang'];
 
 require_once __DIR__ . '/../../layouts/header.php';
 
-// Ambil daftar produk beserta stok sistem saat ini
-$q_products = "SELECT p.id_product, p.nama_barang, p.stok_aktual, c.nama_category
+// 1. Ambil semua kategori (akan diisi produk di bawah)
+$q_categories = "SELECT id_category, nama_category FROM category ORDER BY nama_category ASC";
+$res_cat_raw  = pg_query($conn, $q_categories);
+$categories   = [];
+if ($res_cat_raw) {
+    while ($c = pg_fetch_assoc($res_cat_raw)) {
+        $categories[$c['id_category']] = [
+            'id'           => (int)$c['id_category'],
+            'nama'         => $c['nama_category'],
+            'total_varian' => 0,
+            'total_stok'   => 0,
+            'products'     => [],
+        ];
+    }
+}
+
+// 2. Ambil semua produk beserta stok sistem dan relasikan ke kategori
+$q_products = "SELECT p.id_product, p.nama_barang, p.stok_aktual, p.categoryid_category, c.nama_category
                FROM products p
                LEFT JOIN category c ON p.categoryid_category = c.id_category
                ORDER BY p.nama_barang ASC";
 $res_products = pg_query($conn, $q_products);
-$total_products = $res_products ? pg_num_rows($res_products) : 0;
+$total_all_produk = 0;
 
-// Ambil riwayat stock opname terakhir
+if ($res_products) {
+    while ($p = pg_fetch_assoc($res_products)) {
+        $cid = !empty($p['categoryid_category']) ? (int)$p['categoryid_category'] : 0;
+        // Tangani produk tanpa kategori terdaftar
+        if (!isset($categories[$cid])) {
+            $categories[$cid] = [
+                'id'           => $cid,
+                'nama'         => $p['nama_category'] ?? 'Tanpa Kategori',
+                'total_varian' => 0,
+                'total_stok'   => 0,
+                'products'     => [],
+            ];
+        }
+        $categories[$cid]['products'][]     = $p;
+        $categories[$cid]['total_varian']  += 1;
+        $categories[$cid]['total_stok']    += (int)$p['stok_aktual'];
+        $total_all_produk++;
+    }
+}
+
+// 3. Ambil riwayat stock opname terakhir (15 entri)
 $q_history = "SELECT so.id_opname, so.waktu_opname, so.stok_sistem, so.stok_fisik, so.selisih, so.status_validasi,
                      p.id_product, p.nama_barang, u.nama AS petugas
               FROM stock_opname so
@@ -55,19 +92,20 @@ $res_history = pg_query($conn, $q_history);
 <div class="callout amber rise">
   <?= icon('clipboard', 20) ?>
   <div>
-    <strong>Audit Stock Opname Massal:</strong> Masukkan hasil hitung <em>Stok Fisik</em> aktual di rak gudang menggunakan tombol [-] / [+] atau ketik langsung angka fisik di kolom terkait, lalu tekan tombol <strong>Save All Stock Opname</strong> untuk menyelaraskan seluruh stok sistem secara serentak.
+    <strong>Panduan Audit Stock Opname:</strong> Buka setiap kategori untuk melihat daftar produk. Masukkan hasil hitung <em>Stok Fisik</em> aktual di rak gudang menggunakan tombol <strong>[-] / [+]</strong> atau ketik langsung, lalu tekan <strong>Save All Stock Opname</strong> untuk menyelaraskan seluruh stok sistem.
   </div>
 </div>
 
 <!-- 1 Form Pembungkus Seluruh Tabel Stock Opname (Revisi Dosen Poin 2) -->
 <form action="<?= BASE_URL ?>modules/inventory/process/stock_opname.php" method="POST">
-  <div class="card flush mb-5 rise">
+  <div class="card flush mb-5 rise card-inventory-wrap">
     <div class="card-head pad pb-4">
       <div>
-        <h2>Tabel Audit &amp; Penyesuaian Stok (Sistem vs Fisik)</h2>
+        <h2>Audit Stock Opname &mdash; Per Kategori Produk</h2>
         <p>Pemeriksaan fisik gudang HORECA oleh Staf Logistik pada <?= e(tgl_id()) ?></p>
       </div>
       <div class="form-actions">
+        <span class="badge neutral"><i class="dot"></i><?= count($categories) ?> Kategori &middot; <?= $total_all_produk ?> Varian</span>
         <span class="badge info"><i class="dot"></i>Bulk Audit</span>
         <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?')">
           <?= icon('check', 18) ?> Save All Stock Opname
@@ -80,49 +118,124 @@ $res_history = pg_query($conn, $q_history);
         <thead>
           <tr>
             <th class="col-no">No</th>
-            <th>Nama Produk</th>
-            <th>Kategori</th>
-            <th>Stok Sistem</th>
-            <th class="text-center">Input Stok Fisik</th>
-            <th>Catatan Validasi</th>
+            <th>Nama Kategori</th>
+            <th>Jumlah Varian</th>
+            <th>Total Stok Sistem</th>
+            <th class="text-center">Audit Produk</th>
           </tr>
         </thead>
         <tbody>
-          <?php if ($res_products && $total_products > 0): ?>
-            <?php $no = 1; while ($p = pg_fetch_assoc($res_products)):
-                $stok_sys = (int)$p['stok_aktual'];
-                $p_id     = $p['id_product'];
+          <?php if (!empty($categories)): ?>
+            <?php $no_cat = 1; foreach ($categories as $cid => $cat):
+                $cat_varian = $cat['total_varian'];
+                $cat_stok   = $cat['total_stok'];
+                $kritis_cat = $cat_stok < 24;
             ?>
+              <!-- BARIS LEVEL 1: KATEGORI PRODUK -->
               <tr>
-                <td class="mono muted"><?= $no++ ?></td>
+                <td class="mono muted"><?= $no_cat++ ?></td>
                 <td>
-                  <strong><?= e($p['nama_barang']) ?></strong>
-                  <div class="muted text-xs">SKU: <?= e($p_id) ?></div>
+                  <strong><?= e($cat['nama']) ?></strong>
+                  <div class="muted text-xs">ID Kategori: #<?= $cid ?></div>
                 </td>
-                <td><span class="badge info"><?= e($p['nama_category'] ?? 'Umum') ?></span></td>
-                <td class="mono"><strong><?= $stok_sys ?> Botol</strong></td>
+                <td>
+                  <span class="badge neutral"><?= $cat_varian ?> Varian Produk</span>
+                </td>
+                <td class="mono">
+                  <strong class="<?= $kritis_cat ? 'text-danger' : '' ?>">
+                    <?= $cat_stok ?> Botol
+                  </strong>
+                  <div class="muted text-xs">(<?= floor($cat_stok / 12) >= 1 ? floor($cat_stok / 12) . ' Karton' : '< 1 Karton' ?>)</div>
+                </td>
                 <td class="text-center">
-                  <div class="qty-stepper">
-                    <button type="button" class="btn-step" onclick="stepOpname('fisik_<?= e($p_id) ?>', -1)" title="Kurangi stok fisik">&minus;</button>
-                    <input type="number" id="fisik_<?= e($p_id) ?>" name="stok_fisik[<?= e($p_id) ?>]" class="input-stepper mono" min="0" value="<?= $stok_sys ?>" required>
-                    <button type="button" class="btn-step" onclick="stepOpname('fisik_<?= e($p_id) ?>', 1)" title="Tambah stok fisik">&plus;</button>
-                  </div>
-                </td>
-                <td>
-                  <input type="text" name="status_validasi[<?= e($p_id) ?>]" class="input table-input-compact" value="Audit Rutin Gudang" placeholder="Catatan opname" required>
+                  <?php if ($cat_varian > 0): ?>
+                    <button type="button" class="btn-accordion" onclick="toggleOpnameAccordion('opname-cat-<?= (int)$cid ?>', this)" title="Buka/tutup daftar produk untuk audit">
+                      <span class="acc-icon">&#9662;</span>
+                      <span>Audit Produk (<?= $cat_varian ?>)</span>
+                    </button>
+                  <?php else: ?>
+                    <span class="muted text-xs">Kosong</span>
+                  <?php endif; ?>
                 </td>
               </tr>
-            <?php endwhile; ?>
+
+              <!-- SUB-ROW: DAFTAR MASTER PRODUK UNTUK DIAUDIT -->
+              <tr id="opname-cat-<?= (int)$cid ?>" class="accordion-subrow is-hidden">
+                <td colspan="5" class="accordion-content">
+                  <div class="category-detail-box">
+                    <div class="category-head">
+                      <div class="category-head-title">
+                        <?= icon('clipboard', 16) ?>
+                        <span>Daftar Produk &mdash; Kategori <?= e($cat['nama']) ?></span>
+                      </div>
+                      <div class="form-actions">
+                        <span class="badge neutral"><?= $cat_varian ?> Varian Terdaftar</span>
+                        <span class="badge info"><i class="dot"></i>Total Stok Sistem: <?= $cat_stok ?> Botol</span>
+                      </div>
+                    </div>
+
+                    <div class="table-nested-wrap">
+                      <table class="table-nested-products">
+                        <thead>
+                          <tr>
+                            <th class="col-no">No</th>
+                            <th>Nama Produk &amp; SKU</th>
+                            <th>Stok Sistem</th>
+                            <th class="text-center">Input Stok Fisik</th>
+                            <th>Catatan Validasi</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <?php $no_p = 1; foreach ($cat['products'] as $prod):
+                              $p_id     = $prod['id_product'];
+                              $stok_sys = (int)$prod['stok_aktual'];
+                              $kritis_p = $stok_sys < 24;
+                          ?>
+                            <tr>
+                              <td class="mono muted"><?= $no_p++ ?></td>
+                              <td>
+                                <strong><?= e($prod['nama_barang']) ?></strong>
+                                <div class="muted text-xs">SKU: <?= e($p_id) ?></div>
+                              </td>
+                              <td class="mono">
+                                <strong class="<?= $kritis_p ? 'text-danger' : '' ?>">
+                                  <?= $stok_sys ?> Botol
+                                </strong>
+                                <?php if ($stok_sys <= 0): ?>
+                                  <div class="muted text-xs"><span class="badge danger badge-xs"><i class="dot"></i>Habis</span></div>
+                                <?php elseif ($kritis_p): ?>
+                                  <div class="muted text-xs"><span class="badge danger badge-xs"><i class="dot"></i>Kritis</span></div>
+                                <?php endif; ?>
+                              </td>
+                              <td class="text-center">
+                                <div class="qty-stepper">
+                                  <button type="button" class="btn-step" onclick="stepOpname('fisik_<?= e($p_id) ?>', -1)" title="Kurangi stok fisik">&minus;</button>
+                                  <input type="number" id="fisik_<?= e($p_id) ?>" name="stok_fisik[<?= e($p_id) ?>]" class="input-stepper mono" min="0" value="<?= $stok_sys ?>" required>
+                                  <button type="button" class="btn-step" onclick="stepOpname('fisik_<?= e($p_id) ?>', 1)" title="Tambah stok fisik">&plus;</button>
+                                </div>
+                              </td>
+                              <td>
+                                <input type="text" name="status_validasi[<?= e($p_id) ?>]" class="input table-input-compact" value="Audit Rutin Gudang" placeholder="Catatan opname">
+                              </td>
+                            </tr>
+                          <?php endforeach; ?>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            <?php endforeach; ?>
           <?php else: ?>
             <tr>
-              <td colspan="6" class="table-empty">Belum ada produk terdaftar untuk diaudit.</td>
+              <td colspan="5" class="table-empty">Belum ada kategori produk terdaftar untuk diaudit.</td>
             </tr>
           <?php endif; ?>
         </tbody>
       </table>
     </div>
 
-    <?php if ($res_products && $total_products > 0): ?>
+    <?php if (!empty($categories) && $total_all_produk > 0): ?>
       <div class="card-foot-bar">
         <span class="muted text-xs">Produk dengan stok fisik yang sama persis dengan stok sistem otomatis diabaikan agar riwayat audit tetap bersih.</span>
         <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?')">
@@ -134,6 +247,13 @@ $res_history = pg_query($conn, $q_history);
 </form>
 
 <script>
+function toggleOpnameAccordion(id, btn) {
+  var row = document.getElementById(id);
+  if (!row) return;
+  row.classList.toggle('is-hidden');
+  if (btn) btn.classList.toggle('active');
+}
+
 function stepOpname(id, step) {
   var el = document.getElementById(id);
   if (!el) return;
@@ -145,7 +265,7 @@ function stepOpname(id, step) {
 }
 </script>
 
-<!-- Riwayat Audit Stock Opname -->
+<!-- Riwayat Audit Stock Opname (Dipertahankan) -->
 <div class="card flush rise">
   <div class="card-head pad pb-4">
     <div>
@@ -177,7 +297,7 @@ function stepOpname(id, step) {
               <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($h['waktu_opname']))) ?></td>
               <td>
                 <strong><?= e($h['nama_barang']) ?></strong>
-                <div class="text-xs">SKU: <?= e($h['id_product']) ?></div>
+                <div class="text-xs muted">SKU: <?= e($h['id_product']) ?></div>
               </td>
               <td class="mono"><?= (int)$h['stok_sistem'] ?></td>
               <td class="mono"><strong><?= (int)$h['stok_fisik'] ?></strong></td>

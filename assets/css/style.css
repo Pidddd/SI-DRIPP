@@ -1803,3 +1803,14 @@ body.login-body {
   body { background: #FFFFFF !important; color: #0F172A !important; }
   .invoice-box, .card { box-shadow: none !important; border: 1px solid #CBD5E1 !important; margin: 0 !important; max-width: 100% !important; background: #FFFFFF !important; color: #0F172A !important; }
 }
+
+/* =====================================================
+   OPNAME ACCORDION — Badge ukuran kecil (badge-xs)
+   Zero Inline CSS: ganti style="font-size:10px" di opname.php
+   ===================================================== */
+.badge-xs {
+  font-size: 10px !important;
+  padding: 2px 7px;
+  line-height: 1.4;
+}
+
