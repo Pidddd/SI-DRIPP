@@ -64,7 +64,7 @@ $pre_cat_id  = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
 $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
 ?>
 
-<div class="page-actions rise">
+<div class="page-actions page-actions-form rise">
   <a href="<?= BASE_URL ?>modules/inventory/index.php" class="btn btn-ghost">
     &larr; Kembali ke Inventaris Stok
   </a>
@@ -119,21 +119,18 @@ $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
     <div class="field">
       <div class="field-label-row">
         <label>Pabrik / Vendor Penyuplai</label>
-        <span class="badge info"><i class="dot"></i>Item List &amp; Input Baru</span>
+        <div class="vendor-switch-track" id="vendor_switch_track" data-mode="list" role="tablist" aria-label="Mode input vendor">
+          <span class="vendor-switch-thumb" aria-hidden="true"></span>
+          <button type="button" class="vendor-switch-opt is-active" id="btn_mode_list" onclick="toggleVendorMode('list')">
+            Vendor Terdaftar
+          </button>
+          <button type="button" class="vendor-switch-opt" id="btn_mode_new" onclick="toggleVendorMode('new')">
+            Vendor Baru
+          </button>
+        </div>
       </div>
 
       <div class="vendor-box-card">
-        <div class="vendor-mode-switch">
-          <label class="vendor-radio-label">
-            <input type="radio" name="vendor_mode" value="list" id="mode_vendor_list" checked onchange="toggleVendorMode('list')">
-            <span><?= icon('truck', 14) ?> Pilih Vendor Terdaftar</span>
-          </label>
-          <label class="vendor-radio-label">
-            <input type="radio" name="vendor_mode" value="new" id="mode_vendor_new" onchange="toggleVendorMode('new')">
-            <span><?= icon('plus', 14) ?> + Input Vendor Baru</span>
-          </label>
-        </div>
-
         <!-- Mode 1: Item List Dropdown Vendor Terdaftar -->
         <div id="vendor_list_wrapper" class="vendor-input-group">
           <select id="vendor_select_input" class="select" onchange="onVendorSelectChange(this.value)">
@@ -152,10 +149,10 @@ $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
           <input type="text" id="vendor_manual_input" class="input" placeholder="Masukkan nama PT / pabrik / vendor baru (Contoh: PT. Denali Prima, Cikarang)" oninput="onVendorManualInput(this.value)">
         </div>
 
-        <!-- Hidden input nama_vendor yang disubmit ke proses backend Toriq -->
+        <!-- Hidden input nama_vendor yang disubmit ke proses backend -->
         <input type="hidden" name="nama_vendor" id="nama_vendor" value="" required>
       </div>
-      <span class="field-hint" id="vendor_hint">Pilih dari daftar vendor terdaftar, atau pilih opsi '+ Input Vendor Baru' jika dari penyuplai baru.</span>
+      <span class="field-hint" id="vendor_hint">Pilih dari daftar vendor terdaftar, atau geser switch ke 'Vendor Baru' untuk mengetik manual.</span>
     </div>
 
     <div class="form-row">
@@ -164,17 +161,17 @@ $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
           <label for="kode_batch">Kode Batch Pabrik</label>
           <span class="badge info"><i class="dot"></i>Otomatis</span>
         </div>
-        <input type="text" name="kode_batch" id="kode_batch" class="input mono" value="<?= e($auto_kode_batch) ?>" placeholder="Contoh: BATCH-202611-01" required>
-        <span class="field-hint">Dibuat otomatis oleh sistem berdasarkan tanggal kedatangan.</span>
+        <input type="text" name="kode_batch" id="kode_batch" class="input mono input-readonly" value="<?= e($auto_kode_batch) ?>" data-base-batch="<?= e($auto_kode_batch) ?>" readonly required>
+        <span class="field-hint">Dibuat otomatis oleh sistem sesuai vendor &amp; tanggal masuk.</span>
       </div>
 
       <div class="field">
         <div class="field-label-row">
-          <label for="expired_date">Tanggal Kedaluwarsa (Expired Date)</label>
+          <label for="expired_date">Tanggal Kedaluwarsa</label>
           <span class="badge warn"><i class="dot"></i>Wajib FEFO</span>
         </div>
         <input type="date" name="expired_date" id="expired_date" class="input" min="<?= date('Y-m-d') ?>" required>
-        <span class="field-hint">Tanggal kedaluwarsa sesuai tanggal yang tercantum pada kemasan botol fisik.</span>
+        <span class="field-hint">Sesuai tanggal kedaluwarsa pada kemasan botol fisik.</span>
       </div>
     </div>
 
@@ -195,30 +192,56 @@ $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
 </div>
 
 <script>
-// Toggle antara mode Pilih Vendor Terdaftar dan Input Vendor Baru
+function updateKodeBatchByVendor(vendorName) {
+  var batchInput = document.getElementById('kode_batch');
+  if (!batchInput) return;
+  var baseBatch = batchInput.getAttribute('data-base-batch') || 'BATCH-<?= date('Ym') ?>-01';
+  var suffix = baseBatch.replace(/^BATCH-/, '');
+  var clean = String(vendorName || '')
+    .toUpperCase()
+    .replace(/\b(PT|CV|UD|FA|PD|TBK)\b/g, ' ')
+    .replace(/[^A-Z0-9\s]/g, ' ')
+    .trim();
+  if (!clean) {
+    batchInput.value = baseBatch;
+    return;
+  }
+  var firstWord = clean.split(/\s+/)[0] || '';
+  var code = firstWord.slice(0, 5);
+  batchInput.value = code ? ('BATCH-' + code + '-' + suffix) : baseBatch;
+}
+
+// Toggle antara mode Pilih Vendor Terdaftar dan Input Vendor Baru (Sliding Switch)
 function toggleVendorMode(mode) {
-  var listWrap = document.getElementById('vendor_list_wrapper');
-  var newWrap  = document.getElementById('vendor_new_wrapper');
-  var selInput = document.getElementById('vendor_select_input');
-  var manInput = document.getElementById('vendor_manual_input');
-  var hiddenVal= document.getElementById('nama_vendor');
-  var hintEl   = document.getElementById('vendor_hint');
-  var radioList= document.getElementById('mode_vendor_list');
-  var radioNew = document.getElementById('mode_vendor_new');
+  var listWrap    = document.getElementById('vendor_list_wrapper');
+  var newWrap     = document.getElementById('vendor_new_wrapper');
+  var selInput    = document.getElementById('vendor_select_input');
+  var manInput    = document.getElementById('vendor_manual_input');
+  var hiddenVal   = document.getElementById('nama_vendor');
+  var hintEl      = document.getElementById('vendor_hint');
+  var switchTrack = document.getElementById('vendor_switch_track');
+  var btnList     = document.getElementById('btn_mode_list');
+  var btnNew      = document.getElementById('btn_mode_new');
 
   if (!listWrap || !newWrap) return;
 
   if (mode === 'new') {
-    if (radioNew) radioNew.checked = true;
+    if (switchTrack) switchTrack.setAttribute('data-mode', 'new');
+    if (btnList) btnList.classList.remove('is-active');
+    if (btnNew) btnNew.classList.add('is-active');
     listWrap.classList.add('is-hidden');
     newWrap.classList.remove('is-hidden');
     if (manInput) {
-      if (hiddenVal) hiddenVal.value = manInput.value.trim();
+      var valMan = manInput.value.trim();
+      if (hiddenVal) hiddenVal.value = valMan;
+      updateKodeBatchByVendor(valMan);
       manInput.focus();
     }
     if (hintEl) hintEl.textContent = 'Ketik nama pabrik / vendor baru. Sistem akan otomatis mencatatnya ke database.';
   } else {
-    if (radioList) radioList.checked = true;
+    if (switchTrack) switchTrack.setAttribute('data-mode', 'list');
+    if (btnNew) btnNew.classList.remove('is-active');
+    if (btnList) btnList.classList.add('is-active');
     newWrap.classList.add('is-hidden');
     listWrap.classList.remove('is-hidden');
     if (selInput) {
@@ -226,6 +249,7 @@ function toggleVendorMode(mode) {
         selInput.value = '';
       }
       if (hiddenVal) hiddenVal.value = selInput.value;
+      updateKodeBatchByVendor(selInput.value);
       selInput.focus();
     }
     if (hintEl) hintEl.textContent = 'Pilih salah satu vendor resmi yang sudah pernah terdaftar di sistem.';
@@ -239,11 +263,14 @@ function onVendorSelectChange(val) {
     return;
   }
   if (hiddenVal) hiddenVal.value = val;
+  updateKodeBatchByVendor(val);
 }
 
 function onVendorManualInput(val) {
   var hiddenVal = document.getElementById('nama_vendor');
-  if (hiddenVal) hiddenVal.value = val.trim();
+  var trimmed = val.trim();
+  if (hiddenVal) hiddenVal.value = trimmed;
+  updateKodeBatchByVendor(trimmed);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -341,8 +368,8 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!vendorVal) {
         e.preventDefault();
         alert('Silakan pilih salah satu vendor terdaftar atau ketik nama vendor baru terlebih dahulu!');
-        var radioNew = document.getElementById('mode_vendor_new');
-        if (radioNew && radioNew.checked) {
+        var switchTrack = document.getElementById('vendor_switch_track');
+        if (switchTrack && switchTrack.getAttribute('data-mode') === 'new') {
           document.getElementById('vendor_manual_input').focus();
         } else {
           document.getElementById('vendor_select_input').focus();
