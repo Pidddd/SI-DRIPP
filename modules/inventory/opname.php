@@ -107,7 +107,7 @@ $res_history = pg_query($conn, $q_history);
       <div class="form-actions">
         <span class="badge neutral"><i class="dot"></i><?= count($categories) ?> Kategori &middot; <?= $total_all_produk ?> Varian</span>
         <span class="badge info"><i class="dot"></i>Bulk Audit</span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?')">
+        <button type="submit" class="btn btn-primary" data-confirm="Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?">
           <?= icon('check', 18) ?> Save All Stock Opname
         </button>
       </div>
@@ -238,7 +238,7 @@ $res_history = pg_query($conn, $q_history);
     <?php if (!empty($categories) && $total_all_produk > 0): ?>
       <div class="card-foot-bar">
         <span class="muted text-xs">Produk dengan stok fisik yang sama persis dengan stok sistem otomatis diabaikan agar riwayat audit tetap bersih.</span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?')">
+        <button type="submit" class="btn btn-primary" data-confirm="Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?">
           <?= icon('check', 18) ?> Save All Stock Opname
         </button>
       </div>

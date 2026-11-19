@@ -35,6 +35,21 @@ $footer_is_superadmin = ($footer_role === 'super_admin');
 </nav>
 <?php endif; ?>
 
+<!-- Global Custom Confirmation Modal (SI-DRIPP Soft Caramel Cream) -->
+<div class="confirm-backdrop" id="sidripp-confirm-backdrop" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-msg" aria-hidden="true">
+  <div class="confirm-modal" id="sidripp-confirm-modal" role="document">
+    <div class="confirm-icon" aria-hidden="true">
+      <?= icon('alert', 24) ?>
+    </div>
+    <h3 class="confirm-title" id="confirm-modal-title">Konfirmasi Tindakan</h3>
+    <p class="confirm-msg" id="confirm-modal-msg">Apakah Anda yakin ingin melanjutkan tindakan ini?</p>
+    <div class="confirm-actions">
+      <button type="button" class="btn btn-ghost" id="confirm-btn-cancel">Batal</button>
+      <button type="button" class="btn btn-primary confirm-btn-confirm" id="confirm-btn-ok">Ya, Lanjutkan</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
 <script src="<?= $root ?>assets/js/app.js"></script>

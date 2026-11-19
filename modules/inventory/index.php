@@ -411,7 +411,7 @@ $today_ts = strtotime(date('Y-m-d'));
     <?php if (count($categories) > 0): ?>
       <div class="card-foot-bar">
         <span class="muted text-xs">Petunjuk: Buka kategori, pilih produk, dan sesuaikan kuantitas pada masing-masing batch. Nilai 0 diabaikan, nilai negatif mengurangi stok batch, dan nilai positif menambah stok batch.</span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stok batch ke dalam sistem gudang?')">
+        <button type="submit" class="btn btn-primary" data-confirm="Terapkan seluruh penyesuaian stok batch ke dalam sistem gudang?">
           <?= icon('check', 18) ?> Save All Perubahan Stok
         </button>
       </div>

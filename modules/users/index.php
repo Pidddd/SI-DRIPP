@@ -100,7 +100,7 @@ $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
                   <a href="<?= BASE_URL ?>modules/users/create.php?edit=<?= (int)$u['id_user'] ?>" class="btn btn-soft btn-sm">
                     <?= icon('edit', 14) ?> Edit
                   </a>
-                  <a href="<?= BASE_URL ?>modules/users/process/create.php?hapus_id=<?= (int)$u['id_user'] ?>" class="btn btn-danger-soft btn-sm" onclick="return confirm('Apakah Anda yakin ingin menghapus akun @<?= e($u['username']) ?>?')">
+                  <a href="<?= BASE_URL ?>modules/users/process/create.php?hapus_id=<?= (int)$u['id_user'] ?>" class="btn btn-danger-soft btn-sm" data-confirm="Apakah Anda yakin ingin menghapus akun @<?= e($u['username']) ?>?">
                     <?= icon('trash', 14) ?> Hapus
                   </a>
                 </div>
