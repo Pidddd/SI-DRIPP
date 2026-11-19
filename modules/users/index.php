@@ -14,7 +14,7 @@ $allowed    = ['super_admin'];
 require_once __DIR__ . '/../../layouts/header.php';
 
 // Ambil daftar pengguna dari tabel users di Supabase
-$q_users   = "SELECT id_user, nama, jenis_kelamin, username, role FROM users ORDER BY id_user ASC";
+$q_users   = "SELECT id_user, nama, jenis_kelamin, username, email, no_telp, role FROM users ORDER BY id_user ASC";
 $res_users = pg_query($conn, $q_users);
 $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
 ?>
@@ -68,6 +68,8 @@ $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
           <th class="col-no">No</th>
           <th>Username</th>
           <th>Nama Lengkap</th>
+          <th>Email</th>
+          <th>No. Telepon</th>
           <th>Role</th>
           <th>Status</th>
           <th class="text-right">Aksi</th>
@@ -89,6 +91,8 @@ $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
                   </div>
                 </div>
               </td>
+              <td class="mono"><?= e($u['email'] ?? '-') ?></td>
+              <td class="mono muted"><?= !empty($u['no_telp']) ? e($u['no_telp']) : '-' ?></td>
               <td><?= role_badge($role_norm) ?></td>
               <td><span class="badge success"><i class="dot"></i>Aktif</span></td>
               <td class="text-right">
@@ -105,7 +109,7 @@ $jml_user  = $res_users ? pg_num_rows($res_users) : 0;
           <?php endwhile; ?>
         <?php else: ?>
           <tr>
-            <td colspan="6" class="table-empty">Belum ada akun pengguna yang terdaftar.</td>
+            <td colspan="8" class="table-empty">Belum ada akun pengguna yang terdaftar.</td>
           </tr>
         <?php endif; ?>
       </tbody>

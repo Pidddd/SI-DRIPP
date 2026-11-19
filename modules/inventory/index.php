@@ -136,12 +136,7 @@ $today_ts = strtotime(date('Y-m-d'));
         <h2>Inventaris Stok Gudang (Kategori &amp; Batch FEFO)</h2>
         <p>Buka kategori untuk mengelola produk, lalu buka produk untuk memantau tanggal kedaluwarsa batch dan menyesuaikan stok.</p>
       </div>
-      <div class="form-actions">
-        <span class="badge neutral"><?= count($categories) ?> Kategori · <?= $total_semua_produk ?> Varian (<?= $total_semua_stok ?> Botol)</span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Terapkan seluruh penyesuaian stok batch ke dalam sistem gudang?')">
-          <?= icon('check', 18) ?> Save All Perubahan Stok
-        </button>
-      </div>
+      <span class="badge neutral"><?= count($categories) ?> Kategori · <?= $total_semua_produk ?> Varian (<?= $total_semua_stok ?> Botol)</span>
     </div>
 
     <div class="table-wrap">
