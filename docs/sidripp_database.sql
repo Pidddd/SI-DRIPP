@@ -10,9 +10,10 @@ create table users (
     nama varchar(100) not null,
     jenis_kelamin varchar(15) not null,
     username varchar(50) not null unique,
+    email varchar(100) not null unique,
+    no_telp varchar(20) null,
     password varchar(255) not null,
-    role varchar(20) not null,
-    kode_pemulihan varchar(100) default 'MKP2026'
+    role varchar(20) not null
 );
 
 create table category (
@@ -203,3 +204,13 @@ begin
     return total_botol_expired;
 end;
 $$ language plpgsql;
+
+-- 7. DATA SEEDING AWAL (AKUN PENGGUNA DEFAULT PER ROLE)
+-- Password default untuk akun seeding di bawah adalah: password (bcrypt hash)
+insert into users (nama, jenis_kelamin, username, email, no_telp, password, role)
+values
+    ('Emy Maria Ulfa', 'Perempuan', 'owner_mkp', 'owner@mkpstore.id', '081234567890', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'super_admin'),
+    ('Admin Operasional MKP', 'Perempuan', 'admin_mkp', 'admin@mkpstore.id', '081234567891', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin'),
+    ('Petugas Kasir Rampal', 'Laki-laki', 'kasir_mkp', 'kasir@mkpstore.id', '081234567892', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'kasir'),
+    ('Staf Gudang Moch Juki', 'Laki-laki', 'gudang_mkp', 'gudang@mkpstore.id', '081234567893', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'staf_gudang')
+on conflict (username) do nothing;
