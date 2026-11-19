@@ -69,7 +69,7 @@ require_once '../../layouts/header.php';
                                 <td>
                                     <div class="row-actions">
                                         <a href="create.php?edit=<?= urlencode($row['id_category']) ?>" class="btn btn-ghost btn-sm">Edit</a>
-                                        <a href="process/create.php?hapus_id=<?= urlencode($row['id_category']) ?>" class="btn btn-danger-soft btn-sm" onclick="return confirm('Yakin ingin menghapus kategori <?= htmlspecialchars(addslashes($row['nama_category'])) ?>?');">Hapus</a>
+                                        <a href="process/create.php?hapus_id=<?= urlencode($row['id_category']) ?>" class="btn btn-danger-soft btn-sm" data-confirm="Yakin ingin menghapus kategori <?= e($row['nama_category']) ?>?">Hapus</a>
                                     </div>
                                 </td>
                             </tr>

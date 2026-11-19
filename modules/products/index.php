@@ -196,7 +196,7 @@ require_once '../../layouts/header.php';
                                                             <td class="text-right">
                                                                 <div class="row-actions">
                                                                     <a href="create.php?edit=<?= urlencode($prod['id_product']) ?>" class="btn btn-ghost btn-sm">Edit</a>
-                                                                    <a href="process/create.php?hapus_id=<?= urlencode($prod['id_product']) ?>" class="btn btn-danger-soft btn-sm" onclick="return confirm('Yakin ingin menghapus produk <?= htmlspecialchars(addslashes($prod['nama_barang'])) ?>?');">Hapus</a>
+                                                                    <a href="process/create.php?hapus_id=<?= urlencode($prod['id_product']) ?>" class="btn btn-danger-soft btn-sm" data-confirm="Yakin ingin menghapus produk <?= e($prod['nama_barang']) ?>?">Hapus</a>
                                                                 </div>
                                                             </td>
                                                         </tr>

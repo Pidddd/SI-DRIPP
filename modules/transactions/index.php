@@ -146,7 +146,7 @@ if ($res_customers) {
 
   <!-- ==================== KOLOM KANAN: KERANJANG & CHECKOUT MITRA ==================== -->
   <aside class="card flush cart" aria-label="Keranjang Belanja Kasir">
-    <form action="<?= BASE_URL ?>modules/transactions/process/checkout.php" method="POST" id="form-checkout" onsubmit="return validasiCheckout()">
+    <form action="<?= BASE_URL ?>modules/transactions/process/checkout.php" method="POST" id="form-checkout" data-confirm="Proses transaksi penjualan sekarang?" onsubmit="return validasiCheckout()">
       <input type="hidden" name="userid_user" value="<?= (int)($_SESSION['id_user'] ?? 1) ?>">
       
       <!-- Input Hidden Snapshot Pelanggan untuk Kompatibilitas Database -->
@@ -505,10 +505,14 @@ function filterKatalogPos() {
 
 function validasiCheckout() {
   if (keranjang.length === 0) {
-    alert('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!');
+    if (typeof window.sidrippToast === 'function') {
+      window.sidrippToast('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!', 'warn');
+    } else {
+      alert('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!');
+    }
     return false;
   }
-  return confirm('Proses transaksi penjualan sekarang?');
+  return true;
 }
 
 // Inisialisasi otomatis jika ada parameter mitra baru dari URL

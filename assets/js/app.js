@@ -57,7 +57,147 @@
     if (e.target.classList && e.target.classList.contains('modal')) closeModal(e.target);
   });
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') $$('.modal.open').forEach(closeModal);
+    if (e.key === 'Escape') {
+      if (confirmBackdrop && confirmBackdrop.classList.contains('is-open')) {
+        e.preventDefault();
+        settleConfirm(false);
+        return;
+      }
+      $$('.modal.open').forEach(closeModal);
+    }
+  });
+
+  /* ---------- Global Custom Confirmation Modal (Promise-based) ---------- */
+  var confirmBackdrop = $('#sidripp-confirm-backdrop');
+  var confirmModalEl  = $('#sidripp-confirm-modal');
+  var confirmTitleEl  = $('#confirm-modal-title');
+  var confirmMsgEl    = $('#confirm-modal-msg');
+  var confirmBtnOk    = $('#confirm-btn-ok');
+  var confirmBtnCancel = $('#confirm-btn-cancel');
+  var confirmResolver = null;
+
+  function settleConfirm(result) {
+    if (!confirmBackdrop) return;
+    confirmBackdrop.classList.remove('is-open');
+    confirmBackdrop.setAttribute('aria-hidden', 'true');
+    if (confirmModalEl) confirmModalEl.classList.remove('is-danger');
+    var resolve = confirmResolver;
+    confirmResolver = null;
+    if (typeof resolve === 'function') resolve(Boolean(result));
+  }
+
+  function sidrippConfirm(message, options) {
+    var opts = options || {};
+    if (!confirmBackdrop || !confirmModalEl || !confirmBtnOk || !confirmBtnCancel) {
+      return Promise.resolve(window.confirm(message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?'));
+    }
+
+    // Jika ada modal konfirmasi sebelumnya yang belum selesai, tutup dengan false
+    if (confirmResolver) settleConfirm(false);
+
+    confirmTitleEl.textContent   = opts.title || 'Konfirmasi Tindakan';
+    confirmMsgEl.textContent     = message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+    confirmBtnCancel.textContent = opts.cancelText || 'Batal';
+    confirmBtnOk.textContent     = opts.okText || 'Ya, Lanjutkan';
+
+    if (opts.danger) {
+      confirmModalEl.classList.add('is-danger');
+    } else {
+      confirmModalEl.classList.remove('is-danger');
+    }
+
+    confirmBackdrop.classList.add('is-open');
+    confirmBackdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { confirmBtnOk.focus(); }, 60);
+
+    return new Promise(function (resolve) {
+      confirmResolver = resolve;
+    });
+  }
+  window.sidrippConfirm = sidrippConfirm;
+
+  if (confirmBackdrop && confirmBtnOk && confirmBtnCancel) {
+    confirmBtnOk.addEventListener('click', function () { settleConfirm(true); });
+    confirmBtnCancel.addEventListener('click', function () { settleConfirm(false); });
+    confirmBackdrop.addEventListener('click', function (e) {
+      if (e.target === confirmBackdrop) settleConfirm(false);
+    });
+  }
+
+  function extractConfirmOptions(el) {
+    var isDanger = el.getAttribute('data-confirm-tone') === 'danger' ||
+      el.classList.contains('btn-danger-soft') ||
+      el.classList.contains('btn-danger');
+    return {
+      title: el.getAttribute('data-confirm-title') || (isDanger ? 'Konfirmasi Hapus Data' : 'Konfirmasi Tindakan'),
+      okText: el.getAttribute('data-confirm-ok') || (isDanger ? 'Ya, Hapus' : 'Ya, Lanjutkan'),
+      cancelText: el.getAttribute('data-confirm-cancel') || 'Batal',
+      danger: isDanger
+    };
+  }
+
+  // Intersepsi klik pada tautan <a> atau tombol <button> dengan atribut data-confirm
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('a[data-confirm], button[data-confirm], input[type="submit"][data-confirm]');
+    if (!el) return;
+
+    if (el.dataset.confirmBypass === '1') {
+      delete el.dataset.confirmBypass;
+      return;
+    }
+
+    e.preventDefault();
+    var msg  = el.getAttribute('data-confirm');
+    var opts = extractConfirmOptions(el);
+
+    sidrippConfirm(msg, opts).then(function (ok) {
+      if (!ok) return;
+
+      if (el.tagName === 'A' && el.href) {
+        window.location.href = el.href;
+        return;
+      }
+
+      var isSubmitBtn = (el.tagName === 'BUTTON' && (!el.type || el.type === 'submit')) ||
+        (el.tagName === 'INPUT' && el.type === 'submit');
+      var form = el.form || el.closest('form');
+
+      if (isSubmitBtn && form) {
+        if (typeof form.reportValidity === 'function' && !form.reportValidity()) return;
+        form.dataset.confirmPassed = '1';
+        if (typeof form.requestSubmit === 'function') {
+          form.requestSubmit(el);
+        } else {
+          form.submit();
+        }
+        return;
+      }
+
+      el.dataset.confirmBypass = '1';
+      el.click();
+    });
+  });
+
+  // Intersepsi submit pada <form data-confirm="...">
+  document.addEventListener('submit', function (e) {
+    var form = e.target;
+    if (!form || !form.hasAttribute || !form.hasAttribute('data-confirm')) return;
+    if (e.defaultPrevented) return;
+
+    if (form.dataset.confirmPassed === '1') {
+      delete form.dataset.confirmPassed;
+      return;
+    }
+
+    e.preventDefault();
+    var msg  = form.getAttribute('data-confirm');
+    var opts = extractConfirmOptions(form);
+
+    sidrippConfirm(msg, opts).then(function (ok) {
+      if (!ok) return;
+      form.dataset.confirmPassed = '1';
+      form.submit();
+    });
   });
 
   /* ---------- Form prototype (tanpa backend) ---------- */

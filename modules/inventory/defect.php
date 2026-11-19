@@ -128,7 +128,7 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
       </div>
       <div class="form-actions">
         <span class="badge warn"><i class="dot"></i>Potong Stok Batch &amp; Produk Otomatis</span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Simpan seluruh laporan barang defect yang telah diinput ke dalam sistem?')">
+        <button type="submit" class="btn btn-primary" data-confirm="Simpan seluruh laporan barang defect yang telah diinput ke dalam sistem?">
           <?= icon('check', 18) ?> Save All Laporan Defect
         </button>
       </div>
@@ -371,7 +371,7 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
         <span class="muted text-xs">
           <?= icon('alert', 14) ?> Buka kategori dan produk terkait, lalu masukkan kuantitas rusak pada batch. Hanya baris batch dengan jumlah rusak &gt; 0 yang akan dicatat dan memotong sisa stok batch serta stok aktual produk.
         </span>
-        <button type="submit" class="btn btn-primary" onclick="return confirm('Simpan seluruh laporan barang defect yang telah diinput ke dalam sistem?')">
+        <button type="submit" class="btn btn-primary" data-confirm="Simpan seluruh laporan barang defect yang telah diinput ke dalam sistem?">
           <?= icon('check', 18) ?> Save All Laporan Defect
         </button>
       </div>

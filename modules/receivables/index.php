@@ -184,7 +184,7 @@ if ($res_piutang) {
                     <?php endif; ?>
                     <form action="<?= BASE_URL ?>modules/receivables/process/update_status.php" method="POST">
                       <input type="hidden" name="id_transaksi" value="<?= e($row['id_transaksi']) ?>">
-                      <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Tandai tagihan #<?= e($row['id_transaksi']) ?> sebagai LUNAS?')">
+                      <button type="submit" class="btn btn-primary btn-sm" data-confirm="Tandai tagihan #<?= e($row['id_transaksi']) ?> sebagai LUNAS?">
                         <?= icon('check', 14) ?> Tandai Lunas
                       </button>
                     </form>
