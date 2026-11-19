@@ -39,10 +39,12 @@ if (isset($conn) && $conn) {
     $res_sa = pg_query($conn, "SELECT id_user, nama, username, role FROM users ORDER BY CASE WHEN LOWER(role) IN ('super_admin', 'super admin', 'owner') THEN 0 ELSE 1 END, id_user ASC LIMIT 1");
     if ($res_sa && pg_num_rows($res_sa) > 0) {
       $row_sa = pg_fetch_assoc($res_sa);
-      $_SESSION['id_user']  = (int)$row_sa['id_user'];
-      $_SESSION['nama']     = $row_sa['nama'];
-      $_SESSION['username'] = $row_sa['username'];
-      $_SESSION['role']     = normalisasi_role($row_sa['role']);
+      $_SESSION['id_user']       = (int)$row_sa['id_user'];
+      $_SESSION['user_id']       = (int)$row_sa['id_user'];
+      $_SESSION['nama']          = $row_sa['nama'];
+      $_SESSION['username']      = $row_sa['username'];
+      $_SESSION['role']          = normalisasi_role($row_sa['role']);
+      $_SESSION['original_role'] = $_SESSION['role'];
     }
   } else {
     // Jika user sudah login riil, pastikan id_user & role selalu merujuk ke data asli akunnya di DB
@@ -50,10 +52,12 @@ if (isset($conn) && $conn) {
     $res_uid = pg_query_params($conn, "SELECT id_user, nama, username, role FROM users WHERE id_user = $1 LIMIT 1", [$cek_uid]);
     if ($res_uid && pg_num_rows($res_uid) > 0) {
       $row_u = pg_fetch_assoc($res_uid);
-      $_SESSION['id_user']  = (int)$row_u['id_user'];
-      $_SESSION['nama']     = $row_u['nama'];
-      $_SESSION['username'] = $row_u['username'];
-      $_SESSION['role']     = normalisasi_role($row_u['role']);
+      $_SESSION['id_user']       = (int)$row_u['id_user'];
+      $_SESSION['user_id']       = (int)$row_u['id_user'];
+      $_SESSION['nama']          = $row_u['nama'];
+      $_SESSION['username']      = $row_u['username'];
+      $_SESSION['role']          = normalisasi_role($row_u['role']);
+      $_SESSION['original_role'] = $_SESSION['role'];
     }
   }
 }
@@ -63,28 +67,37 @@ if (isset($_SESSION['role'])) {
   $_SESSION['role'] = normalisasi_role($_SESSION['role']);
 }
 if (!isset($_SESSION['role']) || !isset($roles[$_SESSION['role']])) {
-  $_SESSION['role']     = 'super_admin';
-  $_SESSION['id_user']  = $roles['super_admin']['id'];
-  $_SESSION['nama']     = $roles['super_admin']['nama'];
-  $_SESSION['username'] = $roles['super_admin']['username'];
+  $_SESSION['role']          = 'super_admin';
+  $_SESSION['original_role'] = 'super_admin';
+  $_SESSION['id_user']       = $roles['super_admin']['id'];
+  $_SESSION['user_id']       = $roles['super_admin']['id'];
+  $_SESSION['nama']          = $roles['super_admin']['nama'];
+  $_SESSION['username']      = $roles['super_admin']['username'];
+}
+if (!isset($_SESSION['original_role'])) {
+  $_SESSION['original_role'] = $_SESSION['role'];
+} else {
+  $_SESSION['original_role'] = normalisasi_role($_SESSION['original_role']);
 }
 
 $role          = $_SESSION['role'];
-$is_superadmin = ($role === 'super_admin');
+$original_role = $_SESSION['original_role'];
+$is_superadmin = ($original_role === 'super_admin' && $role === 'super_admin');
 
 /* --- Switch Role Navigasi (?as=<role>) ---
- * Hanya Super Admin yang diizinkan berpindah ruang kerja lintas role,
+ * Hanya Super Admin (original_role === 'super_admin') yang diizinkan berpindah ruang kerja lintas role,
  * dan AKUN ASLI Super Admin TIDAK IKUT TERGANTI.
  */
-if (isset($_GET['as']) && isset($roles[$_GET['as']])) {
-  $target_role = $_GET['as'];
-  if ($is_superadmin) {
+if (isset($_GET['as'])) {
+  $target_role = normalisasi_role($_GET['as']);
+  if ($is_superadmin && isset($roles[$target_role])) {
     $_SESSION['view_role'] = $target_role;
     header('Location: ' . $root . $roles[$target_role]['home']);
     exit();
   } else {
-    // Role selain Super Admin terkunci di ranahnya sendiri
-    $_SESSION['view_role'] = $role;
+    // Tolak permintaan switch role jika peran asli pengguna bukan Super Admin
+    $_SESSION['view_role'] = $original_role;
+    $_SESSION['error']     = 'Akses ditolak: Fitur Switch Role hanya dapat digunakan oleh Super Admin.';
     $q = $_GET;
     unset($q['as']);
     header('Location: ' . strtok($_SERVER['REQUEST_URI'], '?') . ($q ? '?' . http_build_query($q) : ''));
@@ -174,23 +187,27 @@ $is_forbidden = !$is_superadmin && !empty($allowed) && !in_array($role, $allowed
                   <div class="muted text-xs">@<?= e($me['username']) ?></div>
                 </div>
               </div>
-              <div class="pm-label">
-                <?= icon('shield', 13) ?>
-                <?= $is_superadmin ? 'Akses Lintas Role (Super Admin)' : 'Ranah Akses Role Anda' ?>
-              </div>
-              <?php foreach ($roles as $key => $r): ?>
-                <?php if ($is_superadmin || $key === $role): ?>
+              <?php if ($is_superadmin): ?>
+                <div class="pm-label">
+                  <?= icon('shield', 13) ?>
+                  Akses Lintas Role (Super Admin)
+                </div>
+                <?php foreach ($roles as $key => $r): ?>
                   <a class="pm-role <?= $key === $view_role ? 'active' : '' ?>" href="<?= e(role_url($key)) ?>">
                     <span><?= e($r['label']) ?></span>
                     <?php if ($key === $view_role): ?><?= icon('check', 16) ?><?php endif; ?>
                   </a>
-                <?php else: ?>
-                  <span class="pm-role is-locked" title="Terkunci — Hanya dapat diakses sesuai role masing-masing">
-                    <span><?= e($r['label']) ?></span>
-                    <?= icon('lock', 14) ?>
-                  </span>
-                <?php endif; ?>
-              <?php endforeach; ?>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <div class="pm-label">
+                  <?= icon('shield', 13) ?>
+                  Ranah Akses Role Anda
+                </div>
+                <span class="pm-role active">
+                  <span><?= e($me['label']) ?></span>
+                  <?= icon('check', 16) ?>
+                </span>
+              <?php endif; ?>
               <div class="pm-sep"></div>
               <a class="pm-link" href="<?= BASE_URL ?>modules/auth/process/logout.php"><?= icon('logout', 18) ?> Keluar</a>
             </div>

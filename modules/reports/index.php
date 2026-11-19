@@ -135,7 +135,7 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
 <div class="callout amber rise">
   <?= icon('shield', 20) ?>
   <div>
-    <strong>Kebijakan Retensi Data Audit MKP Store:</strong> Seluruh rekaman transaksi finansial bersifat permanen untuk keperluan audit akuntansi. Penghapusan arsip transaksi dikunci dan wajib menggunakan <strong>PIN Otorisasi Owner</strong>.
+    <strong>Kebijakan Retensi Data Audit MKP Store:</strong> Seluruh rekaman transaksi finansial bersifat permanen untuk keperluan audit akuntansi. Penghapusan arsip transaksi dikunci dan wajib menggunakan verifikasi <strong>Kata Sandi Akun Super Admin / Owner</strong>.
   </div>
 </div>
 
@@ -386,9 +386,7 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
       </thead>
       <tbody>
         <?php if ($res_view && pg_num_rows($res_view) > 0): ?>
-          <?php $idx_row = 1; while ($v = pg_fetch_assoc($res_view)):
-              $form_del_id = 'form-del-trx-' . $idx_row++;
-          ?>
+          <?php while ($v = pg_fetch_assoc($res_view)): ?>
             <tr>
               <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($v['waktu_transaksi']))) ?></td>
               <td class="mono"><strong>#<?= e($v['id_transaksi']) ?></strong></td>
@@ -401,13 +399,9 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
                   <a href="<?= BASE_URL ?>modules/transactions/print_invoice.php?id=<?= urlencode($v['id_transaksi']) ?>" class="btn btn-soft btn-sm">
                     <?= icon('report', 14) ?> Nota
                   </a>
-                  <form id="<?= e($form_del_id) ?>" action="<?= BASE_URL ?>modules/reports/process/delete_report.php" method="POST" onsubmit="return konfirmasiHapusDenganPin(this, '<?= e(addslashes($v['id_transaksi'])) ?>')">
-                    <input type="hidden" name="id_transaksi" value="<?= e($v['id_transaksi']) ?>">
-                    <input type="hidden" name="pin_otorisasi" value="">
-                    <button type="submit" class="btn btn-danger-soft btn-sm">
-                      <?= icon('lock', 14) ?> Hapus (PIN)
-                    </button>
-                  </form>
+                  <button type="button" class="btn btn-danger-soft btn-sm" data-delete-trx="<?= e($v['id_transaksi']) ?>" data-return-to="reports">
+                    <?= icon('trash', 14) ?> Hapus
+                  </button>
                 </div>
               </td>
             </tr>
@@ -445,28 +439,5 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
     </div>
   </div>
 </div>
-
-<script>
-function konfirmasiHapusDenganPin(formEl, idTransaksi) {
-  var pesanPrompt =
-    "PERINGATAN RETENSI DATA AUDIT:\n" +
-    "Sesuai SOP MKP Store, data transaksi historis dilindungi untuk audit akuntansi.\n\n" +
-    "Jika transaksi #" + idTransaksi + " ini adalah data uji coba yang wajib dihapus, masukkan PIN Otorisasi Owner:";
-  var pinInput = window.prompt(pesanPrompt, "");
-  if (pinInput === null) {
-    return false;
-  }
-  if (pinInput.trim() === "") {
-    if (typeof window.sidrippToast === 'function') {
-      window.sidrippToast('Penghapusan dibatalkan: PIN Otorisasi Owner wajib diisi.', 'warn');
-    } else {
-      alert("Penghapusan dibatalkan: PIN Otorisasi Owner wajib diisi.");
-    }
-    return false;
-  }
-  formEl.querySelector('input[name="pin_otorisasi"]').value = pinInput.trim();
-  return true;
-}
-</script>
 
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>
