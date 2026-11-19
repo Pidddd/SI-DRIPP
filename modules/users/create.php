@@ -15,7 +15,7 @@ $edit_id   = isset($_GET['edit']) ? (int)$_GET['edit'] : 0;
 $edit_user = null;
 
 if ($edit_id > 0) {
-    $res_edit = pg_query_params($conn, "SELECT id_user, nama, jenis_kelamin, username, role FROM users WHERE id_user = $1", [$edit_id]);
+    $res_edit = pg_query_params($conn, "SELECT id_user, nama, jenis_kelamin, username, email, no_telp, role FROM users WHERE id_user = $1", [$edit_id]);
     if ($res_edit && pg_num_rows($res_edit) > 0) {
         $edit_user = pg_fetch_assoc($res_edit);
     }
@@ -40,6 +40,8 @@ require_once __DIR__ . '/../../layouts/header.php';
       <?php
         if ($_GET['error'] === 'data_tidak_lengkap') echo 'Mohon lengkapi seluruh kolom wajib pada form.';
         elseif ($_GET['error'] === 'username_terpakai') echo 'Username tersebut sudah digunakan oleh personel lain. Gunakan username berbeda.';
+        elseif ($_GET['error'] === 'email_terpakai') echo 'Email tersebut sudah terdaftar pada akun lain. Gunakan alamat email berbeda.';
+        elseif ($_GET['error'] === 'email_tidak_valid') echo 'Format alamat email yang dimasukkan tidak valid.';
         else echo 'Gagal menyimpan data pengguna ke database.';
       ?>
     </div>
@@ -78,6 +80,18 @@ require_once __DIR__ . '/../../layouts/header.php';
           <option value="Laki-laki" <?= strtolower($jk_val) === 'laki-laki' ? 'selected' : '' ?>>Laki-laki</option>
           <option value="Perempuan" <?= strtolower($jk_val) === 'perempuan' ? 'selected' : '' ?>>Perempuan</option>
         </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="field">
+        <label for="email">Email Resmi *</label>
+        <input type="email" id="email" name="email" class="input" maxlength="100" value="<?= e($edit_user['email'] ?? '') ?>" placeholder="Contoh: rina@mkpstore.id" required>
+      </div>
+
+      <div class="field">
+        <label for="no_telp">Nomor Telepon</label>
+        <input type="tel" id="no_telp" name="no_telp" class="input mono" maxlength="20" value="<?= e($edit_user['no_telp'] ?? '') ?>" placeholder="08xxxxxxxxxx">
       </div>
     </div>
 

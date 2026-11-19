@@ -48,7 +48,7 @@ if (isset($_SESSION['id_user'])) {
 
       <div>
         <h2>Pemulihan Kata Sandi Akun</h2>
-        <p>Gunakan Kode Pemulihan Resmi yang diberikan oleh Owner / Super Admin untuk menyetel ulang kata sandi akun Anda.</p>
+        <p>Masukkan alamat email yang terdaftar pada akun SI-DRIPP Anda untuk menerima instruksi atau kode OTP pengaturan ulang kata sandi.</p>
       </div>
 
       <div class="login-art-copy">
@@ -57,8 +57,8 @@ if (isset($_SESSION['id_user'])) {
     </div>
 
     <div class="login-form">
-      <h1>Lupa Password?</h1>
-      <p>Masukkan username dan kode pemulihan Anda untuk mengatur kata sandi baru.</p>
+      <h1>Lupa Kata Sandi?</h1>
+      <p>Masukkan email terdaftar Anda untuk meminta verifikasi pemulihan kata sandi.</p>
 
       <!-- Tangkap Pesan Error / Sukses dari Backend (Jika ada) -->
       <?php if (isset($_GET['error'])): ?>
@@ -74,27 +74,12 @@ if (isset($_SESSION['id_user'])) {
 
       <form action="process/forgot_password.php" method="POST">
         <div class="field">
-          <label for="username">Username Pegawai</label>
-          <input type="text" id="username" name="username" class="input" placeholder="Masukkan username Anda..." required autofocus>
+          <label for="email">Email Terdaftar</label>
+          <input type="email" id="email" name="email" class="input" maxlength="100" placeholder="Contoh: nama@mkpstore.id" required autofocus>
+          <small class="muted">Pastikan alamat email sesuai dengan data akun yang didaftarkan oleh Super Admin.</small>
         </div>
 
-        <div class="field">
-          <label for="kode_pemulihan">Kode Pemulihan (Recovery PIN)</label>
-          <input type="text" id="kode_pemulihan" name="kode_pemulihan" class="input mono" placeholder="Contoh: MKP2026" required>
-          <small class="muted">Kode pemulihan default sistem: <code>MKP2026</code> (atau hubungi Super Admin).</small>
-        </div>
-
-        <div class="field">
-          <label for="password_baru">Password Baru</label>
-          <input type="password" id="password_baru" name="password_baru" class="input" placeholder="Minimal 6 karakter..." minlength="6" required>
-        </div>
-
-        <div class="field">
-          <label for="konfirmasi_password">Konfirmasi Password Baru</label>
-          <input type="password" id="konfirmasi_password" name="konfirmasi_password" class="input" placeholder="Ulangi password baru..." minlength="6" required>
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Simpan Password Baru</button>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Kirim Instruksi Pemulihan</button>
       </form>
 
       <div class="login-foot">
