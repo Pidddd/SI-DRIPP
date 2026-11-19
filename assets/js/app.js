@@ -230,6 +230,261 @@
     });
   });
 
+  /* ---------- Reports Page: Filter Periode 2 Mode & Accordion Kategori ---------- */
+  var reportFilterForm = $('#form-report-filter');
+  if (reportFilterForm) {
+    var modeRadios   = $$('input[name="mode"]', reportFilterForm);
+    var tabRange     = $('#tab-mode-range');
+    var tabMonthly   = $('#tab-mode-monthly');
+    var panelRange   = $('#panel-mode-range');
+    var panelMonthly = $('#panel-mode-monthly');
+    var minUnitRange = $('#min_unit_range');
+    var minUnitMonth = $('#min_unit_monthly');
+    var monthChips   = $$('.month-chip', reportFilterForm);
+
+    function syncMonthChipClasses() {
+      monthChips.forEach(function (chip) {
+        var cb = $('input[type="checkbox"]', chip);
+        if (cb) chip.classList.toggle('is-checked', cb.checked);
+      });
+    }
+
+    function syncReportModeUI() {
+      var checked   = $('input[name="mode"]:checked', reportFilterForm);
+      var isMonthly = checked && checked.value === 'monthly';
+
+      if (tabRange) tabRange.classList.toggle('is-active', !isMonthly);
+      if (tabMonthly) tabMonthly.classList.toggle('is-active', isMonthly);
+      if (panelRange) panelRange.classList.toggle('is-hidden', isMonthly);
+      if (panelMonthly) panelMonthly.classList.toggle('is-hidden', !isMonthly);
+
+      // Pastikan hanya 1 input min_unit aktif yang dikirim ke server
+      if (minUnitRange && minUnitMonth) {
+        if (isMonthly) {
+          minUnitMonth.value    = minUnitRange.value;
+          minUnitRange.disabled = true;
+          minUnitMonth.disabled = false;
+        } else {
+          minUnitRange.value    = minUnitMonth.value;
+          minUnitRange.disabled = false;
+          minUnitMonth.disabled = true;
+        }
+      }
+    }
+
+    modeRadios.forEach(function (r) {
+      r.addEventListener('change', syncReportModeUI);
+    });
+
+    if (minUnitRange && minUnitMonth) {
+      minUnitRange.addEventListener('input', function () { minUnitMonth.value = minUnitRange.value; });
+      minUnitMonth.addEventListener('input', function () { minUnitRange.value = minUnitMonth.value; });
+    }
+
+    monthChips.forEach(function (chip) {
+      var cb = $('input[type="checkbox"]', chip);
+      if (cb) cb.addEventListener('change', syncMonthChipClasses);
+    });
+
+    var btnBulanSemua = $('#btn-bulan-semua');
+    if (btnBulanSemua) {
+      btnBulanSemua.addEventListener('click', function () {
+        $$('input[name="bulan[]"]', reportFilterForm).forEach(function (cb) { cb.checked = true; });
+        syncMonthChipClasses();
+      });
+    }
+
+    var btnBulanIni = $('#btn-bulan-ini');
+    if (btnBulanIni) {
+      btnBulanIni.addEventListener('click', function () {
+        var curMonth = String(new Date().getMonth() + 1);
+        $$('input[name="bulan[]"]', reportFilterForm).forEach(function (cb) { cb.checked = (cb.value === curMonth); });
+        syncMonthChipClasses();
+      });
+    }
+
+    var btnBulanReset = $('#btn-bulan-reset');
+    if (btnBulanReset) {
+      btnBulanReset.addEventListener('click', function () {
+        $$('input[name="bulan[]"]', reportFilterForm).forEach(function (cb) { cb.checked = false; });
+        syncMonthChipClasses();
+      });
+    }
+
+    reportFilterForm.addEventListener('submit', function (e) {
+      var checkedMode = $('input[name="mode"]:checked', reportFilterForm);
+      if (checkedMode && checkedMode.value === 'monthly') {
+        var checkedMonths = $$('input[name="bulan[]"]:checked', reportFilterForm);
+        if (checkedMonths.length === 0) {
+          e.preventDefault();
+          toast('Centang minimal 1 bulan sebelum menerapkan filter Per Bulan.', 'warn');
+        }
+      }
+    });
+
+    syncMonthChipClasses();
+    syncReportModeUI();
+  }
+
+  // Accordion Rincian Produk di dalam Tabel Agregasi Kategori (Card 2)
+  var reportCatRows  = $$('.report-cat-row[data-report-acc]');
+  var btnToggleAllCat = $('#btn-toggle-all-report-cat');
+
+  if (reportCatRows.length > 0) {
+    function setCatRowExpanded(row, expand) {
+      var targetId = row.getAttribute('data-report-acc');
+      var detail   = targetId ? document.getElementById(targetId) : null;
+      var arrow    = $('.report-acc-arrow', row);
+      row.classList.toggle('is-open', expand);
+      row.setAttribute('aria-expanded', expand ? 'true' : 'false');
+      if (arrow) arrow.textContent = expand ? '\u25BE' : '\u25B8';
+      if (detail) detail.classList.toggle('is-hidden', !expand);
+    }
+
+    function syncToggleAllBtn() {
+      if (!btnToggleAllCat) return;
+      var allOpen = reportCatRows.every(function (r) { return r.classList.contains('is-open'); });
+      btnToggleAllCat.textContent = allOpen ? 'Tutup Semua Rincian' : 'Buka Semua Rincian';
+      btnToggleAllCat.setAttribute('aria-pressed', allOpen ? 'true' : 'false');
+    }
+
+    reportCatRows.forEach(function (row) {
+      row.addEventListener('click', function () {
+        setCatRowExpanded(row, !row.classList.contains('is-open'));
+        syncToggleAllBtn();
+      });
+      row.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          setCatRowExpanded(row, !row.classList.contains('is-open'));
+          syncToggleAllBtn();
+        }
+      });
+    });
+
+    if (btnToggleAllCat) {
+      btnToggleAllCat.addEventListener('click', function () {
+        var allOpen = reportCatRows.every(function (r) { return r.classList.contains('is-open'); });
+        reportCatRows.forEach(function (r) { setCatRowExpanded(r, !allOpen); });
+        syncToggleAllBtn();
+      });
+      syncToggleAllBtn();
+    }
+  }
+
+  // Ekspor Langsung ke Google Sheets (AJAX fetch -> Modal Soft Caramel Cream)
+  var btnExportGsheet  = $('#btn-export-gsheet');
+  var gsheetBackdrop   = $('#gsheet-result-backdrop');
+  var gsheetModal      = $('#gsheet-result-modal');
+  var gsheetTitle      = $('#gsheet-modal-title');
+  var gsheetMsg        = $('#gsheet-modal-msg');
+  var gsheetBtnOpen    = $('#gsheet-btn-open');
+  var gsheetBtnClose   = $('#gsheet-btn-close');
+
+  function closeGsheetModal() {
+    if (!gsheetBackdrop) return;
+    gsheetBackdrop.classList.remove('is-open');
+    gsheetBackdrop.setAttribute('aria-hidden', 'true');
+  }
+
+  function showGsheetModal(isSuccess, title, message, url) {
+    if (!gsheetBackdrop || !gsheetModal) {
+      toast(message, isSuccess ? 'success' : 'warn');
+      return;
+    }
+    gsheetModal.classList.toggle('is-success', Boolean(isSuccess));
+    gsheetModal.classList.toggle('is-danger', !isSuccess);
+    if (gsheetTitle) gsheetTitle.textContent = title;
+    if (gsheetMsg) gsheetMsg.textContent = message;
+
+    if (gsheetBtnOpen) {
+      if (isSuccess && url) {
+        gsheetBtnOpen.href = url;
+        gsheetBtnOpen.classList.remove('is-hidden');
+      } else {
+        gsheetBtnOpen.href = '#';
+        gsheetBtnOpen.classList.add('is-hidden');
+      }
+    }
+
+    gsheetBackdrop.classList.add('is-open');
+    gsheetBackdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () {
+      if (isSuccess && url && gsheetBtnOpen) gsheetBtnOpen.focus();
+      else if (gsheetBtnClose) gsheetBtnClose.focus();
+    }, 60);
+  }
+
+  if (gsheetBackdrop) {
+    if (gsheetBtnClose) gsheetBtnClose.addEventListener('click', closeGsheetModal);
+    gsheetBackdrop.addEventListener('click', function (e) {
+      if (e.target === gsheetBackdrop) closeGsheetModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && gsheetBackdrop.classList.contains('is-open')) {
+        e.preventDefault();
+        closeGsheetModal();
+      }
+    });
+  }
+
+  if (btnExportGsheet) {
+    btnExportGsheet.addEventListener('click', function () {
+      var endpoint = btnExportGsheet.getAttribute('data-endpoint');
+      if (!endpoint) return;
+
+      var labelEl      = $('.btn-gsheet-label', btnExportGsheet);
+      var originalText = labelEl ? labelEl.textContent : 'Simpan ke Google Sheets';
+
+      btnExportGsheet.disabled = true;
+      btnExportGsheet.classList.add('is-loading');
+      if (labelEl) labelEl.textContent = 'Menyimpan ke Drive...';
+
+      fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      })
+        .then(function (res) {
+          return res.text().then(function (text) {
+            var parsed = null;
+            try { parsed = JSON.parse(text); } catch (err) {}
+            return { ok: res.ok, status: res.status, data: parsed, raw: text };
+          });
+        })
+        .then(function (result) {
+          var data = result.data;
+          if (result.ok && data && data.status === 'success' && data.url) {
+            toast('Laporan berhasil disimpan ke Google Sheets!', 'success');
+            showGsheetModal(
+              true,
+              'Berhasil Disimpan ke Google Sheets',
+              data.message || 'Laporan penjualan berhasil disimpan ke Google Drive Anda.',
+              data.url
+            );
+          } else {
+            var errMsg = (data && data.message)
+              ? data.message
+              : ('Gagal menyimpan ke Google Sheets (HTTP ' + result.status + ').');
+            toast(errMsg, 'warn');
+            showGsheetModal(false, 'Gagal Menyimpan ke Google Sheets', errMsg, '');
+          }
+        })
+        .catch(function (err) {
+          var netMsg = 'Terjadi kesalahan jaringan saat menghubungi server: ' + (err && err.message ? err.message : 'Koneksi terputus');
+          toast(netMsg, 'warn');
+          showGsheetModal(false, 'Koneksi Gagal', netMsg, '');
+        })
+        .finally(function () {
+          btnExportGsheet.disabled = false;
+          btnExportGsheet.classList.remove('is-loading');
+          if (labelEl) labelEl.textContent = originalText;
+        });
+    });
+  }
+
   /* ======================================================================
      POS — Keranjang Kasir
      Data produk disuplai halaman via window.POS_PRODUCTS & POS_SEED
