@@ -139,6 +139,30 @@ curl_setopt_array($ch, [
     CURLOPT_TIMEOUT        => 20,
 ]);
 
+// Penyesuaian sertifikat SSL (Laragon Windows lokal vs Linux Render produksi)
+$curl_cainfo    = trim((string)ini_get('curl.cainfo'));
+$openssl_cafile = trim((string)ini_get('openssl.cafile'));
+$is_windows     = (stripos(PHP_OS, 'WIN') === 0);
+
+$ca_valid_file = null;
+if ($curl_cainfo !== '' && file_exists($curl_cainfo)) {
+    $ca_valid_file = $curl_cainfo;
+} elseif ($openssl_cafile !== '' && file_exists($openssl_cafile)) {
+    $ca_valid_file = $openssl_cafile;
+}
+
+if ($ca_valid_file !== null) {
+    curl_setopt($ch, CURLOPT_CAINFO, $ca_valid_file);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+} elseif (($curl_cainfo !== '' && !file_exists($curl_cainfo)) || $is_windows) {
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+} else {
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+}
+
 $response   = curl_exec($ch);
 $curl_errno = curl_errno($ch);
 $curl_error = curl_error($ch);
