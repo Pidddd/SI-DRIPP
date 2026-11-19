@@ -253,6 +253,58 @@
     );
   });
 
+  /* ---------- Password-Protected Delete User Account Modal (Super Admin) ---------- */
+  var pwDelUserBackdrop = $('#sidripp-pw-delete-user-backdrop');
+  var pwDelUserMsg      = $('#pw-delete-user-msg');
+  var pwDelUserIdInput  = $('#pw-delete-user-id');
+  var pwDelUserPwInput  = $('#pw-delete-user-input');
+  var pwDelUserCancel   = $('#pw-delete-user-cancel');
+
+  function closePwDeleteUserModal() {
+    if (!pwDelUserBackdrop) return;
+    pwDelUserBackdrop.classList.remove('is-open');
+    pwDelUserBackdrop.setAttribute('aria-hidden', 'true');
+    if (pwDelUserPwInput) pwDelUserPwInput.value = '';
+  }
+
+  function openPwDeleteUserModal(idUser, username, nama) {
+    if (!pwDelUserBackdrop || !pwDelUserIdInput) return;
+    pwDelUserIdInput.value = idUser || '';
+    if (pwDelUserMsg) {
+      pwDelUserMsg.textContent = 'Masukkan kata sandi akun Super Admin Anda untuk menghapus akun ' + (nama ? nama + ' ' : '') + '(@' + (username || '') + ') secara permanen.';
+    }
+    if (pwDelUserPwInput) pwDelUserPwInput.value = '';
+    pwDelUserBackdrop.classList.add('is-open');
+    pwDelUserBackdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () {
+      if (pwDelUserPwInput) pwDelUserPwInput.focus();
+    }, 60);
+  }
+
+  if (pwDelUserBackdrop) {
+    if (pwDelUserCancel) pwDelUserCancel.addEventListener('click', closePwDeleteUserModal);
+    pwDelUserBackdrop.addEventListener('click', function (e) {
+      if (e.target === pwDelUserBackdrop) closePwDeleteUserModal();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && pwDelUserBackdrop.classList.contains('is-open')) {
+        e.preventDefault();
+        closePwDeleteUserModal();
+      }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var btnDelUser = e.target.closest('[data-delete-user]');
+    if (!btnDelUser) return;
+    e.preventDefault();
+    openPwDeleteUserModal(
+      btnDelUser.getAttribute('data-delete-user'),
+      btnDelUser.getAttribute('data-delete-username') || '',
+      btnDelUser.getAttribute('data-delete-nama') || ''
+    );
+  });
+
   /* ---------- Form prototype (tanpa backend) ---------- */
   $$('form[data-proto]').forEach(function (f) {
     f.addEventListener('submit', function (e) {

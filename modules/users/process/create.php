@@ -9,17 +9,10 @@ require_once __DIR__ . '/../../../config/auth_guard.php';
 
 cek_hak_akses(['super_admin']);
 
-// 1. Proses Hapus Akun (via GET ?hapus_id=...)
+// 1. Proses Hapus Akun (diarahkan wajib melalui POST delete.php dengan verifikasi password Super Admin)
 if (isset($_GET['hapus_id'])) {
-    $hapus_id = (int)$_GET['hapus_id'];
-    if ($hapus_id > 0 && $hapus_id !== (int)($_SESSION['id_user'] ?? 0)) {
-        $res_del = pg_query_params($conn, "DELETE FROM users WHERE id_user = $1", [$hapus_id]);
-        if ($res_del) {
-            header("Location: ../index.php?pesan=sukses_hapus_pegawai");
-            exit();
-        }
-    }
-    header("Location: ../index.php?error=Tidak_dapat_menghapus_akun_aktif_atau_berelasi");
+    $_SESSION['error'] = 'Penghapusan akun wajib dilakukan melalui konfirmasi kata sandi Super Admin.';
+    header("Location: ../index.php");
     exit();
 }
 
@@ -70,6 +63,46 @@ if ($res_email && pg_num_rows($res_email) > 0) {
 
 // 3. Mode Update Akun Existing
 if ($id_user > 0) {
+    $admin_password = $_POST['admin_password'] ?? '';
+    $active_uid     = isset($_SESSION['user_id'])
+        ? (int)$_SESSION['user_id']
+        : (isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0);
+
+    if (trim($admin_password) === '') {
+        header("Location: ../create.php?edit={$id_user}&error=admin_password_kosong");
+        exit();
+    }
+
+    // Validasi kata sandi milik Super Admin yang sedang aktif login
+    $res_sa = pg_query_params(
+        $conn,
+        "SELECT id_user, password, role FROM users WHERE id_user = $1 LIMIT 1",
+        [$active_uid]
+    );
+    if (!$res_sa || pg_num_rows($res_sa) === 0) {
+        header("Location: ../create.php?edit={$id_user}&error=admin_password_salah");
+        exit();
+    }
+
+    $sa_row = pg_fetch_assoc($res_sa);
+    if (normalisasi_role($sa_row['role']) !== 'super_admin') {
+        header("Location: ../create.php?edit={$id_user}&error=admin_password_salah");
+        exit();
+    }
+
+    $db_hash        = (string)$sa_row['password'];
+    $password_valid = password_verify($admin_password, $db_hash) || ($admin_password === $db_hash);
+    if (!$password_valid) {
+        header("Location: ../create.php?edit={$id_user}&error=admin_password_salah");
+        exit();
+    }
+
+    // Penjagaan agar Super Admin tidak dapat menurunkan peran (role) akunnya sendiri
+    if ($active_uid > 0 && $id_user === $active_uid && $role !== 'super_admin') {
+        header("Location: ../create.php?edit={$id_user}&error=turun_role_sendiri");
+        exit();
+    }
+
     if ($password_mentah !== '') {
         $password_hashed = password_hash($password_mentah, PASSWORD_DEFAULT);
         $q_upd  = "UPDATE users SET nama = $1, jenis_kelamin = $2, username = $3, email = $4, no_telp = $5, password = $6, role = $7 WHERE id_user = $8";
