@@ -14,6 +14,11 @@ if (session_status() === PHP_SESSION_NONE) {
 // Ini mencegah error "file not found" akibat penggunaan '../../' yang salah
 define('BASE_PATH', dirname(__DIR__) . '/');
 
+// 2b. Muat Environment Variables (.env lokal maupun environment server Render)
+if (file_exists(BASE_PATH . 'config/env.php')) {
+    require_once BASE_PATH . 'config/env.php';
+}
+
 // 3. Panggil File Database Asli (File ini disembunyikan oleh .gitignore)
 // Kita pakai '@' untuk menyembunyikan warning jika file tidak ditemukan
 if (file_exists(BASE_PATH . 'config/database.php')) {

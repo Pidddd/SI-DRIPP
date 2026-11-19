@@ -62,24 +62,32 @@ if (isset($_SESSION['id_user'])) {
 
       <!-- Tangkap Pesan Error / Sukses dari Backend (Jika ada) -->
       <?php if (isset($_GET['error'])): ?>
+        <?php
+          $err_raw = (string)$_GET['error'];
+          $err_txt = (strpos($err_raw, ' ') === false) ? str_replace('_', ' ', $err_raw) : $err_raw;
+        ?>
         <div class="callout danger">
-          <strong>Gagal Memulihkan:</strong> <?= str_replace('_', ' ', htmlspecialchars($_GET['error'])) ?>
+          <div><strong>Gagal Memulihkan:</strong> <?= htmlspecialchars($err_txt, ENT_QUOTES, 'UTF-8') ?></div>
         </div>
       <?php endif; ?>
       <?php if (isset($_GET['pesan'])): ?>
+        <?php
+          $msg_raw = (string)$_GET['pesan'];
+          $msg_txt = (strpos($msg_raw, ' ') === false) ? str_replace('_', ' ', $msg_raw) : $msg_raw;
+        ?>
         <div class="callout success">
-          <?= str_replace('_', ' ', htmlspecialchars($_GET['pesan'])) ?>
+          <div><?= htmlspecialchars($msg_txt, ENT_QUOTES, 'UTF-8') ?></div>
         </div>
       <?php endif; ?>
 
-      <form action="process/forgot_password.php" method="POST">
+      <form action="process/send_otp.php" method="POST">
         <div class="field">
           <label for="email">Email Terdaftar</label>
           <input type="email" id="email" name="email" class="input" maxlength="100" placeholder="Contoh: nama@mkpstore.id" required autofocus>
-          <small class="muted">Pastikan alamat email sesuai dengan data akun yang didaftarkan oleh Super Admin.</small>
+          <small class="muted">Kode OTP 6 digit akan dikirim ke email Anda dan berlaku selama 10 menit.</small>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Kirim Instruksi Pemulihan</button>
+        <button type="submit" class="btn btn-primary btn-lg btn-block mt-2">Kirim Kode OTP</button>
       </form>
 
       <div class="login-foot">
