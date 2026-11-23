@@ -19,7 +19,6 @@ composer.lock
 .env.local
 
 # Database credentials - JANGAN di-commit
-config/database.php
 config/db_pass.local.php
 
 # File manajemen tugas & CSV internal lokal (di-ignore agar tidak mengotori repo GitHub)

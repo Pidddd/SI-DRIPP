@@ -35,7 +35,7 @@ create table customers (
     id_customer serial primary key,
     nama_pt varchar(100) not null unique,
     nama_pj varchar(100) not null,
-    nik_pj varchar(20) not null,
+    nik_pj varchar(20),
     no_telp varchar(20) not null,
     alamat_toko text not null,
     created_at timestamp default current_timestamp
@@ -52,7 +52,9 @@ create table transactions (
     kontak_pelanggan varchar(20),
     status_pembayaran smallint not null,
     jatuh_tempo date,
-    diskon integer default 0
+    diskon integer default 0,
+    ongkir integer not null default 0 check (ongkir >= 0),
+    sumber_transaksi varchar(30) not null default 'Umum' check (sumber_transaksi in ('Umum', 'Shopee'))
 );
 
 create table transaction_details (
