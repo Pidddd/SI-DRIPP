@@ -5,6 +5,9 @@
  * Tugasnya: Memulai session, mengatur path absolut, dan memanggil file konfigurasi lainnya.
  */
 
+// 0. Sinkronisasi Zona Waktu PHP ke WIB (Asia/Jakarta)
+date_default_timezone_set('Asia/Jakarta');
+
 // 1. Mulai Session (jika belum dimulai)
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

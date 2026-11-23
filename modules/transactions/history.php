@@ -26,6 +26,22 @@ $res_history   = pg_query($conn, $q_history);
 $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
 ?>
 
+<?php if (isset($_SESSION['success'])): ?>
+  <div class="callout success rise">
+    <?= icon('check', 18) ?>
+    <div><?= e($_SESSION['success']) ?></div>
+  </div>
+  <?php unset($_SESSION['success']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+  <div class="callout danger rise">
+    <?= icon('alert', 18) ?>
+    <div><?= e($_SESSION['error']) ?></div>
+  </div>
+  <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
+
 <!-- Bar Aksi & Info -->
 <div class="page-actions rise">
   <div>
@@ -86,6 +102,11 @@ $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
                   <a href="<?= BASE_URL ?>modules/transactions/print_invoice.php?id=<?= urlencode($trx['id_transaksi']) ?>" class="btn btn-soft btn-sm">
                     <?= icon('report', 15) ?> Cetak Nota
                   </a>
+                  <?php if (!empty($is_superadmin)): ?>
+                    <button type="button" class="btn btn-danger-soft btn-sm" data-delete-trx="<?= e($trx['id_transaksi']) ?>" data-return-to="history">
+                      <?= icon('trash', 14) ?> Hapus
+                    </button>
+                  <?php endif; ?>
                 </div>
               </td>
             </tr>

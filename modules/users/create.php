@@ -25,6 +25,11 @@ $page_title = $edit_user ? 'Edit Akun Pengguna' : 'Tambah Pengguna Baru';
 $page_sub   = 'Pengaturan kredensial login dan pembagian hak akses personel MKP Store';
 
 require_once __DIR__ . '/../../layouts/header.php';
+
+$active_uid = isset($_SESSION['user_id'])
+    ? (int)$_SESSION['user_id']
+    : (isset($_SESSION['id_user']) ? (int)$_SESSION['id_user'] : 0);
+$is_editing_self = ($edit_user && $active_uid > 0 && (int)$edit_user['id_user'] === $active_uid);
 ?>
 
 <div class="page-actions rise">
@@ -42,6 +47,9 @@ require_once __DIR__ . '/../../layouts/header.php';
         elseif ($_GET['error'] === 'username_terpakai') echo 'Username tersebut sudah digunakan oleh personel lain. Gunakan username berbeda.';
         elseif ($_GET['error'] === 'email_terpakai') echo 'Email tersebut sudah terdaftar pada akun lain. Gunakan alamat email berbeda.';
         elseif ($_GET['error'] === 'email_tidak_valid') echo 'Format alamat email yang dimasukkan tidak valid.';
+        elseif ($_GET['error'] === 'admin_password_kosong') echo 'Konfirmasi gagal: Kata sandi Super Admin wajib diisi untuk menyimpan perubahan.';
+        elseif ($_GET['error'] === 'admin_password_salah') echo 'Konfirmasi gagal: Kata sandi Super Admin salah.';
+        elseif ($_GET['error'] === 'turun_role_sendiri') echo 'Perubahan ditolak: Anda tidak dapat menurunkan peran (role) akun Anda sendiri yang sedang aktif login.';
         else echo 'Gagal menyimpan data pengguna ke database.';
       ?>
     </div>
@@ -99,12 +107,20 @@ require_once __DIR__ . '/../../layouts/header.php';
       <div class="field">
         <label for="role">Role / Hak Akses Sistem</label>
         <?php $r_val = isset($edit_user['role']) ? normalisasi_role($edit_user['role']) : 'kasir'; ?>
-        <select id="role" name="role" class="select" required>
-          <option value="super_admin" <?= $r_val === 'super_admin' ? 'selected' : '' ?>>Super Admin (Owner)</option>
-          <option value="admin" <?= $r_val === 'admin' ? 'selected' : '' ?>>Admin Operasional</option>
-          <option value="kasir" <?= $r_val === 'kasir' ? 'selected' : '' ?>>Kasir (Point of Sale)</option>
-          <option value="staf_gudang" <?= $r_val === 'staf_gudang' ? 'selected' : '' ?>>Staf Gudang &amp; Logistik</option>
-        </select>
+        <?php if ($is_editing_self): ?>
+          <input type="hidden" name="role" value="super_admin">
+          <select id="role" class="select" disabled>
+            <option value="super_admin" selected>Super Admin (Owner)</option>
+          </select>
+          <small class="field-hint">Peran akun Super Admin yang sedang aktif login tidak dapat diturunkan.</small>
+        <?php else: ?>
+          <select id="role" name="role" class="select" required>
+            <option value="super_admin" <?= $r_val === 'super_admin' ? 'selected' : '' ?>>Super Admin (Owner)</option>
+            <option value="admin" <?= $r_val === 'admin' ? 'selected' : '' ?>>Admin Operasional</option>
+            <option value="kasir" <?= $r_val === 'kasir' ? 'selected' : '' ?>>Kasir (Point of Sale)</option>
+            <option value="staf_gudang" <?= $r_val === 'staf_gudang' ? 'selected' : '' ?>>Staf Gudang &amp; Logistik</option>
+          </select>
+        <?php endif; ?>
       </div>
 
       <div class="field">
@@ -112,6 +128,16 @@ require_once __DIR__ . '/../../layouts/header.php';
         <input type="password" id="password" name="password" class="input" placeholder="<?= $edit_user ? 'Biarkan kosong bila tetap' : 'Minimal 6 karakter' ?>" <?= $edit_user ? '' : 'required' ?>>
       </div>
     </div>
+
+    <?php if ($edit_user): ?>
+      <div class="vendor-box-card mb-4">
+        <div class="field field-tight">
+          <label for="admin_password">Kata Sandi Super Admin (Otorisasi) *</label>
+          <input type="password" id="admin_password" name="admin_password" class="input" placeholder="Masukkan kata sandi akun Super Admin Anda..." autocomplete="current-password" required>
+          <small class="field-hint">Perubahan data atau peran akun memerlukan konfirmasi kata sandi Super Admin yang sedang aktif login.</small>
+        </div>
+      </div>
+    <?php endif; ?>
 
     <div class="form-actions">
       <button type="submit" class="btn btn-primary">

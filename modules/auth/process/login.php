@@ -47,12 +47,16 @@ if (!$password_valid) {
 // 6. Cegah session fixation attack dengan memperbarui ID session
 session_regenerate_id(true);
 
-// 7. Simpan data pengguna ke dalam session
+// 7. Simpan data pengguna ke dalam session (termasuk original_role untuk validasi Switch Role)
+$role_normalized           = function_exists('normalisasi_role') ? normalisasi_role($user['role']) : strtolower(trim($user['role']));
 $_SESSION['id_user']       = (int)$user['id_user'];
+$_SESSION['user_id']       = (int)$user['id_user'];
 $_SESSION['nama']          = $user['nama'];
 $_SESSION['username']      = $user['username'];
-$_SESSION['role']          = $user['role'];
+$_SESSION['role']          = $role_normalized;
+$_SESSION['original_role'] = $role_normalized;
 $_SESSION['jenis_kelamin'] = $user['jenis_kelamin'];
+unset($_SESSION['view_role']);
 
 // 8. Redirect ke halaman awal berdasarkan role pengguna
 switch ($user['role']) {

@@ -28,6 +28,100 @@ if (!function_exists('tgl_indo')) {
     }
 }
 
+// Fungsi konversi nominal angka Rupiah ke teks Terbilang Bahasa Indonesia
+if (!function_exists('_terbilang_satuan_id')) {
+    function _terbilang_satuan_id($nilai) {
+        $nilai = (int)$nilai;
+        $huruf = [
+            '', 'Satu', 'Dua', 'Tiga', 'Empat', 'Lima',
+            'Enam', 'Tujuh', 'Delapan', 'Sembilan', 'Sepuluh', 'Sebelas'
+        ];
+
+        if ($nilai < 12) {
+            return $huruf[$nilai];
+        }
+        if ($nilai < 20) {
+            return _terbilang_satuan_id($nilai - 10) . ' Belas';
+        }
+        if ($nilai < 100) {
+            $puluh = (int)floor($nilai / 10);
+            $sisa  = $nilai % 10;
+            return _terbilang_satuan_id($puluh) . ' Puluh' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 200) {
+            $sisa = $nilai - 100;
+            return 'Seratus' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 1000) {
+            $ratus = (int)floor($nilai / 100);
+            $sisa  = $nilai % 100;
+            return _terbilang_satuan_id($ratus) . ' Ratus' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 2000) {
+            $sisa = $nilai - 1000;
+            return 'Seribu' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 1000000) {
+            $ribu = (int)floor($nilai / 1000);
+            $sisa = $nilai % 1000;
+            return _terbilang_satuan_id($ribu) . ' Ribu' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 1000000000) {
+            $juta = (int)floor($nilai / 1000000);
+            $sisa = $nilai % 1000000;
+            return _terbilang_satuan_id($juta) . ' Juta' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+        if ($nilai < 1000000000000) {
+            $miliar = (int)floor($nilai / 1000000000);
+            $sisa   = $nilai % 1000000000;
+            return _terbilang_satuan_id($miliar) . ' Miliar' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+        }
+
+        $triliun = (int)floor($nilai / 1000000000000);
+        $sisa    = $nilai % 1000000000000;
+        return _terbilang_satuan_id($triliun) . ' Triliun' . ($sisa > 0 ? ' ' . _terbilang_satuan_id($sisa) : '');
+    }
+}
+
+if (!function_exists('terbilang_rupiah')) {
+    function terbilang_rupiah($angka) {
+        if (!is_numeric($angka)) {
+            return 'Nol Rupiah';
+        }
+        $n = (int)round((float)$angka);
+        if ($n === 0) {
+            return 'Nol Rupiah';
+        }
+        $prefix = $n < 0 ? 'Minus ' : '';
+        $teks   = trim(preg_replace('/\s+/', ' ', _terbilang_satuan_id(abs($n))));
+        return $prefix . $teks . ' Rupiah';
+    }
+}
+
+// Fungsi format timestamp PostgreSQL ke format rapi WIB tanpa mikrodetik (contoh: 20 Nov 2026 · 10:10 WIB)
+if (!function_exists('format_waktu_wib')) {
+    function format_waktu_wib($timestamp) {
+        if (empty($timestamp)) {
+            return '-';
+        }
+        // Bersihkan pecahan mikrodetik PostgreSQL (mis. .470465) sebelum parsing
+        $clean = preg_replace('/\.\d+/', '', trim((string)$timestamp));
+        $ts    = strtotime($clean);
+        if ($ts === false) {
+            return '-';
+        }
+        $bulan_singkat = [
+            1 => 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
+            'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'
+        ];
+        $hari  = date('d', $ts);
+        $bulan = $bulan_singkat[(int)date('n', $ts)];
+        $tahun = date('Y', $ts);
+        $jam   = date('H:i', $ts);
+        return "{$hari} {$bulan} {$tahun} · {$jam} WIB";
+    }
+}
+
 // Fungsi normalisasi variasi penulisan nama role ke standar snake_case sistem
 if (!function_exists('normalisasi_role')) {
     function normalisasi_role($role_str) {

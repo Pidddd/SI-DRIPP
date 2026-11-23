@@ -1,25 +1,30 @@
 <?php
 /**
- * TEMPLATE KONEKSI DATABASE POSTGRESQL
- * PENTING: 
- * 1. Copy file ini dan rename menjadi 'database.php'
- * 2. Jangan pernah menaruh password asli di file .example ini!
+ * TEMPLATE KONEKSI DATABASE POSTGRESQL SUPABASE
+ * File: config/database.example.php
+ * PENTING:
+ * 1. Kredensial asli disimpan di file `.env` di root proyek (mengacu pada `.env.example`),
+ *    atau di tab Environment Variables pada server hosting Render.
+ * 2. Jangan pernah menuliskan password asli di file ini!
  */
 
-$host = 'localhost';
-$port = '5432';          // Port default PostgreSQL
-$dbname = 'sidripp_db';  // Nama database yang kamu buat di pgAdmin/DBeaver
-$user = 'postgres';      // Username default PostgreSQL (atau sesuaikan dengan milikmu)
-$pass = '';              // Biarkan KOSONG agar aman saat di-push ke GitHub
+if (file_exists(__DIR__ . '/env.php')) {
+    require_once __DIR__ . '/env.php';
+}
 
-// Merakit string koneksi khusus PostgreSQL
-$connection_string = "host=$host port=$port dbname=$dbname user=$user password=$pass";
+$db_host = getenv('DB_HOST') ?: '';
+$db_port = getenv('DB_PORT') ?: '5432';
+$db_name = getenv('DB_NAME') ?: '';
+$db_user = getenv('DB_USER') ?: '';
+$db_pass = getenv('DB_PASS') ?: '';
 
-// Membuka koneksi menggunakan pg_connect
-$conn = pg_connect($connection_string);
+$conn_string = "host={$db_host} port={$db_port} dbname={$db_name} user={$db_user} password='{$db_pass}' sslmode=require";
+
+$conn = @pg_connect($conn_string);
 
 if (!$conn) {
-    // pg_last_error digunakan untuk melihat detail error koneksi di PostgreSQL
-    die("<h1>Error Kritis</h1><p>Koneksi database PostgreSQL gagal: " . pg_last_error() . "</p>");
+    die("<h1>Error Kritis</h1><p>Koneksi database PostgreSQL gagal. Pastikan file <b>.env</b> telah dikonfigurasi dengan benar.</p>");
 }
-?>
+
+// Sinkronisasi zona waktu sesi PostgreSQL ke WIB (Asia/Jakarta)
+pg_query($conn, "SET TIME ZONE 'Asia/Jakarta';");
