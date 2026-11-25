@@ -43,119 +43,79 @@ require_once '../../layouts/header.php';
 ?>
 
 <!-- Bar Aksi Atas -->
-<div class="page-actions rise">
+<div class="page-actions page-actions-narrow rise">
     <a href="index.php" class="btn btn-ghost">&larr; Kembali ke Daftar Kategori</a>
     <span class="badge info"><i class="dot"></i>Kategori Katalog MKP Store</span>
 </div>
 
 <!-- Alert Notifikasi Error -->
 <?php if (isset($_GET['error'])): ?>
-    <div class="callout danger rise">
+    <div class="callout danger callout-narrow rise">
         <?= icon('alert', 18) ?>
         <div><?= e(str_replace('_', ' ', $_GET['error'])) ?></div>
     </div>
 <?php endif; ?>
 
-<!-- Layout Bento Grid Form Kategori -->
-<div class="bento">
-    <!-- Panel Kiri: Form Input Utama (Bento Span 7) -->
-    <div class="card span-7 rise">
-        <div class="card-head">
-            <div>
-                <h2><?= $is_edit ? 'Form Edit Kategori Produk' : 'Form Tambah Kategori Produk' ?></h2>
-                <p><?= $is_edit ? 'Ubah nama kategori di bawah ini lalu klik Simpan Perubahan.' : 'Masukkan nama kategori baru untuk mengelompokkan produk di katalog dan kasir.' ?></p>
-            </div>
-            <span class="badge neutral"><?= $is_edit ? 'KAT-' . str_pad($edit_id, 3, '0', STR_PAD_LEFT) : 'Kategori Baru' ?></span>
+<!-- Form Terpusat Kategori Produk (Single Card max-width: 640px) -->
+<div class="card card-form-narrow rise">
+    <div class="card-head">
+        <div>
+            <h2><?= $is_edit ? 'Form Edit Kategori Produk' : 'Form Tambah Kategori Produk' ?></h2>
+            <p><?= $is_edit ? 'Perbarui nama kategori lalu klik Simpan Perubahan.' : 'Tambahkan kategori baru untuk pengelompokan katalog produk dan kasir.' ?></p>
         </div>
-
-        <form action="process/create.php" method="POST">
-            <?php if ($is_edit): ?>
-                <input type="hidden" name="id_category" value="<?= e($edit_id) ?>">
-                <div class="field">
-                    <label>ID Kategori</label>
-                    <input type="text" class="input mono" value="KAT-<?= str_pad($edit_id, 3, '0', STR_PAD_LEFT) ?>" readonly disabled>
-                </div>
-            <?php endif; ?>
-
-            <div class="field">
-                <label for="nama_category">Nama Kategori</label>
-                <input type="text" id="nama_category" name="nama_category" class="input" value="<?= e($nama_category) ?>" placeholder="Contoh: DRIPP Syrup, Multibev Powder, Ramoe Beverage" maxlength="100" required autofocus>
-                <small class="muted">Nama kategori tampil pada kartu katalog, pencarian kasir POS, dan filter stok gudang.</small>
-            </div>
-
-            <div class="callout amber">
-                <?= icon('tag', 18) ?>
-                <div>
-                    <strong>SOP Pengelompokan Katalog MKP Store:</strong><br>
-                    Pastikan nama kategori spesifik terhadap lini brand produk (misal: Sirup Gourmet, Bubuk Minuman Barista, atau Ready-to-Drink).
-                </div>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-primary"><?= $is_edit ? 'Simpan Perubahan' : 'Simpan Kategori' ?></button>
-                <a href="index.php" class="btn btn-ghost">Batal</a>
-            </div>
-        </form>
+        <span class="badge neutral"><?= $is_edit ? 'KAT-' . str_pad($edit_id, 3, '0', STR_PAD_LEFT) : 'Kategori Baru' ?></span>
     </div>
 
-    <!-- Panel Kanan: Bento Informasi & Quick Glance (Bento Span 5) -->
-    <div class="span-5 stack">
-        <!-- Kartu 1: Pedoman Standar Brand -->
-        <div class="card rise">
-            <div class="card-head">
-                <div>
-                    <h3>Pedoman Standar Brand</h3>
-                    <p>Standar brand utama CV. Mitra Kembar Pradipta</p>
-                </div>
-                <span class="badge info">HORECA</span>
+    <form action="process/create.php" method="POST">
+        <?php if ($is_edit): ?>
+            <input type="hidden" name="id_category" value="<?= e($edit_id) ?>">
+            <div class="field">
+                <label>ID Kategori</label>
+                <input type="text" class="input mono" value="KAT-<?= str_pad($edit_id, 3, '0', STR_PAD_LEFT) ?>" readonly disabled>
             </div>
-            <div class="stack">
-                <div class="kv">
-                    <span>DRIPP Syrup</span>
-                    <strong>Sirup Gourmet Artisan (760 ml)</strong>
-                </div>
-                <div class="divider"></div>
-                <div class="kv">
-                    <span>Multibev</span>
-                    <strong>Powder &amp; Premix Minuman Barista</strong>
-                </div>
-                <div class="divider"></div>
-                <div class="kv">
-                    <span>Ramoe</span>
-                    <strong>Minuman Soda &amp; Botol Segar</strong>
-                </div>
+        <?php endif; ?>
+
+        <div class="field">
+            <label for="nama_category">Nama Kategori</label>
+            <input type="text" id="nama_category" name="nama_category" class="input" value="<?= e($nama_category) ?>" placeholder="Contoh: DRIPP Syrup, Multibev Powder, Ramoe Beverage" maxlength="100" required autofocus>
+            <small class="muted">Tampil pada kartu katalog, pencarian kasir POS, dan filter stok gudang.</small>
+        </div>
+
+        <div class="callout amber">
+            <?= icon('tag', 18) ?>
+            <div>
+                <strong>SOP Penamaan Kategori MKP Store:</strong>
+                Gunakan nama spesifik lini brand agar konsisten (misal: <em>DRIPP Syrup</em>, <em>Multibev Powder</em>, atau <em>Ramoe Beverage</em>).
             </div>
         </div>
 
-        <!-- Kartu 2: Daftar Seluruh Kategori Terdaftar Saat Ini -->
-        <div class="card rise">
-            <div class="card-head">
-                <div>
-                    <h3>Kategori Terdaftar</h3>
-                    <p>Total <?= (int)$total_kategori ?> kategori dalam sistem</p>
-                </div>
-                <a href="index.php" class="btn btn-soft btn-sm">Lihat Semua &rarr;</a>
-            </div>
-            <div class="list">
-                <?php if (!$res_categories || pg_num_rows($res_categories) === 0): ?>
-                    <div class="table-empty">Belum ada kategori terdaftar.</div>
-                <?php else: ?>
-                    <?php 
-                    pg_result_seek($res_categories, 0);
-                    while ($cat = pg_fetch_assoc($res_categories)): 
-                    ?>
-                        <div class="list-item">
-                            <span class="mini-icon info"><?= icon('tag', 15) ?></span>
-                            <div class="grow">
-                                <strong><?= e($cat['nama_category']) ?></strong>
-                                <small class="muted mono">KAT-<?= str_pad($cat['id_category'], 3, '0', STR_PAD_LEFT) ?></small>
-                            </div>
-                            <span class="badge neutral mono"><?= (int)$cat['total_produk'] ?> item</span>
-                        </div>
-                    <?php endwhile; ?>
-                <?php endif; ?>
-            </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary"><?= $is_edit ? 'Simpan Perubahan' : 'Simpan Kategori' ?></button>
+            <a href="index.php" class="btn btn-ghost">Batal</a>
         </div>
+    </form>
+
+    <!-- Daftar Ringkas Kategori Terdaftar (Badge/Pill Kompak) -->
+    <div class="cat-existing-box">
+        <div class="cat-existing-head">
+            <h3 class="cat-existing-title">Kategori Terdaftar Saat Ini (<?= (int)$total_kategori ?>)</h3>
+            <a href="index.php" class="text-xs muted">Kelola semua &rarr;</a>
+        </div>
+        <?php if (!$res_categories || pg_num_rows($res_categories) === 0): ?>
+            <p class="text-xs muted">Belum ada kategori terdaftar dalam sistem.</p>
+        <?php else: ?>
+            <div class="cat-pill-list">
+                <?php
+                pg_result_seek($res_categories, 0);
+                while ($cat = pg_fetch_assoc($res_categories)):
+                ?>
+                    <span class="cat-pill">
+                        <span><?= e($cat['nama_category']) ?></span>
+                        <span class="cat-pill-count mono"><?= (int)$cat['total_produk'] ?></span>
+                    </span>
+                <?php endwhile; ?>
+            </div>
+        <?php endif; ?>
     </div>
 </div>
 

@@ -143,9 +143,9 @@ $palet = [
       <span class="badge info"><i class="dot"></i><?= $total_produk ?> Produk Aktif</span>
     </div>
 
-    <!-- Toolbar: Pencarian + Filter Kategori (.pos-toolbar) -->
+    <!-- Toolbar: Pencarian + Custom Searchable Dropdown Kategori (.pos-toolbar) -->
     <div class="pos-toolbar">
-      <div class="input-icon">
+      <div class="input-icon pos-search-box">
         <?= icon('search', 18) ?>
         <input
           type="text"
@@ -156,14 +156,65 @@ $palet = [
           aria-label="Cari produk"
         >
       </div>
-      <div class="input-icon">
-        <?= icon('tag', 18) ?>
-        <select id="pos-filter-kat" class="select" onchange="onPosFilter()" aria-label="Filter kategori">
-          <option value="">Semua Kategori</option>
+
+      <!-- Custom Searchable Dropdown (Combobox) Kategori -->
+      <div class="pos-cat-combo" id="pos-cat-combo">
+        <input type="hidden" id="pos-filter-kat" value="">
+        <div class="pos-cat-combo-control">
+          <span class="pos-cat-combo-ico" aria-hidden="true"><?= icon('tag', 16) ?></span>
+          <input
+            type="text"
+            id="pos-cat-combo-input"
+            class="pos-cat-combo-input"
+            placeholder="Semua Kategori"
+            autocomplete="off"
+            role="combobox"
+            aria-label="Filter kategori produk"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="pos-cat-combo-menu"
+          >
+          <button
+            type="button"
+            id="pos-cat-combo-clear"
+            class="pos-cat-combo-clear is-hidden"
+            title="Reset ke Semua Kategori"
+            aria-label="Reset filter kategori"
+          >&times;</button>
+          <button
+            type="button"
+            id="pos-cat-combo-toggle"
+            class="pos-cat-combo-toggle"
+            tabindex="-1"
+            aria-label="Buka daftar kategori"
+          ><?= icon('chevron', 16) ?></button>
+        </div>
+
+        <ul class="pos-cat-combo-menu is-hidden" id="pos-cat-combo-menu" role="listbox" aria-label="Daftar Kategori">
+          <li
+            class="pos-cat-combo-opt is-selected"
+            role="option"
+            aria-selected="true"
+            data-value=""
+            data-label="Semua Kategori"
+          >
+            <span class="pos-cat-combo-opt-label">Semua Kategori</span>
+            <span class="pos-cat-combo-opt-count"><?= $total_produk ?> produk</span>
+          </li>
           <?php foreach ($katalog_per_kat as $kat): ?>
-            <option value="<?= e($kat['id']) ?>"><?= e($kat['nama']) ?></option>
+            <li
+              class="pos-cat-combo-opt"
+              role="option"
+              aria-selected="false"
+              data-value="<?= e($kat['id']) ?>"
+              data-label="<?= e($kat['nama']) ?>"
+            >
+              <span class="pos-cat-combo-opt-label"><?= e($kat['nama']) ?></span>
+              <span class="pos-cat-combo-opt-count"><?= count($kat['produk']) ?> produk</span>
+            </li>
           <?php endforeach; ?>
-        </select>
+          <li class="pos-cat-combo-empty is-hidden" id="pos-cat-combo-empty">Kategori tidak ditemukan.</li>
+        </ul>
       </div>
     </div>
 
@@ -222,16 +273,20 @@ $palet = [
     <div class="pos-cat-acc-wrap" id="pos-cat-acc-wrap">
       <?php if (count($katalog_per_kat) > 0): ?>
         <?php $kat_no = 0; foreach ($katalog_per_kat as $kat_id => $kat): $kat_no++; ?>
-          <div class="pos-cat-acc" data-kat-id="<?= e($kat_id) ?>" id="pos-cat-<?= e($kat_id) ?>">
+          <div class="pos-cat-acc<?= $kat_no === 1 ? ' is-open' : '' ?>" data-kat-id="<?= e($kat_id) ?>" id="pos-cat-<?= e($kat_id) ?>">
             <div
               class="pos-cat-acc-header"
               onclick="togglePosKat('<?= e($kat_id) ?>', this)"
+              onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); togglePosKat('<?= e($kat_id) ?>', this); }"
               role="button"
               tabindex="0"
+              aria-expanded="<?= $kat_no === 1 ? 'true' : 'false' ?>"
             >
-              <span class="pos-cat-name"><?= e($kat['nama']) ?></span>
-              <span class="badge neutral"><?= count($kat['produk']) ?> produk</span>
-              <span class="acc-icon"><?= icon('chevron', 16) ?></span>
+              <div class="pos-cat-header-left">
+                <span class="pos-cat-name"><?= e($kat['nama']) ?></span>
+                <span class="badge neutral pos-cat-count"><?= count($kat['produk']) ?> produk</span>
+              </div>
+              <span class="acc-icon" aria-hidden="true"><?= icon('chevron', 16) ?></span>
             </div>
 
             <div class="pos-cat-acc-body<?= $kat_no === 1 ? '' : ' is-hidden' ?>" id="pos-cat-body-<?= e($kat_id) ?>">
@@ -425,16 +480,14 @@ $palet = [
 
         <!-- DISKON 2 MODE (.pos-discount-switch) -->
         <div class="field field-compact">
-          <div class="cart-customer-header">
-            <label class="label">Sistem Diskon</label>
-            <div class="pos-discount-switch">
-              <button type="button" class="switch-btn active" id="tab-disc-auto" onclick="setDiskonMode('auto')">
-                Diskon Otomatis
-              </button>
-              <button type="button" class="switch-btn" id="tab-disc-manual" onclick="setDiskonMode('manual')">
-                Diskon Manual
-              </button>
-            </div>
+          <label class="label">Sistem Diskon</label>
+          <div class="pos-discount-switch" role="group" aria-label="Pilih mode sistem diskon">
+            <button type="button" class="switch-btn active" id="tab-disc-auto" onclick="setDiskonMode('auto')">
+              Diskon Otomatis
+            </button>
+            <button type="button" class="switch-btn" id="tab-disc-manual" onclick="setDiskonMode('manual')">
+              Diskon Manual
+            </button>
           </div>
           <input type="hidden" id="diskon_mode" value="auto">
 
@@ -934,6 +987,9 @@ function onPosFilter() {
       if (filterAktif) {
         var body = document.getElementById('pos-cat-body-' + katId);
         if (body) body.classList.remove('is-hidden');
+        acc.classList.add('is-open');
+        var hdr = acc.querySelector('.pos-cat-acc-header');
+        if (hdr) hdr.setAttribute('aria-expanded', 'true');
       }
     } else {
       acc.classList.add('is-hidden');
@@ -951,16 +1007,215 @@ function onPosFilter() {
 }
 
 // ----------------------------------------------------------------
+// Custom Searchable Dropdown (Combobox) Kategori
+// ----------------------------------------------------------------
+function initPosKatCombobox() {
+  var combo  = document.getElementById('pos-cat-combo');
+  var hidden = document.getElementById('pos-filter-kat');
+  var input  = document.getElementById('pos-cat-combo-input');
+  var clear  = document.getElementById('pos-cat-combo-clear');
+  var toggle = document.getElementById('pos-cat-combo-toggle');
+  var menu   = document.getElementById('pos-cat-combo-menu');
+  var empty  = document.getElementById('pos-cat-combo-empty');
+  if (!combo || !hidden || !input || !menu) return;
+
+  var options = Array.prototype.slice.call(menu.querySelectorAll('.pos-cat-combo-opt'));
+  var activeIndex = -1;
+  var selectedLabel = '';
+
+  function updateClearBtn() {
+    if (!clear) return;
+    if (hidden.value !== '' || input.value.trim() !== '') {
+      clear.classList.remove('is-hidden');
+    } else {
+      clear.classList.add('is-hidden');
+    }
+  }
+
+  function getVisibleOptions() {
+    return options.filter(function(opt) {
+      return !opt.classList.contains('is-hidden');
+    });
+  }
+
+  function highlightOption(idx) {
+    var vis = getVisibleOptions();
+    options.forEach(function(o) { o.classList.remove('is-focused'); });
+    if (vis.length === 0) {
+      activeIndex = -1;
+      return;
+    }
+    if (idx < 0) idx = vis.length - 1;
+    if (idx >= vis.length) idx = 0;
+    activeIndex = idx;
+    vis[activeIndex].classList.add('is-focused');
+    vis[activeIndex].scrollIntoView({ block: 'nearest' });
+  }
+
+  function filterOptions(keyword) {
+    var term = (keyword || '').toLowerCase().trim();
+    var visibleCount = 0;
+    options.forEach(function(opt) {
+      var lbl = (opt.getAttribute('data-label') || '').toLowerCase();
+      var val = opt.getAttribute('data-value') || '';
+      var match = (!term || lbl.indexOf(term) > -1 || (val === '' && 'semua'.indexOf(term) > -1));
+      if (match) {
+        opt.classList.remove('is-hidden');
+        visibleCount++;
+      } else {
+        opt.classList.add('is-hidden');
+      }
+    });
+    if (empty) {
+      if (visibleCount === 0) {
+        empty.classList.remove('is-hidden');
+      } else {
+        empty.classList.add('is-hidden');
+      }
+    }
+    activeIndex = -1;
+    options.forEach(function(o) { o.classList.remove('is-focused'); });
+  }
+
+  function openMenu(showAll) {
+    if (showAll) filterOptions('');
+    menu.classList.remove('is-hidden');
+    combo.classList.add('is-open');
+    input.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeMenu(restoreLabel) {
+    menu.classList.add('is-hidden');
+    combo.classList.remove('is-open');
+    input.setAttribute('aria-expanded', 'false');
+    activeIndex = -1;
+    options.forEach(function(o) { o.classList.remove('is-focused'); });
+    if (restoreLabel) {
+      input.value = hidden.value === '' ? '' : selectedLabel;
+      updateClearBtn();
+    }
+  }
+
+  function selectOption(opt) {
+    if (!opt) return;
+    var val = opt.getAttribute('data-value') || '';
+    var lbl = opt.getAttribute('data-label') || 'Semua Kategori';
+    hidden.value = val;
+    selectedLabel = val === '' ? '' : lbl;
+    input.value = selectedLabel;
+
+    options.forEach(function(o) {
+      var isSel = (o === opt);
+      o.classList.toggle('is-selected', isSel);
+      o.setAttribute('aria-selected', isSel ? 'true' : 'false');
+    });
+
+    updateClearBtn();
+    closeMenu(false);
+    onPosFilter();
+  }
+
+  input.addEventListener('focus', function() {
+    openMenu(true);
+    if (input.value !== '') {
+      input.select();
+    }
+  });
+
+  input.addEventListener('click', function() {
+    if (menu.classList.contains('is-hidden')) {
+      openMenu(true);
+    }
+  });
+
+  input.addEventListener('input', function() {
+    openMenu(false);
+    filterOptions(input.value);
+    updateClearBtn();
+    if (input.value.trim() === '' && hidden.value !== '') {
+      selectOption(options[0]);
+      openMenu(true);
+    }
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (menu.classList.contains('is-hidden')) openMenu(true);
+      highlightOption(activeIndex + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (menu.classList.contains('is-hidden')) openMenu(true);
+      highlightOption(activeIndex - 1);
+    } else if (e.key === 'Enter') {
+      if (!menu.classList.contains('is-hidden')) {
+        e.preventDefault();
+        var vis = getVisibleOptions();
+        if (activeIndex >= 0 && vis[activeIndex]) {
+          selectOption(vis[activeIndex]);
+        } else if (vis.length > 0) {
+          selectOption(vis[0]);
+        }
+      }
+    } else if (e.key === 'Escape') {
+      closeMenu(true);
+      input.blur();
+    }
+  });
+
+  if (toggle) {
+    toggle.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (menu.classList.contains('is-hidden')) {
+        input.focus();
+        openMenu(true);
+      } else {
+        closeMenu(true);
+      }
+    });
+  }
+
+  if (clear) {
+    clear.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      selectOption(options[0]);
+      input.focus();
+    });
+  }
+
+  options.forEach(function(opt) {
+    opt.addEventListener('mousedown', function(e) {
+      e.preventDefault();
+      selectOption(opt);
+    });
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!combo.contains(e.target) && !menu.classList.contains('is-hidden')) {
+      closeMenu(true);
+    }
+  });
+
+  updateClearBtn();
+}
+
+// ----------------------------------------------------------------
 // Toggle Accordion Kategori
 // ----------------------------------------------------------------
 function togglePosKat(katId, headerEl) {
+  var acc  = document.getElementById('pos-cat-' + katId);
   var body = document.getElementById('pos-cat-body-' + katId);
   if (!body) return;
   var sedangTerbuka = !body.classList.contains('is-hidden');
   if (sedangTerbuka) {
     body.classList.add('is-hidden');
+    if (acc) acc.classList.remove('is-open');
+    if (headerEl) headerEl.setAttribute('aria-expanded', 'false');
   } else {
     body.classList.remove('is-hidden');
+    if (acc) acc.classList.add('is-open');
+    if (headerEl) headerEl.setAttribute('aria-expanded', 'true');
   }
 }
 
@@ -995,6 +1250,7 @@ window.addEventListener('DOMContentLoaded', function() {
     }
   }
 
+  initPosKatCombobox();
   renderKeranjang();
 });
 </script>
