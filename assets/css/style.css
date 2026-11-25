@@ -1075,6 +1075,282 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .due-box { margin: 10px 0 14px; display: none; }
 .due-box.show { display: block; animation: rise .3s var(--ease); }
 
+/* ==========================================================================
+   POS INDEPENDENT 2-PANEL SCROLL & TIMOTHY'S POS CONTRACT
+   (Tahap 2 Revisi Mitra MKP Store - Inas Asami El Murtadho)
+   ========================================================================== */
+
+/* 1. Independent 2-Panel Scroll for POS (Desktop vs Mobile/Tablet) */
+@media (min-width: 1025px) {
+  .pos-catalog-pane,
+  .pos-cart-pane {
+    max-height: calc(100vh - var(--topbar-h) - 48px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-right: 4px;
+  }
+  .pos-catalog-pane::-webkit-scrollbar,
+  .pos-cart-pane::-webkit-scrollbar {
+    width: 6px;
+  }
+  .pos-catalog-pane::-webkit-scrollbar-track,
+  .pos-cart-pane::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .pos-catalog-pane::-webkit-scrollbar-thumb,
+  .pos-cart-pane::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 999px;
+  }
+  .pos-catalog-pane::-webkit-scrollbar-thumb:hover,
+  .pos-cart-pane::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+}
+
+@media (max-width: 1024px) {
+  .pos-catalog-pane,
+  .pos-cart-pane {
+    max-height: none !important;
+    overflow-y: visible !important;
+    padding-right: 0 !important;
+  }
+}
+
+/* 2. Timothy's POS Contract Classes (Bento Grid Soft Caramel Cream & Dark Mode) */
+
+/* .pos-bestseller-wrap: Area produk terlaris di katalog POS */
+.pos-bestseller-wrap {
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, var(--amber-50) 0%, var(--card) 100%);
+  border: 1px solid var(--amber-200);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pos-bestseller-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pos-bestseller-title {
+  font-size: 13px;
+  font-weight: 750;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+.pos-bestseller-items {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+[data-theme="dark"] .pos-bestseller-wrap {
+  background: rgba(30, 41, 59, 0.55);
+  border-color: rgba(56, 189, 248, 0.25);
+}
+[data-theme="dark"] .pos-bestseller-title {
+  color: var(--primary);
+}
+
+/* .pos-cat-acc: Kategori Accordion / Navigasi Kategori POS */
+.pos-cat-acc {
+  margin-bottom: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color .2s var(--ease);
+}
+.pos-cat-acc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  background: var(--bg-soft);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink-2);
+  user-select: none;
+  border-bottom: 1px solid var(--line);
+  transition: background .2s var(--ease), color .2s var(--ease);
+}
+.pos-cat-acc-header:hover {
+  background: var(--amber-100);
+  color: var(--primary-dark);
+}
+.pos-cat-acc-body {
+  padding: 14px 16px;
+}
+[data-theme="dark"] .pos-cat-acc {
+  background: var(--card);
+  border-color: var(--line);
+}
+[data-theme="dark"] .pos-cat-acc-header {
+  background: rgba(30, 41, 59, 0.7);
+  color: var(--ink);
+  border-color: var(--line);
+}
+[data-theme="dark"] .pos-cat-acc-header:hover {
+  background: rgba(56, 189, 248, 0.16);
+  color: var(--primary);
+}
+
+/* .pos-toolbar: Toolbar pencarian & penyaringan cepat kasir */
+.pos-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.pos-toolbar .input-icon {
+  flex: 1;
+  min-width: 200px;
+}
+[data-theme="dark"] .pos-toolbar {
+  background: rgba(15, 23, 42, 0.6);
+  border-color: var(--line);
+}
+
+/* .pos-discount-switch: Switch Diskon Persentase / Potongan Tunai */
+.pos-discount-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  gap: 2px;
+}
+.pos-discount-switch button,
+.pos-discount-switch .switch-btn,
+.pos-discount-switch a {
+  border: none;
+  background: transparent;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all .2s var(--ease);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pos-discount-switch button.active,
+.pos-discount-switch .switch-btn.active,
+.pos-discount-switch a.active {
+  background: var(--caramel-grad);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px -1px var(--teal-shadow);
+}
+[data-theme="dark"] .pos-discount-switch {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: var(--line-strong);
+}
+[data-theme="dark"] .pos-discount-switch button.active,
+[data-theme="dark"] .pos-discount-switch .switch-btn.active,
+[data-theme="dark"] .pos-discount-switch a.active {
+  background: var(--caramel-grad);
+  color: #FFFFFF;
+}
+
+/* .pos-ongkir-box: Kotak input & rincian Ongkos Kirim */
+.pos-ongkir-box {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: rise .3s var(--spring) both;
+}
+.pos-ongkir-box label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+}
+.pos-ongkir-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+[data-theme="dark"] .pos-ongkir-box {
+  background: rgba(30, 41, 59, 0.55);
+  border-color: var(--line);
+}
+[data-theme="dark"] .pos-ongkir-box label {
+  color: var(--ink);
+}
+
+/* .pos-source-switch: Switch Penanda Sumber Transaksi (Umum, Shopee, WA, dll) */
+.pos-source-switch {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  gap: 4px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+.pos-source-btn {
+  flex: 1;
+  min-width: fit-content;
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--muted);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: all .2s var(--ease);
+}
+.pos-source-btn:hover {
+  color: var(--primary-dark);
+  background: var(--amber-100);
+}
+.pos-source-btn.active {
+  background: var(--caramel-grad);
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px -1px var(--teal-shadow);
+}
+[data-theme="dark"] .pos-source-switch {
+  background: rgba(15, 23, 42, 0.85);
+  border-color: var(--line-strong);
+}
+[data-theme="dark"] .pos-source-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--primary);
+}
+[data-theme="dark"] .pos-source-btn.active {
+  background: var(--caramel-grad);
+  color: #FFFFFF;
+}
+
 /* ---------- 14. Modal & Toast ---------- */
 .modal {
   position: fixed; inset: 0; z-index: 100; display: none; align-items: center; justify-content: center;
@@ -1406,10 +1682,269 @@ body.login-body {
 .modal-footer { padding: 14px 20px; border-top: 1px solid var(--line); background: var(--bg); display: flex; justify-content: flex-end; gap: 8px; }
 .modal-close { background: none; border: none; font-size: 24px; color: var(--faint); cursor: pointer; }
 
-/* Cetak Invoice / Laporan */
-.invoice-box { max-width: 780px; margin: 24px auto; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
-.invoice-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid var(--line); padding-bottom: 18px; margin-bottom: 20px; gap: 16px; }
-.invoice-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+/* ==========================================================================
+   INVOICE / NOTA FISIK & DIGITAL MKP STORE (A5 Landscape Ready)
+   ========================================================================== */
+.invoice-box {
+  max-width: 900px;
+  margin: 24px auto;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  position: relative;
+}
+.invoice-head,
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid var(--line);
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+.invoice-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.invoice-logo {
+  max-height: 52px;
+  max-width: 140px;
+  object-fit: contain;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.invoice-brand-text h2 {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: #3B2314;
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+.invoice-company-sub {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: #9A5B25;
+  margin-bottom: 3px;
+}
+.invoice-company-contact {
+  font-size: 10.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.invoice-head-meta {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+.invoice-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #3B2314;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0;
+}
+.invoice-no {
+  font-size: 13.5px;
+  font-weight: 750;
+  color: #9A5B25;
+}
+.invoice-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+}
+
+/* Meta section (Customer & Trx Info) */
+.invoice-meta,
+.invoice-meta-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+.invoice-meta-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.invoice-meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 1px;
+}
+.invoice-meta-value {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+/* Table wrap & table */
+.invoice-table-wrap {
+  margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.invoice-table thead th {
+  background: var(--table-head-bg);
+  color: #3B2314;
+  font-weight: 750;
+  font-size: 11px;
+  padding: 8px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid var(--line);
+}
+.invoice-table tbody td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+.invoice-table tbody tr:last-child td {
+  border-bottom: none;
+}
+.invoice-table tbody tr:nth-child(even) {
+  background: var(--table-even-bg);
+}
+
+/* Bottom Grid (Keterangan + Kalkulasi) */
+.invoice-bottom-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 18px;
+  align-items: start;
+  margin-bottom: 14px;
+}
+.invoice-info-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.invoice-terbilang {
+  padding: 8px 12px;
+  background: var(--bg-soft);
+  border-left: 3.5px solid #9A5B25;
+  border-radius: 4px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+.invoice-terbilang strong {
+  color: #3B2314;
+}
+.invoice-bank-box {
+  padding: 8px 12px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-xs);
+  background: var(--card);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--ink-2);
+}
+.invoice-bank-title {
+  font-weight: 750;
+  color: #3B2314;
+  margin-bottom: 2px;
+}
+.invoice-retur-note {
+  font-size: 10.5px;
+  font-style: italic;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+/* Calculation summary */
+.invoice-calc-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  background: var(--bg-soft);
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+.invoice-calc-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--muted);
+}
+.invoice-calc-row strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+.invoice-calc-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-top: 8px;
+  margin-top: 6px;
+  border-top: 1.5px solid var(--line-strong);
+  font-size: 13.5px;
+  color: #3B2314;
+}
+.invoice-calc-total span {
+  font-weight: 750;
+}
+.invoice-calc-total strong {
+  font-size: 17px;
+  font-weight: 800;
+  color: #9A5B25;
+}
+
+/* Signatures */
+.invoice-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-top: 14px;
+  padding-top: 10px;
+}
+.invoice-sign-box {
+  text-align: center;
+  font-size: 11.5px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 85px;
+}
+.invoice-sign-title {
+  font-weight: 700;
+  color: var(--ink);
+}
+.invoice-sign-space {
+  height: 48px;
+}
+.invoice-sign-name {
+  font-weight: 750;
+  border-top: 1px dotted var(--line-strong);
+  padding-top: 4px;
+  color: var(--ink-2);
+  margin-top: auto;
+}
 
 /* Komponen Kasir POS Mitra PT & Modal Dialog (Revisi Poin 6 - Zero Inline CSS) */
 .cart-customer-header {
@@ -1796,12 +2331,289 @@ body.login-body {
   transform: rotate(180deg);
 }
 
+/* ==========================================================================
+   PRINT STYLESHEET — A5 LANDSCAPE (MKP STORE INVOICE STANDARDS)
+   ========================================================================== */
+@page {
+  size: A5 landscape;
+  margin: 8mm;
+}
+
 @media print {
-  .sidebar, .topbar, .page-actions, .role-switcher, .theme-toggle, .no-print { display: none !important; }
-  .main { margin-left: 0 !important; }
-  .content { padding: 0 !important; }
-  body { background: #FFFFFF !important; color: #0F172A !important; }
-  .invoice-box, .card { box-shadow: none !important; border: 1px solid #CBD5E1 !important; margin: 0 !important; max-width: 100% !important; background: #FFFFFF !important; color: #0F172A !important; }
+  /* Hilangkan seluruh chrome dan kontrol UI interaktif */
+  .sidebar,
+  .topbar,
+  .page-actions,
+  .role-switcher,
+  .theme-toggle,
+  .no-print,
+  .modal-backdrop,
+  .modal,
+  .toast-wrap,
+  .footer {
+    display: none !important;
+  }
+
+  /* Reset layout kanvas cetak */
+  html,
+  body {
+    background: #FFFFFF !important;
+    color: #2B1B12 !important;
+    font-size: 8.8pt !important;
+    line-height: 1.25 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* PAKSA MATIKAN DARK MODE SAAT PRINT SUPAYA HEMAT TINTA & BERSIH */
+  [data-theme="dark"],
+  [data-theme="dark"] body,
+  [data-theme="dark"] .main,
+  [data-theme="dark"] .content,
+  [data-theme="dark"] .invoice-box {
+    background: #FFFFFF !important;
+    color: #2B1B12 !important;
+  }
+
+  .main,
+  .content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Box Invoice A5 Landscape */
+  .invoice-box {
+    box-shadow: none !important;
+    border: 1px solid #E8D5BC !important;
+    border-radius: 6px !important;
+    margin: 0 !important;
+    padding: 3mm 4mm !important;
+    max-width: 100% !important;
+    background: #FFFFFF !important;
+    color: #2B1B12 !important;
+  }
+
+  .invoice-head,
+  .invoice-header {
+    border-bottom: 1.5px solid #E8D5BC !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 6px !important;
+    gap: 10px !important;
+  }
+
+  .invoice-brand {
+    gap: 10px !important;
+  }
+
+  .invoice-logo {
+    max-height: 38px !important;
+    max-width: 100px !important;
+  }
+
+  .invoice-brand-text h2 {
+    font-size: 11pt !important;
+    color: #3B2314 !important;
+    margin-bottom: 1px !important;
+  }
+
+  .invoice-company-sub {
+    font-size: 7.5pt !important;
+    color: #9A5B25 !important;
+    margin-bottom: 1px !important;
+  }
+
+  .invoice-company-contact {
+    font-size: 7pt !important;
+    color: #4A3222 !important;
+    line-height: 1.25 !important;
+  }
+
+  .invoice-title {
+    font-size: 11.5pt !important;
+    color: #3B2314 !important;
+  }
+
+  .invoice-no {
+    font-size: 9.5pt !important;
+    color: #9A5B25 !important;
+  }
+
+  .invoice-badges .badge {
+    padding: 2px 6px !important;
+    font-size: 7.5pt !important;
+  }
+
+  /* Meta info box */
+  .invoice-meta,
+  .invoice-meta-grid {
+    padding: 5px 8px !important;
+    margin-bottom: 6px !important;
+    background: #FDF8F2 !important;
+    border: 1px solid #E8D5BC !important;
+    font-size: 8pt !important;
+    gap: 10px !important;
+  }
+
+  .invoice-meta-label {
+    font-size: 6.5pt !important;
+    color: #846954 !important;
+  }
+
+  .invoice-meta-value {
+    font-size: 8.5pt !important;
+    color: #2B1B12 !important;
+  }
+
+  /* Tabel item cetak */
+  .invoice-table-wrap {
+    margin-bottom: 6px !important;
+    border: 1px solid #E8D5BC !important;
+  }
+
+  .invoice-table {
+    font-size: 8pt !important;
+  }
+
+  .invoice-table thead {
+    display: table-header-group !important;
+  }
+
+  .invoice-table thead th {
+    background: #F7ECDC !important;
+    color: #3B2314 !important;
+    padding: 3px 6px !important;
+    font-size: 7.5pt !important;
+    border-bottom: 1px solid #E8D5BC !important;
+  }
+
+  .invoice-table tbody td {
+    padding: 3px 6px !important;
+    border-bottom: 1px solid #E8D5BC !important;
+  }
+
+  .invoice-table tbody tr:nth-child(even) {
+    background: rgba(250, 243, 232, 0.4) !important;
+  }
+
+  .invoice-table tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Bottom grid & Kalkulasi */
+  .invoice-bottom-grid {
+    gap: 10px !important;
+    margin-bottom: 6px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .invoice-info-pane,
+  .invoice-calc-pane {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .invoice-terbilang {
+    background: #FDF8F2 !important;
+    border-left: 2.5px solid #9A5B25 !important;
+    padding: 4px 6px !important;
+    font-size: 7.5pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .invoice-bank-box {
+    background: #FFFFFF !important;
+    border: 1px dashed #D6B792 !important;
+    padding: 4px 6px !important;
+    font-size: 7pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .invoice-bank-title {
+    font-size: 7pt !important;
+    color: #3B2314 !important;
+  }
+
+  .invoice-retur-note {
+    font-size: 6.8pt !important;
+    color: #846954 !important;
+    line-height: 1.2 !important;
+  }
+
+  .invoice-calc-pane {
+    background: #FDF8F2 !important;
+    border: 1px solid #E8D5BC !important;
+    padding: 4px 8px !important;
+    font-size: 8pt !important;
+    gap: 2.5px !important;
+  }
+
+  .invoice-calc-row strong {
+    color: #2B1B12 !important;
+  }
+
+  .invoice-calc-total {
+    padding-top: 4px !important;
+    margin-top: 3px !important;
+    border-top: 1px solid #D6B792 !important;
+    font-size: 8.5pt !important;
+  }
+
+  .invoice-calc-total strong {
+    color: #9A5B25 !important;
+    font-size: 10pt !important;
+  }
+
+  /* Tanda Tangan */
+  .invoice-signatures {
+    margin-top: 4px !important;
+    padding-top: 2px !important;
+    gap: 20px !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .invoice-sign-box {
+    min-height: 48px !important;
+    font-size: 7.5pt !important;
+  }
+
+  .invoice-sign-title {
+    color: #2B1B12 !important;
+  }
+
+  .invoice-sign-space {
+    height: 26px !important;
+  }
+
+  .invoice-sign-name {
+    border-top: 1px dotted #846954 !important;
+    color: #2B1B12 !important;
+    padding-top: 2px !important;
+  }
+
+  /* Badges color exact print */
+  .badge.success {
+    background: #ECFDF5 !important;
+    color: #16A34A !important;
+    border: 1px solid #A7F3D0 !important;
+  }
+  .badge.warn {
+    background: #FEF3C7 !important;
+    color: #D97706 !important;
+    border: 1px solid #FDE68A !important;
+  }
+  .badge.info {
+    background: #FDF3E3 !important;
+    color: #B8651B !important;
+    border: 1px solid #F4E3CE !important;
+  }
 }
 
 /* =====================================================
