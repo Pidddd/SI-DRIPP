@@ -2,12 +2,17 @@
 /**
  * MODUL TRANSAKSI — KASIR / POINT OF SALE (POS)
  * File: modules/transactions/index.php
- * Fungsi: Antarmuka Kasir (POS) dinamis yang terhubung ke tabel products & customers Supabase.
- * Revisi Dosen Poin 6:
- *   - Query data pelanggan / mitra PT dari tabel customers.
- *   - Searchable Dropdown / Select Mitra PT dengan tombol "+ Mitra Baru".
- *   - Auto-fill detail data PT (Nama PT, Nama PJ, NIK PJ, Telp/WA, Alamat Toko) via JS.
- *   - Pop-up Modal pendaftaran Mitra PT baru ke process/create_customer.php.
+ * Fungsi: Antarmuka Kasir POS dinamis — Best Seller, Accordion Kategori, Diskon 2 Mode,
+ *         Ongkir, Sumber Transaksi, Mitra PT autofill, Modal Mitra Baru.
+ * Revisi Mitra MKP Store Tahap 3 (Timothy, 25 Nov 2026):
+ *   - Best Seller 7 produk terlaris 30 hari terakhir (.pos-bestseller-wrap)
+ *   - Accordion katalog per kategori (.pos-cat-acc), produk A-Z
+ *   - Filter kategori + pencarian (.pos-toolbar) → sembunyikan bestseller saat aktif
+ *   - Diskon 2 Mode: Auto (2% jika >= 24 unit campur) & Manual (.pos-discount-switch)
+ *   - Ongkir checkbox + nominal (.pos-ongkir-box)
+ *   - Sumber Transaksi: Umum / Shopee (.pos-source-switch) — TERPISAH dari status_pembayaran
+ *   - .pos-catalog-pane (kiri) & .pos-cart-pane (kanan) scroll independen
+ * Aturan Arsitektur: PHP Native Prosedural, pg_query_params, ZERO INLINE CSS.
  */
 
 $root       = '../../';
@@ -18,20 +23,59 @@ $allowed    = ['super_admin', 'admin', 'kasir'];
 
 require_once __DIR__ . '/../../layouts/header.php';
 
-// 1. Ambil katalog produk dari Supabase beserta kategori
-$q_katalog   = "SELECT p.id_product, p.nama_barang, p.harga_jual, p.stok_aktual, c.nama_category
-                FROM products p
-                LEFT JOIN category c ON p.categoryid_category = c.id_category
-                ORDER BY p.nama_barang ASC";
-$res_katalog = pg_query($conn, $q_katalog);
-$katalog_arr = [];
-if ($res_katalog) {
-    while ($item = pg_fetch_assoc($res_katalog)) {
-        $katalog_arr[] = $item;
+// ============================================================
+// 1. Best Seller: 7 produk terlaris 30 hari terakhir
+// ============================================================
+$q_bestseller = "SELECT p.id_product, p.nama_barang, p.harga_jual, p.stok_aktual,
+                        c.id_category, c.nama_category,
+                        SUM(td.kuantitas) AS total_terjual
+                 FROM transaction_details td
+                 JOIN transactions t ON td.transactionsid_transaksi = t.id_transaksi
+                 JOIN products p ON td.productsid_product = p.id_product
+                 LEFT JOIN category c ON p.categoryid_category = c.id_category
+                 WHERE t.waktu_transaksi >= CURRENT_TIMESTAMP - INTERVAL '30 days'
+                 GROUP BY p.id_product, p.nama_barang, p.harga_jual, p.stok_aktual,
+                          c.id_category, c.nama_category
+                 ORDER BY total_terjual DESC
+                 LIMIT 7";
+$res_bs     = pg_query($conn, $q_bestseller);
+$bestseller = [];
+if ($res_bs) {
+    while ($bs = pg_fetch_assoc($res_bs)) {
+        $bestseller[] = $bs;
     }
 }
 
-// 2. Ambil seluruh data Mitra PT dari tabel customers (Revisi Poin 6)
+// ============================================================
+// 2. Katalog produk dikelompokkan per kategori, produk A-Z
+// ============================================================
+$q_katalog   = "SELECT p.id_product, p.nama_barang, p.harga_jual, p.stok_aktual,
+                       c.id_category, c.nama_category
+                FROM products p
+                LEFT JOIN category c ON p.categoryid_category = c.id_category
+                ORDER BY c.nama_category ASC NULLS LAST, p.nama_barang ASC";
+$res_katalog = pg_query($conn, $q_katalog);
+$katalog_per_kat = [];
+$total_produk    = 0;
+if ($res_katalog) {
+    while ($item = pg_fetch_assoc($res_katalog)) {
+        $total_produk++;
+        $kat_key  = !empty($item['id_category']) ? (int)$item['id_category'] : 0;
+        $kat_nama = $item['nama_category'] ?? 'Lainnya';
+        if (!isset($katalog_per_kat[$kat_key])) {
+            $katalog_per_kat[$kat_key] = [
+                'id'     => $kat_key,
+                'nama'   => $kat_nama,
+                'produk' => [],
+            ];
+        }
+        $katalog_per_kat[$kat_key]['produk'][] = $item;
+    }
+}
+
+// ============================================================
+// 3. Data Mitra PT dari tabel customers
+// ============================================================
 $q_customers   = "SELECT id_customer, nama_pt, nama_pj, nik_pj, no_telp, alamat_toko
                   FROM customers
                   ORDER BY nama_pt ASC";
@@ -42,9 +86,20 @@ if ($res_customers) {
         $customers_arr[] = $cust;
     }
 }
+
+// Palet warna kartu produk (cycling)
+$palet = [
+    ['#F0B35A', '#B8651B'],
+    ['#F9E8B6', '#D4A843'],
+    ['#84D49D', '#278C48'],
+    ['#A5B4FC', '#4338CA'],
+    ['#F87171', '#991B1B'],
+    ['#68CDDA', '#088395'],
+    ['#FDE68A', '#CA8A04'],
+];
 ?>
 
-<!-- Notifikasi Transaksi & Pendaftaran Mitra Baru -->
+<!-- Notifikasi Flash -->
 <?php if (isset($_GET['pesan']) && $_GET['pesan'] === 'transaksi_sukses'): ?>
   <div class="callout success rise">
     <?= icon('check', 18) ?>
@@ -63,7 +118,7 @@ if ($res_customers) {
   <div class="callout success rise">
     <?= icon('check', 18) ?>
     <div>
-      <strong>Mitra Baru Berhasil Didaftarkan!</strong> Data mitra PT telah tersimpan di Supabase dan langsung dipilih pada keranjang transaksi.
+      <strong>Mitra Baru Berhasil Didaftarkan!</strong> Data mitra PT tersimpan dan langsung dapat dipilih pada keranjang.
     </div>
   </div>
 <?php endif; ?>
@@ -75,84 +130,191 @@ if ($res_customers) {
   </div>
 <?php endif; ?>
 
+<!-- ==================== LAYOUT UTAMA POS: 2 PANE ==================== -->
 <section class="pos rise" aria-label="Area Kasir Point of Sale">
 
-  <!-- ==================== KOLOM KIRI: KATALOG PRODUK SUPABASE ==================== -->
-  <div class="card">
+  <!-- ========== PANEL KIRI: KATALOG (.pos-catalog-pane) ========== -->
+  <div class="card pos-catalog-pane">
     <div class="card-head">
       <div>
         <h2>Katalog Produk MKP Store</h2>
         <p>Pilih produk sirup / bubuk dari database untuk dimasukkan ke keranjang kasir</p>
       </div>
-      <span class="badge info"><i class="dot"></i><?= count($katalog_arr) ?> Produk Aktif</span>
+      <span class="badge info"><i class="dot"></i><?= $total_produk ?> Produk Aktif</span>
     </div>
 
-    <div class="pos-tools">
+    <!-- Toolbar: Pencarian + Filter Kategori (.pos-toolbar) -->
+    <div class="pos-toolbar">
       <div class="input-icon">
         <?= icon('search', 18) ?>
-        <input type="text" id="pos-search" class="input" placeholder="Cari nama produk, SKU, atau kategori..." oninput="filterKatalogPos()" aria-label="Cari produk">
+        <input
+          type="text"
+          id="pos-search"
+          class="input"
+          placeholder="Cari nama produk atau SKU..."
+          oninput="onPosFilter()"
+          aria-label="Cari produk"
+        >
+      </div>
+      <div class="input-icon">
+        <?= icon('tag', 18) ?>
+        <select id="pos-filter-kat" class="select" onchange="onPosFilter()" aria-label="Filter kategori">
+          <option value="">Semua Kategori</option>
+          <?php foreach ($katalog_per_kat as $kat): ?>
+            <option value="<?= e($kat['id']) ?>"><?= e($kat['nama']) ?></option>
+          <?php endforeach; ?>
+        </select>
       </div>
     </div>
 
-    <div class="product-grid" id="pos-product-grid">
-      <?php if (count($katalog_arr) > 0): ?>
-        <?php foreach ($katalog_arr as $idx => $p):
-            $stok      = (int)$p['stok_aktual'];
-            $habis     = $stok <= 0;
-            $kritis    = $stok > 0 && $stok < 24;
-            $kat_label = $p['nama_category'] ?? 'Sirup DRIPP';
-            $palet     = [
-                ['#F0B35A', '#B8651B'],
-                ['#F9E8B6', '#D4A843'],
-                ['#84D49D', '#278C48'],
-                ['#A5B4FC', '#4338CA'],
-                ['#F87171', '#991B1B'],
-                ['#68CDDA', '#088395']
-            ];
-            $warna = $palet[$idx % count($palet)];
+    <!-- Best Seller (.pos-bestseller-wrap) -->
+    <?php if (count($bestseller) > 0): ?>
+    <div class="pos-bestseller-wrap" id="pos-bestseller-wrap">
+      <div class="pos-bestseller-head">
+        <h3 class="pos-bestseller-title">
+          <?= icon('trend', 16) ?>
+          <span>Produk Terlaris 30 Hari Terakhir</span>
+        </h3>
+        <span class="badge warn"><?= count($bestseller) ?> Teratas</span>
+      </div>
+      <div class="pos-bestseller-items">
+        <?php foreach ($bestseller as $bi => $bs):
+            $stok_bs   = (int)$bs['stok_aktual'];
+            $habis_bs  = $stok_bs <= 0;
+            $kritis_bs = $stok_bs > 0 && $stok_bs < 24;
+            $w = $palet[$bi % count($palet)];
         ?>
-          <article class="product-card <?= $habis ? 'out' : '' ?>" data-search="<?= e(strtolower($p['nama_barang'] . ' ' . $kat_label . ' ' . $p['id_product'])) ?>">
+          <article class="product-card col-nama-prod<?= $habis_bs ? ' out' : '' ?>"
+                   data-search="<?= e(strtolower($bs['nama_barang'] . ' ' . ($bs['nama_category'] ?? '') . ' ' . $bs['id_product'])) ?>"
+                   data-kat-id="<?= e($bs['id_category'] ?? '') ?>">
             <div class="product-photo">
-              <span class="badge cat-tag"><?= e($kat_label) ?></span>
-              <span class="badge <?= $habis ? 'danger' : ($kritis ? 'warn' : 'success') ?>">
-                <i class="dot"></i>Stok: <?= $stok ?>
+              <span class="badge cat-tag">#<?= $bi + 1 ?> Best Seller</span>
+              <span class="badge <?= $habis_bs ? 'danger' : ($kritis_bs ? 'warn' : 'success') ?>">
+                <i class="dot"></i>Stok: <?= $stok_bs ?>
               </span>
-              <?= bottle_svg($warna[0], $warna[1], substr($p['nama_barang'], 0, 10), '760 ml', 'syrup', 'DRIPP') ?>
+              <?= bottle_svg($w[0], $w[1], substr($bs['nama_barang'], 0, 10), '760 ml', 'syrup', 'DRIPP', $bs['id_product']) ?>
             </div>
             <div class="product-body">
-              <h3><?= e($p['nama_barang']) ?></h3>
-              <span class="meta">SKU: <?= e($p['id_product']) ?></span>
+              <h3><?= e($bs['nama_barang']) ?></h3>
+              <span class="meta"><?= (int)$bs['total_terjual'] ?> Unit Terjual</span>
               <div class="product-foot">
                 <div class="price">
-                  <?= rupiah($p['harga_jual']) ?>
+                  <?= rupiah($bs['harga_jual']) ?>
                   <small>/ unit</small>
                 </div>
                 <button
                   type="button"
                   class="btn btn-primary btn-sm"
-                  <?= $habis ? 'disabled' : '' ?>
-                  onclick="tambahKeKeranjang('<?= e(addslashes($p['id_product'])) ?>', '<?= e(addslashes($p['nama_barang'])) ?>', <?= (int)$p['harga_jual'] ?>, <?= $stok ?>)">
-                  <?= icon('plus', 15) ?> Tambah
+                  <?= $habis_bs ? 'disabled' : '' ?>
+                  onclick="tambahKeKeranjang('<?= e(addslashes($bs['id_product'])) ?>', '<?= e(addslashes($bs['nama_barang'])) ?>', <?= (int)$bs['harga_jual'] ?>, <?= $stok_bs ?>)"
+                >
+                  <?= icon('plus', 14) ?> Tambah
                 </button>
               </div>
             </div>
           </article>
         <?php endforeach; ?>
+      </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Katalog Accordion Per Kategori (.pos-cat-acc) -->
+    <div class="pos-cat-acc-wrap" id="pos-cat-acc-wrap">
+      <?php if (count($katalog_per_kat) > 0): ?>
+        <?php $kat_no = 0; foreach ($katalog_per_kat as $kat_id => $kat): $kat_no++; ?>
+          <div class="pos-cat-acc" data-kat-id="<?= e($kat_id) ?>" id="pos-cat-<?= e($kat_id) ?>">
+            <div
+              class="pos-cat-acc-header"
+              onclick="togglePosKat('<?= e($kat_id) ?>', this)"
+              role="button"
+              tabindex="0"
+            >
+              <span class="pos-cat-name"><?= e($kat['nama']) ?></span>
+              <span class="badge neutral"><?= count($kat['produk']) ?> produk</span>
+              <span class="acc-icon"><?= icon('chevron', 16) ?></span>
+            </div>
+
+            <div class="pos-cat-acc-body<?= $kat_no === 1 ? '' : ' is-hidden' ?>" id="pos-cat-body-<?= e($kat_id) ?>">
+              <div class="product-grid">
+                <?php foreach ($kat['produk'] as $idx => $p):
+                    $stok   = (int)$p['stok_aktual'];
+                    $habis  = $stok <= 0;
+                    $kritis = $stok > 0 && $stok < 24;
+                    $w = $palet[$idx % count($palet)];
+                ?>
+                  <article
+                    class="product-card<?= $habis ? ' out' : '' ?>"
+                    data-search="<?= e(strtolower($p['nama_barang'] . ' ' . ($p['nama_category'] ?? '') . ' ' . $p['id_product'])) ?>"
+                    data-kat-id="<?= e($kat_id) ?>"
+                  >
+                    <div class="product-photo">
+                      <span class="badge cat-tag"><?= e($kat['nama']) ?></span>
+                      <span class="badge <?= $habis ? 'danger' : ($kritis ? 'warn' : 'success') ?>">
+                        <i class="dot"></i>Stok: <?= $stok ?>
+                      </span>
+                      <?= bottle_svg($w[0], $w[1], substr($p['nama_barang'], 0, 10), '760 ml', 'syrup', 'DRIPP', $p['id_product']) ?>
+                    </div>
+                    <div class="product-body">
+                      <h3><?= e($p['nama_barang']) ?></h3>
+                      <span class="meta">SKU: <?= e($p['id_product']) ?></span>
+                      <div class="product-foot">
+                        <div class="price">
+                          <?= rupiah($p['harga_jual']) ?>
+                          <small>/ unit</small>
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-primary btn-sm"
+                          <?= $habis ? 'disabled' : '' ?>
+                          onclick="tambahKeKeranjang('<?= e(addslashes($p['id_product'])) ?>', '<?= e(addslashes($p['nama_barang'])) ?>', <?= (int)$p['harga_jual'] ?>, <?= $stok ?>)"
+                        >
+                          <?= icon('plus', 15) ?> Tambah
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                <?php endforeach; ?>
+              </div>
+            </div>
+          </div>
+        <?php endforeach; ?>
       <?php else: ?>
         <div class="table-empty">Belum ada produk di database. Silakan tambahkan di menu Master Produk.</div>
       <?php endif; ?>
     </div>
-  </div>
 
-  <!-- ==================== KOLOM KANAN: KERANJANG & CHECKOUT MITRA ==================== -->
-  <aside class="card flush cart" aria-label="Keranjang Belanja Kasir">
-    <form action="<?= BASE_URL ?>modules/transactions/process/checkout.php" method="POST" id="form-checkout" data-confirm="Proses transaksi penjualan sekarang?" onsubmit="return validasiCheckout()">
+    <!-- Pesan tidak ada hasil filter -->
+    <div class="pos-no-result is-hidden" id="pos-no-result">
+      <?= icon('search', 24) ?>
+      <p>Tidak ada produk yang cocok dengan pencarian.</p>
+    </div>
+  </div><!-- /.pos-catalog-pane -->
+
+  <!-- ========== PANEL KANAN: KERANJANG & CHECKOUT (.pos-cart-pane) ========== -->
+  <aside class="card flush cart pos-cart-pane" aria-label="Keranjang Belanja Kasir">
+    <form
+      action="<?= BASE_URL ?>modules/transactions/process/checkout.php"
+      method="POST"
+      id="form-checkout"
+      data-confirm="Proses transaksi penjualan sekarang?"
+      onsubmit="return validasiCheckout()"
+    >
       <input type="hidden" name="userid_user" value="<?= (int)($_SESSION['id_user'] ?? 1) ?>">
-      
-      <!-- Input Hidden Snapshot Pelanggan untuk Kompatibilitas Database -->
-      <input type="hidden" id="nama_pelanggan" name="nama_pelanggan" value="Pelanggan Walk-In">
+
+      <!-- Snapshot pelanggan untuk kompatibilitas DB -->
+      <input type="hidden" id="nama_pelanggan"   name="nama_pelanggan"   value="Pelanggan Walk-In">
       <input type="hidden" id="kontak_pelanggan" name="kontak_pelanggan" value="-">
 
+      <!-- Diskon final yang dikirim ke backend (diisi JS) -->
+      <input type="hidden" id="hidden_diskon" name="diskon" value="0">
+
+      <!-- Ongkir final yang dikirim ke backend (diisi JS) -->
+      <input type="hidden" id="hidden_ongkir" name="ongkir" value="0">
+
+      <!-- Sumber transaksi aktual (diisi JS via switch) -->
+      <input type="hidden" id="hidden_sumber_transaksi" name="sumber_transaksi" value="Umum">
+
+      <!-- ---- Cart Head ---- -->
       <div class="cart-head">
         <div>
           <h2>Keranjang Belanja</h2>
@@ -161,7 +323,7 @@ if ($res_customers) {
         <span class="badge info" id="cart-badge-count">0 Item (0 Unit)</span>
       </div>
 
-      <!-- Area Pemilihan Pelanggan / Mitra PT (Revisi Poin 6) -->
+      <!-- ---- Pemilihan Mitra PT (Revisi Poin 6) ---- -->
       <div class="cart-customer">
         <div class="cart-customer-header">
           <label for="select_customer" class="label">Mitra PT / Pelanggan HORECA</label>
@@ -186,7 +348,7 @@ if ($res_customers) {
           </select>
         </div>
 
-        <!-- Box Auto-Fill Informasi Mitra PT Terpilih -->
+        <!-- Auto-fill info mitra terpilih -->
         <div id="box-detail-mitra" class="customer-meta-box is-hidden">
           <div class="customer-meta-row">
             <span class="muted text-xxs">Nama PT / Kafe:</span>
@@ -210,7 +372,7 @@ if ($res_customers) {
           </div>
         </div>
 
-        <!-- Fallback Input Manual jika Pelanggan Walk-In (Non-Mitra PT) -->
+        <!-- Fallback input manual untuk Walk-In -->
         <div id="box-manual-customer">
           <div class="field field-compact">
             <label for="input_manual_nama">Nama Pelanggan Walk-In</label>
@@ -223,7 +385,7 @@ if ($res_customers) {
         </div>
       </div>
 
-      <!-- Tabel Item Keranjang Dinamis -->
+      <!-- ---- Tabel Item Keranjang ---- -->
       <div class="table-wrap border-top-line">
         <table class="table">
           <thead>
@@ -235,23 +397,96 @@ if ($res_customers) {
             </tr>
           </thead>
           <tbody id="cart-tbody">
-            <tr id="cart-empty-row">
+            <tr>
               <td colspan="4" class="table-empty">Keranjang masih kosong. Klik tombol <strong>+ Tambah</strong> pada katalog.</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <!-- Container Hidden Inputs untuk Array POST -->
+      <!-- Container hidden inputs POST -->
       <div id="cart-hidden-inputs"></div>
 
-      <!-- Ringkasan Pembayaran -->
+      <!-- ---- Ringkasan Pembayaran ---- -->
       <div class="cart-summary">
+
+        <!-- SUMBER TRANSAKSI (.pos-source-switch) — TERPISAH dari status_pembayaran -->
         <div class="field field-compact">
-          <label for="input_diskon">Potongan Diskon Transaksi (Rp)</label>
-          <input type="number" id="input_diskon" name="diskon" class="input mono" value="0" min="0" step="500" oninput="renderKeranjang()">
+          <label class="label">Sumber Transaksi</label>
+          <div class="pos-source-switch">
+            <button type="button" class="pos-source-btn active" id="src-btn-umum" onclick="setSumberTransaksi('Umum')">
+              <?= icon('users', 14) ?> Umum
+            </button>
+            <button type="button" class="pos-source-btn" id="src-btn-shopee" onclick="setSumberTransaksi('Shopee')">
+              <?= icon('tag', 14) ?> Shopee
+            </button>
+          </div>
         </div>
 
+        <!-- DISKON 2 MODE (.pos-discount-switch) -->
+        <div class="field field-compact">
+          <div class="cart-customer-header">
+            <label class="label">Sistem Diskon</label>
+            <div class="pos-discount-switch">
+              <button type="button" class="switch-btn active" id="tab-disc-auto" onclick="setDiskonMode('auto')">
+                Diskon Otomatis
+              </button>
+              <button type="button" class="switch-btn" id="tab-disc-manual" onclick="setDiskonMode('manual')">
+                Diskon Manual
+              </button>
+            </div>
+          </div>
+          <input type="hidden" id="diskon_mode" value="auto">
+
+          <!-- Mode Auto: Info box -->
+          <div class="moq-hint" id="disc-auto-info">
+            <?= icon('alert', 14) ?>
+            <span id="disc-auto-text">Diskon <strong>2%</strong> otomatis aktif jika keranjang &ge; <strong>24 botol</strong> (campur produk).</span>
+          </div>
+
+          <!-- Mode Manual: Input box -->
+          <div class="is-hidden" id="disc-manual-box">
+            <div class="field field-tight">
+              <label for="input_diskon_manual">Potongan Diskon Manual (Rp)</label>
+              <input
+                type="number"
+                id="input_diskon_manual"
+                class="input mono"
+                value="0"
+                min="0"
+                step="500"
+                placeholder="0"
+                oninput="renderKeranjang()"
+              >
+              <span class="muted text-xs">Setara <strong id="disc-manual-pct-val">0%</strong> dari subtotal</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ONGKIR (.pos-ongkir-box) -->
+        <div class="pos-ongkir-box">
+          <div class="pos-ongkir-row">
+            <label for="cb-ongkir">
+              <input type="checkbox" id="cb-ongkir" onchange="toggleOngkir()">
+              Tambahkan Ongkos Kirim (Rp)
+            </label>
+            <span class="badge neutral" id="badge-ongkir-status">Opsional</span>
+          </div>
+          <div id="ongkir-input-wrap" class="is-hidden">
+            <input
+              type="number"
+              id="input_ongkir"
+              class="input mono"
+              value="0"
+              min="0"
+              step="1000"
+              placeholder="Masukkan nominal ongkir..."
+              oninput="renderKeranjang()"
+            >
+          </div>
+        </div>
+
+        <!-- Status Pembayaran -->
         <div class="field field-compact">
           <label for="status_pembayaran">Metode &amp; Status Pembayaran</label>
           <select id="status_pembayaran" name="status_pembayaran" class="select" onchange="toggleJatuhTempo()">
@@ -265,15 +500,19 @@ if ($res_customers) {
           <input type="date" id="jatuh_tempo" name="jatuh_tempo" class="input" value="<?= date('Y-m-d', strtotime('+14 days')) ?>">
         </div>
 
+        <!-- Ringkasan Total -->
         <div class="sum-row">
           <span>Subtotal Barang</span>
           <b class="mono" id="label-subtotal">Rp 0</b>
         </div>
         <div class="sum-row disc">
-          <span>Potongan Diskon</span>
+          <span id="label-diskon-desc">Potongan Diskon</span>
           <b class="mono" id="label-diskon">- Rp 0</b>
         </div>
-
+        <div class="sum-row is-hidden" id="sum-row-ongkir">
+          <span>Ongkos Kirim</span>
+          <b class="mono" id="label-ongkir">+ Rp 0</b>
+        </div>
         <div class="sum-total">
           <span>Total Tagihan</span>
           <strong class="mono" id="label-grandtotal">Rp 0</strong>
@@ -284,11 +523,11 @@ if ($res_customers) {
         </button>
       </div>
     </form>
-  </aside>
+  </aside><!-- /.pos-cart-pane -->
 
 </section>
 
-<!-- ==================== POP-UP MODAL TAMBAH MITRA PT BARU (Revisi Poin 6) ==================== -->
+<!-- ==================== POP-UP MODAL TAMBAH MITRA PT BARU ==================== -->
 <div id="modal-tambah-mitra" class="modal-backdrop hidden" aria-modal="true" role="dialog">
   <div class="modal-dialog">
     <div class="modal-head">
@@ -339,28 +578,42 @@ if ($res_customers) {
 </div>
 
 <script>
-let keranjang = [];
+/* ================================================================
+   SI-DRIPP POS — Vanilla JS State Management Keranjang + Diskon 2 Mode
+   Revisi Mitra Tahap 3 (Timothy, 25 Nov 2026)
+   Zero external library — Pure Vanilla JS
+   ================================================================ */
 
+var keranjang = [];
+
+// ----------------------------------------------------------------
+// Utilitas Format Rupiah
+// ----------------------------------------------------------------
 function formatRupiah(angka) {
   return 'Rp ' + Math.max(0, Math.round(angka)).toLocaleString('id-ID');
 }
 
+// ----------------------------------------------------------------
+// Modal Mitra PT
+// ----------------------------------------------------------------
 function bukaModalMitra() {
-  const modal = document.getElementById('modal-tambah-mitra');
+  var modal = document.getElementById('modal-tambah-mitra');
   if (modal) modal.classList.remove('hidden');
 }
-
 function tutupModalMitra() {
-  const modal = document.getElementById('modal-tambah-mitra');
+  var modal = document.getElementById('modal-tambah-mitra');
   if (modal) modal.classList.add('hidden');
 }
 
+// ----------------------------------------------------------------
+// Pilih Mitra PT dari Dropdown
+// ----------------------------------------------------------------
 function pilihMitra(idCustomer) {
-  const select = document.getElementById('select_customer');
-  const boxDetail = document.getElementById('box-detail-mitra');
-  const boxManual = document.getElementById('box-manual-customer');
-  const hNama = document.getElementById('nama_pelanggan');
-  const hKontak = document.getElementById('kontak_pelanggan');
+  var select    = document.getElementById('select_customer');
+  var boxDetail = document.getElementById('box-detail-mitra');
+  var boxManual = document.getElementById('box-manual-customer');
+  var hNama     = document.getElementById('nama_pelanggan');
+  var hKontak   = document.getElementById('kontak_pelanggan');
 
   if (!idCustomer || idCustomer === '') {
     boxDetail.classList.add('is-hidden');
@@ -369,24 +622,22 @@ function pilihMitra(idCustomer) {
     return;
   }
 
-  const selectedOpt = select.options[select.selectedIndex];
-  if (!selectedOpt) return;
+  var opt = select.options[select.selectedIndex];
+  if (!opt) return;
 
-  const namaPt = selectedOpt.getAttribute('data-nama-pt') || '';
-  const pj = selectedOpt.getAttribute('data-pj') || '';
-  const nik = selectedOpt.getAttribute('data-nik') || '';
-  const telp = selectedOpt.getAttribute('data-telp') || '';
-  const alamat = selectedOpt.getAttribute('data-alamat') || '';
+  var namaPt = opt.getAttribute('data-nama-pt') || '';
+  var pj     = opt.getAttribute('data-pj')      || '';
+  var nik    = opt.getAttribute('data-nik')      || '';
+  var telp   = opt.getAttribute('data-telp')     || '';
+  var alamat = opt.getAttribute('data-alamat')   || '';
 
-  // Isi tampilan auto-fill readonly
-  document.getElementById('disp-nama-pt').textContent = namaPt;
-  document.getElementById('disp-nama-pj').textContent = pj;
-  document.getElementById('disp-nik-pj').textContent = nik;
-  document.getElementById('disp-no-telp').textContent = telp;
+  document.getElementById('disp-nama-pt').textContent     = namaPt;
+  document.getElementById('disp-nama-pj').textContent     = pj;
+  document.getElementById('disp-nik-pj').textContent      = nik;
+  document.getElementById('disp-no-telp').textContent     = telp;
   document.getElementById('disp-alamat-toko').textContent = alamat;
 
-  // Sinkronkan ke input hidden untuk disimpan di transaksi
-  hNama.value = namaPt;
+  hNama.value   = namaPt;
   hKontak.value = telp;
 
   boxDetail.classList.remove('is-hidden');
@@ -394,14 +645,20 @@ function pilihMitra(idCustomer) {
 }
 
 function syncManualCustomer() {
-  const namaManual = document.getElementById('input_manual_nama').value.trim();
-  const kontakManual = document.getElementById('input_manual_kontak').value.trim();
-  document.getElementById('nama_pelanggan').value = namaManual || 'Pelanggan Walk-In';
+  var namaManual   = document.getElementById('input_manual_nama').value.trim();
+  var kontakManual = document.getElementById('input_manual_kontak').value.trim();
+  document.getElementById('nama_pelanggan').value   = namaManual   || 'Pelanggan Walk-In';
   document.getElementById('kontak_pelanggan').value = kontakManual || '-';
 }
 
+// ----------------------------------------------------------------
+// Keranjang — Tambah & Ubah Qty
+// ----------------------------------------------------------------
 function tambahKeKeranjang(id, nama, harga, stokMaks) {
-  const idx = keranjang.findIndex(item => item.id === id);
+  var idx = -1;
+  for (var i = 0; i < keranjang.length; i++) {
+    if (keranjang[i].id === id) { idx = i; break; }
+  }
   if (idx > -1) {
     if (keranjang[idx].qty + 1 > stokMaks) {
       alert('Stok produk ' + nama + ' hanya tersisa ' + stokMaks + ' unit.');
@@ -415,9 +672,12 @@ function tambahKeKeranjang(id, nama, harga, stokMaks) {
 }
 
 function ubahQty(id, delta) {
-  const idx = keranjang.findIndex(item => item.id === id);
+  var idx = -1;
+  for (var i = 0; i < keranjang.length; i++) {
+    if (keranjang[i].id === id) { idx = i; break; }
+  }
   if (idx === -1) return;
-  const qtyBaru = keranjang[idx].qty + delta;
+  var qtyBaru = keranjang[idx].qty + delta;
   if (qtyBaru <= 0) {
     keranjang.splice(idx, 1);
   } else if (qtyBaru > keranjang[idx].stokMaks) {
@@ -429,34 +689,125 @@ function ubahQty(id, delta) {
   renderKeranjang();
 }
 
-function renderKeranjang() {
-  const tbody = document.getElementById('cart-tbody');
-  const hiddenWrap = document.getElementById('cart-hidden-inputs');
-  const badge = document.getElementById('cart-badge-count');
-  const diskonInput = document.getElementById('input_diskon');
-  const diskon = Math.max(0, parseInt(diskonInput.value || '0', 10));
+// ----------------------------------------------------------------
+// Sumber Transaksi (Umum vs Shopee)
+// ----------------------------------------------------------------
+function setSumberTransaksi(sumber) {
+  document.getElementById('hidden_sumber_transaksi').value = sumber;
+  var btnUmum   = document.getElementById('src-btn-umum');
+  var btnShopee = document.getElementById('src-btn-shopee');
+  if (sumber === 'Shopee') {
+    btnShopee.classList.add('active');
+    btnUmum.classList.remove('active');
+  } else {
+    btnUmum.classList.add('active');
+    btnShopee.classList.remove('active');
+  }
+}
 
-  tbody.innerHTML = '';
+// ----------------------------------------------------------------
+// Diskon 2 Mode
+// ----------------------------------------------------------------
+function setDiskonMode(mode) {
+  document.getElementById('diskon_mode').value = mode;
+  var tabAuto   = document.getElementById('tab-disc-auto');
+  var tabManual = document.getElementById('tab-disc-manual');
+  var infoAuto  = document.getElementById('disc-auto-info');
+  var boxManual = document.getElementById('disc-manual-box');
+
+  if (mode === 'auto') {
+    tabAuto.classList.add('active');
+    tabManual.classList.remove('active');
+    infoAuto.classList.remove('is-hidden');
+    boxManual.classList.add('is-hidden');
+  } else {
+    tabManual.classList.add('active');
+    tabAuto.classList.remove('active');
+    boxManual.classList.remove('is-hidden');
+    infoAuto.classList.add('is-hidden');
+  }
+  renderKeranjang();
+}
+
+function hitungDiskon(subtotal, totalUnit) {
+  var mode = document.getElementById('diskon_mode').value;
+  if (mode === 'auto') {
+    return totalUnit >= 24 ? Math.round(subtotal * 0.02) : 0;
+  }
+  var el = document.getElementById('input_diskon_manual');
+  var val = parseInt(el ? el.value : '0', 10);
+  return Math.max(0, isNaN(val) ? 0 : val);
+}
+
+// ----------------------------------------------------------------
+// Ongkir
+// ----------------------------------------------------------------
+function toggleOngkir() {
+  var cb    = document.getElementById('cb-ongkir');
+  var wrap  = document.getElementById('ongkir-input-wrap');
+  var rowOK = document.getElementById('sum-row-ongkir');
+  var badge = document.getElementById('badge-ongkir-status');
+  if (cb.checked) {
+    wrap.classList.remove('is-hidden');
+    if (rowOK) rowOK.classList.remove('is-hidden');
+    if (badge) {
+      badge.textContent = 'Aktif';
+      badge.className = 'badge info';
+    }
+  } else {
+    wrap.classList.add('is-hidden');
+    if (rowOK) rowOK.classList.add('is-hidden');
+    if (badge) {
+      badge.textContent = 'Opsional';
+      badge.className = 'badge neutral';
+    }
+    var el = document.getElementById('input_ongkir');
+    if (el) el.value = 0;
+  }
+  renderKeranjang();
+}
+
+// ----------------------------------------------------------------
+// Render Keranjang & Hitung Total
+// ----------------------------------------------------------------
+function renderKeranjang() {
+  var tbody      = document.getElementById('cart-tbody');
+  var hiddenWrap = document.getElementById('cart-hidden-inputs');
+  var badge      = document.getElementById('cart-badge-count');
+
+  tbody.innerHTML      = '';
   hiddenWrap.innerHTML = '';
 
   if (keranjang.length === 0) {
     tbody.innerHTML = '<tr><td colspan="4" class="table-empty">Keranjang masih kosong. Klik tombol <strong>+ Tambah</strong> pada katalog.</td></tr>';
     badge.textContent = '0 Item (0 Unit)';
-    document.getElementById('label-subtotal').textContent = 'Rp 0';
-    document.getElementById('label-diskon').textContent = '- Rp 0';
+    document.getElementById('label-subtotal').textContent   = 'Rp 0';
+    document.getElementById('label-diskon').textContent     = '- Rp 0';
+    document.getElementById('label-ongkir').textContent     = '+ Rp 0';
     document.getElementById('label-grandtotal').textContent = 'Rp 0';
+
+    var hintEl = document.getElementById('disc-auto-info');
+    var textEl = document.getElementById('disc-auto-text');
+    if (hintEl && textEl) {
+      hintEl.classList.remove('ok');
+      textEl.innerHTML = 'Diskon <strong>2%</strong> otomatis aktif jika keranjang &ge; <strong>24 botol</strong> (campur produk).';
+    }
+
+    document.getElementById('hidden_diskon').value = 0;
+    document.getElementById('hidden_ongkir').value = 0;
     return;
   }
 
-  let totalUnit = 0;
-  let subtotal = 0;
+  var totalUnit = 0;
+  var subtotal  = 0;
 
-  keranjang.forEach(item => {
-    const subItem = item.qty * item.harga;
-    totalUnit += item.qty;
-    subtotal += subItem;
+  for (var i = 0; i < keranjang.length; i++) {
+    var item    = keranjang[i];
+    var subItem = item.qty * item.harga;
+    totalUnit  += item.qty;
+    subtotal   += subItem;
 
-    const tr = document.createElement('tr');
+    var tr = document.createElement('tr');
     tr.innerHTML =
       '<td><strong>' + item.nama + '</strong><div class="muted text-xxs">' + formatRupiah(item.harga) + ' / unit</div></td>' +
       '<td class="text-center mono">' +
@@ -472,18 +823,64 @@ function renderKeranjang() {
       '<input type="hidden" name="product_id[]" value="' + item.id + '">' +
       '<input type="hidden" name="kuantitas[]" value="' + item.qty + '">' +
       '<input type="hidden" name="harga[]" value="' + item.harga + '">';
-  });
+  }
 
-  const grandTotal = Math.max(0, subtotal - diskon);
+  // Hitung & update diskon
+  var diskon = hitungDiskon(subtotal, totalUnit);
+
+  var hintEl = document.getElementById('disc-auto-info');
+  var textEl = document.getElementById('disc-auto-text');
+  if (hintEl && textEl && document.getElementById('diskon_mode').value === 'auto') {
+    if (totalUnit >= 24) {
+      hintEl.classList.add('ok');
+      textEl.innerHTML = '<strong>Selamat!</strong> Diskon 2% aktif &mdash; Hemat ' + formatRupiah(diskon) + ' (' + totalUnit + ' botol)';
+    } else {
+      hintEl.classList.remove('ok');
+      var sisa = 24 - totalUnit;
+      textEl.innerHTML = 'Tambah <strong>' + sisa + ' botol</strong> lagi untuk dapat diskon otomatis <strong>2%</strong> (' + totalUnit + '/24 botol).';
+    }
+  }
+
+  var pctEl = document.getElementById('disc-manual-pct-val');
+  if (pctEl) {
+    pctEl.textContent = subtotal > 0 ? (diskon / subtotal * 100).toFixed(1) + '%' : '0%';
+  }
+
+  var descEl = document.getElementById('label-diskon-desc');
+  if (descEl) {
+    var mode = document.getElementById('diskon_mode').value;
+    descEl.textContent = mode === 'auto'
+      ? 'Diskon Otomatis (2%)' + (totalUnit >= 24 ? ' ✓' : '')
+      : 'Diskon Manual';
+  }
+
+  // Ongkir
+  var pakai_ongkir = document.getElementById('cb-ongkir').checked;
+  var ongkir = 0;
+  if (pakai_ongkir) {
+    var ongkirEl = document.getElementById('input_ongkir');
+    var ongkirRaw = parseInt(ongkirEl ? ongkirEl.value : '0', 10);
+    ongkir = Math.max(0, isNaN(ongkirRaw) ? 0 : ongkirRaw);
+  }
+
+  var grandTotal = Math.max(0, subtotal - diskon + ongkir);
+
   badge.textContent = keranjang.length + ' Item (' + totalUnit + ' Unit)';
-  document.getElementById('label-subtotal').textContent = formatRupiah(subtotal);
-  document.getElementById('label-diskon').textContent = '- ' + formatRupiah(diskon);
+  document.getElementById('label-subtotal').textContent   = formatRupiah(subtotal);
+  document.getElementById('label-diskon').textContent     = '- ' + formatRupiah(diskon);
+  document.getElementById('label-ongkir').textContent     = '+ ' + formatRupiah(ongkir);
   document.getElementById('label-grandtotal').textContent = formatRupiah(grandTotal);
+
+  document.getElementById('hidden_diskon').value = diskon;
+  document.getElementById('hidden_ongkir').value = ongkir;
 }
 
+// ----------------------------------------------------------------
+// Status Pembayaran: Toggle Jatuh Tempo
+// ----------------------------------------------------------------
 function toggleJatuhTempo() {
-  const status = document.getElementById('status_pembayaran').value;
-  const box = document.getElementById('box-jatuh-tempo');
+  var status = document.getElementById('status_pembayaran').value;
+  var box    = document.getElementById('box-jatuh-tempo');
   if (status === '2') {
     box.classList.remove('is-hidden');
   } else {
@@ -491,18 +888,85 @@ function toggleJatuhTempo() {
   }
 }
 
-function filterKatalogPos() {
-  const q = (document.getElementById('pos-search').value || '').toLowerCase().trim();
-  document.querySelectorAll('#pos-product-grid .product-card').forEach(card => {
-    const teks = card.getAttribute('data-search') || '';
-    if (!q || teks.includes(q)) {
-      card.classList.remove('is-hidden');
+// ----------------------------------------------------------------
+// Filter Katalog + Best Seller
+// ----------------------------------------------------------------
+function onPosFilter() {
+  var q         = (document.getElementById('pos-search').value || '').toLowerCase().trim();
+  var katFilter = document.getElementById('pos-filter-kat').value;
+  var filterAktif = (q !== '' || katFilter !== '');
+
+  var bsWrap = document.getElementById('pos-bestseller-wrap');
+  if (bsWrap) {
+    if (filterAktif) {
+      bsWrap.classList.add('is-hidden');
     } else {
-      card.classList.add('is-hidden');
+      bsWrap.classList.remove('is-hidden');
     }
-  });
+  }
+
+  var totalVisible = 0;
+  var accItems     = document.querySelectorAll('.pos-cat-acc');
+
+  for (var i = 0; i < accItems.length; i++) {
+    var acc   = accItems[i];
+    var katId = acc.getAttribute('data-kat-id');
+    var katMatch = (katFilter === '' || katFilter === katId);
+
+    var produk   = acc.querySelectorAll('.product-card');
+    var visCount = 0;
+
+    for (var j = 0; j < produk.length; j++) {
+      var card    = produk[j];
+      var teks    = card.getAttribute('data-search') || '';
+      var prodMatch = (!q || teks.indexOf(q) > -1);
+      if (katMatch && prodMatch) {
+        card.classList.remove('is-hidden');
+        visCount++;
+        totalVisible++;
+      } else {
+        card.classList.add('is-hidden');
+      }
+    }
+
+    if (visCount > 0) {
+      acc.classList.remove('is-hidden');
+      if (filterAktif) {
+        var body = document.getElementById('pos-cat-body-' + katId);
+        if (body) body.classList.remove('is-hidden');
+      }
+    } else {
+      acc.classList.add('is-hidden');
+    }
+  }
+
+  var noResult = document.getElementById('pos-no-result');
+  if (noResult) {
+    if (totalVisible === 0 && filterAktif) {
+      noResult.classList.remove('is-hidden');
+    } else {
+      noResult.classList.add('is-hidden');
+    }
+  }
 }
 
+// ----------------------------------------------------------------
+// Toggle Accordion Kategori
+// ----------------------------------------------------------------
+function togglePosKat(katId, headerEl) {
+  var body = document.getElementById('pos-cat-body-' + katId);
+  if (!body) return;
+  var sedangTerbuka = !body.classList.contains('is-hidden');
+  if (sedangTerbuka) {
+    body.classList.add('is-hidden');
+  } else {
+    body.classList.remove('is-hidden');
+  }
+}
+
+// ----------------------------------------------------------------
+// Validasi sebelum submit
+// ----------------------------------------------------------------
 function validasiCheckout() {
   if (keranjang.length === 0) {
     if (typeof window.sidrippToast === 'function') {
@@ -512,20 +976,26 @@ function validasiCheckout() {
     }
     return false;
   }
+  renderKeranjang(); // Pastikan hidden inputs tersinkron
   return true;
 }
 
-// Inisialisasi otomatis jika ada parameter mitra baru dari URL
+// ----------------------------------------------------------------
+// Inisialisasi DOMContentLoaded
+// ----------------------------------------------------------------
 window.addEventListener('DOMContentLoaded', function() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const selectedCust = urlParams.get('selected_customer');
+  // Auto-pilih mitra dari URL param (setelah daftar mitra baru berhasil)
+  var urlParams    = new URLSearchParams(window.location.search);
+  var selectedCust = urlParams.get('selected_customer');
   if (selectedCust) {
-    const sel = document.getElementById('select_customer');
+    var sel = document.getElementById('select_customer');
     if (sel) {
       sel.value = selectedCust;
       pilihMitra(selectedCust);
     }
   }
+
+  renderKeranjang();
 });
 </script>
 

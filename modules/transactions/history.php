@@ -3,6 +3,12 @@
  * MODUL TRANSAKSI — RIWAYAT TRANSAKSI PENJUALAN
  * File: modules/transactions/history.php
  * Fungsi: Menampilkan arsip nota penjualan dari Supabase menggunakan Multi-table JOIN.
+ * Revisi Mitra MKP Store Tahap 3 (Timothy, 25 Nov 2026):
+ *   - Tambahkan kolom t.sumber_transaksi dan t.ongkir di SELECT.
+ *   - Badge sumber transaksi (Umum / Shopee).
+ *   - Rincian ongkir bila > 0.
+ *   - Format waktu menggunakan format_waktu_wib() (tanpa mikrodetik).
+ * Aturan Arsitektur: PHP Native Prosedural, pg_query_params, ZERO INLINE CSS.
  */
 
 $root       = '../../';
@@ -13,9 +19,30 @@ $allowed    = ['super_admin', 'admin', 'kasir'];
 
 require_once __DIR__ . '/../../layouts/header.php';
 
-// Query Multi-table JOIN (transactions + users + subquery jumlah item)
+// ============================================================
+// Helper: format waktu WIB tanpa mikrodetik
+// ============================================================
+if (!function_exists('format_waktu_wib')) {
+    function format_waktu_wib($ts_string)
+    {
+        if (empty($ts_string)) return '-';
+        // Potong mikrodetik jika ada (format: 2026-11-25 10:30:00.123456)
+        $ts_clean = preg_replace('/\.\d+$/', '', trim($ts_string));
+        $ts       = strtotime($ts_clean);
+        if (!$ts) return e($ts_string);
+        $bulan = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        return date('d', $ts) . ' ' . $bulan[(int)date('n', $ts) - 1] . ' ' . date('Y', $ts)
+             . ' &middot; ' . date('H:i', $ts) . ' WIB';
+    }
+}
+
+// ============================================================
+// Query Riwayat — sertakan sumber_transaksi & ongkir
+// ============================================================
 $q_history = "SELECT t.id_transaksi, t.waktu_transaksi, t.nama_pelanggan, t.kontak_pelanggan,
-                     t.total_harga, t.diskon, t.status_pembayaran, u.nama AS nama_kasir,
+                     t.total_harga, t.diskon, t.status_pembayaran,
+                     t.sumber_transaksi, t.ongkir,
+                     u.nama AS nama_kasir,
                      (SELECT COALESCE(SUM(td.kuantitas), 0)
                       FROM transaction_details td
                       WHERE td.transactionsid_transaksi = t.id_transaksi) AS total_botol
@@ -68,9 +95,10 @@ $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
       <thead>
         <tr>
           <th>No Invoice</th>
-          <th>Tanggal</th>
+          <th>Tanggal &amp; Waktu</th>
           <th>Pelanggan</th>
           <th>Kasir</th>
+          <th>Sumber</th>
           <th>Status Bayar</th>
           <th class="text-right">Total Tagihan</th>
           <th class="text-right">Aksi</th>
@@ -79,16 +107,38 @@ $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
       <tbody>
         <?php if ($res_history && $total_riwayat > 0): ?>
           <?php while ($trx = pg_fetch_assoc($res_history)):
-              $lunas = (int)$trx['status_pembayaran'] === 1;
+              $lunas        = (int)$trx['status_pembayaran'] === 1;
+              $ongkir       = (int)($trx['ongkir'] ?? 0);
+              $sumber       = trim($trx['sumber_transaksi'] ?? 'Umum');
+              $is_shopee    = (strtolower($sumber) === 'shopee');
           ?>
             <tr>
               <td class="mono"><strong>#<?= e($trx['id_transaksi']) ?></strong></td>
-              <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($trx['waktu_transaksi']))) ?></td>
+              <td class="nowrap"><?= format_waktu_wib($trx['waktu_transaksi']) ?></td>
               <td>
                 <strong><?= e($trx['nama_pelanggan'] ?: 'Pelanggan Umum') ?></strong>
-                <div class="muted text-xs"><?= (int)$trx['total_botol'] ?> Unit · Kontak: <?= e($trx['kontak_pelanggan'] ?: '-') ?></div>
+                <div class="muted text-xs">
+                  <?= (int)$trx['total_botol'] ?> Unit
+                  <?php if (!empty($trx['kontak_pelanggan']) && $trx['kontak_pelanggan'] !== '-'): ?>
+                    &middot; <?= e($trx['kontak_pelanggan']) ?>
+                  <?php endif; ?>
+                </div>
+                <?php if ($ongkir > 0): ?>
+                  <div class="muted text-xs">
+                    <span class="badge neutral">
+                      <?= icon('truck', 11) ?> Ongkir: <?= rupiah($ongkir) ?>
+                    </span>
+                  </div>
+                <?php endif; ?>
               </td>
               <td><?= e($trx['nama_kasir'] ?? 'Kasir') ?></td>
+              <td>
+                <?php if ($is_shopee): ?>
+                  <span class="badge warn"><i class="dot"></i>Shopee</span>
+                <?php else: ?>
+                  <span class="badge neutral"><i class="dot"></i>Umum</span>
+                <?php endif; ?>
+              </td>
               <td>
                 <?php if ($lunas): ?>
                   <span class="badge success"><i class="dot"></i>Lunas</span>
@@ -113,7 +163,7 @@ $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
           <?php endwhile; ?>
         <?php else: ?>
           <tr>
-            <td colspan="7" class="table-empty">Belum ada riwayat transaksi penjualan yang tercatat.</td>
+            <td colspan="8" class="table-empty">Belum ada riwayat transaksi penjualan yang tercatat.</td>
           </tr>
         <?php endif; ?>
       </tbody>
