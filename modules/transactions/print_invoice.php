@@ -210,12 +210,12 @@ if ($id_trx !== '') {
       <div class="invoice-sign-box">
         <div class="invoice-sign-title">Penerima</div>
         <div class="invoice-sign-space"></div>
-        <div class="invoice-sign-name">( <?= e($header_trx['nama_pj'] ?: $nama_pelanggan) ?> )</div>
+        <div class="invoice-sign-name">_____________________________</div>
       </div>
       <div class="invoice-sign-box">
-        <div class="invoice-sign-title">Pengirim (CV. MITRA KEMBAR PRADIPTA)</div>
+        <div class="invoice-sign-title">CV. MITRA KEMBAR PRADIPTA</div>
         <div class="invoice-sign-space"></div>
-        <div class="invoice-sign-name">( <?= e($header_trx['nama_kasir'] ?? 'MKP Store Malang') ?> )</div>
+        <div class="invoice-sign-name">______________________________</div>
       </div>
     </div>
   </div>
