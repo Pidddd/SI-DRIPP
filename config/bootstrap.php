@@ -36,8 +36,19 @@ if (file_exists(BASE_PATH . 'config/helper.php')) {
     require_once BASE_PATH . 'config/helper.php';
 }
 
-// 5. URL Dasar Aplikasi (Otomatis mendeteksi localhost:8000 maupun subfolder XAMPP/Laragon)
-$protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+// 5. URL Dasar Aplikasi (Otomatis mendeteksi reverse proxy HTTPS seperti Render, localhost, maupun subfolder)
+$forwarded_proto = '';
+if (!empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) {
+    $proto_parts = explode(',', (string)$_SERVER['HTTP_X_FORWARDED_PROTO']);
+    $forwarded_proto = strtolower(trim($proto_parts[0]));
+}
+
+$is_https = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+    || $forwarded_proto === 'https'
+    || (!empty($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower((string)$_SERVER['HTTP_X_FORWARDED_SSL']) === 'on')
+    || (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443);
+
+$protocol = $is_https ? 'https://' : 'http://';
 $host     = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : 'localhost';
 $doc_root = isset($_SERVER['DOCUMENT_ROOT']) ? str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])) : '';
 $app_root = str_replace('\\', '/', realpath(dirname(__DIR__)));
