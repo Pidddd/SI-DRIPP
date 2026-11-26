@@ -67,45 +67,111 @@
     }
   });
 
-  /* ---------- Global Custom Confirmation Modal (Promise-based) ---------- */
-  var confirmBackdrop = $('#sidripp-confirm-backdrop');
-  var confirmModalEl  = $('#sidripp-confirm-modal');
-  var confirmTitleEl  = $('#confirm-modal-title');
-  var confirmMsgEl    = $('#confirm-modal-msg');
-  var confirmBtnOk    = $('#confirm-btn-ok');
+  /* ---------- Global Custom Notification & Confirmation Modal (Promise-based) ---------- */
+  var confirmBackdrop  = $('#sidripp-confirm-backdrop');
+  var confirmModalEl   = $('#sidripp-confirm-modal');
+  var confirmTitleEl   = $('#confirm-modal-title');
+  var confirmMsgEl     = $('#confirm-modal-msg');
+  var confirmBtnOk     = $('#confirm-btn-ok');
   var confirmBtnCancel = $('#confirm-btn-cancel');
-  var confirmResolver = null;
+  var confirmResolver  = null;
+  var confirmFocusEl   = null;
+  var confirmWired     = false;
+
+  function ensureGlobalModal() {
+    if (!confirmBackdrop) {
+      var wrap = document.createElement('div');
+      wrap.className = 'confirm-backdrop';
+      wrap.id = 'sidripp-confirm-backdrop';
+      wrap.setAttribute('role', 'dialog');
+      wrap.setAttribute('aria-modal', 'true');
+      wrap.setAttribute('aria-labelledby', 'confirm-modal-title');
+      wrap.setAttribute('aria-describedby', 'confirm-modal-msg');
+      wrap.setAttribute('aria-hidden', 'true');
+      wrap.innerHTML =
+        '<div class="confirm-modal" id="sidripp-confirm-modal" role="document">' +
+          '<div class="confirm-icon" aria-hidden="true">' +
+            '<svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '</div>' +
+          '<h3 class="confirm-title" id="confirm-modal-title">Konfirmasi Tindakan</h3>' +
+          '<p class="confirm-msg" id="confirm-modal-msg"></p>' +
+          '<div class="confirm-actions">' +
+            '<button type="button" class="btn btn-ghost" id="confirm-btn-cancel">Batal</button>' +
+            '<button type="button" class="btn btn-primary confirm-btn-confirm" id="confirm-btn-ok">Ya, Lanjutkan</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(wrap);
+      confirmBackdrop  = wrap;
+      confirmModalEl   = $('#sidripp-confirm-modal');
+      confirmTitleEl   = $('#confirm-modal-title');
+      confirmMsgEl     = $('#confirm-modal-msg');
+      confirmBtnOk     = $('#confirm-btn-ok');
+      confirmBtnCancel = $('#confirm-btn-cancel');
+    }
+    if (!confirmWired && confirmBackdrop && confirmBtnOk && confirmBtnCancel) {
+      confirmWired = true;
+      confirmBtnOk.addEventListener('click', function () { settleConfirm(true); });
+      confirmBtnCancel.addEventListener('click', function () { settleConfirm(false); });
+      confirmBackdrop.addEventListener('click', function (e) {
+        if (e.target === confirmBackdrop) settleConfirm(false);
+      });
+    }
+  }
+
+  function resolveFocusTarget(target) {
+    if (!target) return null;
+    if (typeof target === 'string') return document.querySelector(target);
+    if (typeof target.focus === 'function') return target;
+    return null;
+  }
 
   function settleConfirm(result) {
     if (!confirmBackdrop) return;
     confirmBackdrop.classList.remove('is-open');
     confirmBackdrop.setAttribute('aria-hidden', 'true');
-    if (confirmModalEl) confirmModalEl.classList.remove('is-danger');
+    if (confirmModalEl) {
+      confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    }
+    if (confirmBtnCancel) confirmBtnCancel.classList.remove('is-hidden');
+
     var resolve = confirmResolver;
+    var focusTarget = resolveFocusTarget(confirmFocusEl);
     confirmResolver = null;
+    confirmFocusEl  = null;
+
     if (typeof resolve === 'function') resolve(Boolean(result));
+    if (focusTarget) {
+      setTimeout(function () {
+        try {
+          if (typeof focusTarget.scrollIntoView === 'function') {
+            focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          focusTarget.focus();
+        } catch (e) {}
+      }, 50);
+    }
   }
 
   function sidrippConfirm(message, options) {
     var opts = options || {};
-    if (!confirmBackdrop || !confirmModalEl || !confirmBtnOk || !confirmBtnCancel) {
-      return Promise.resolve(window.confirm(message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?'));
-    }
+    ensureGlobalModal();
 
-    // Jika ada modal konfirmasi sebelumnya yang belum selesai, tutup dengan false
     if (confirmResolver) settleConfirm(false);
 
     confirmTitleEl.textContent   = opts.title || 'Konfirmasi Tindakan';
     confirmMsgEl.textContent     = message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
     confirmBtnCancel.textContent = opts.cancelText || 'Batal';
     confirmBtnOk.textContent     = opts.okText || 'Ya, Lanjutkan';
+    confirmBtnCancel.classList.remove('is-hidden');
 
-    if (opts.danger) {
+    confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    if (opts.danger || opts.tone === 'danger') {
       confirmModalEl.classList.add('is-danger');
-    } else {
-      confirmModalEl.classList.remove('is-danger');
+    } else if (opts.tone === 'warn') {
+      confirmModalEl.classList.add('is-warn');
     }
 
+    confirmFocusEl = opts.focusEl || null;
     confirmBackdrop.classList.add('is-open');
     confirmBackdrop.setAttribute('aria-hidden', 'false');
     setTimeout(function () { confirmBtnOk.focus(); }, 60);
@@ -114,15 +180,41 @@
       confirmResolver = resolve;
     });
   }
-  window.sidrippConfirm = sidrippConfirm;
 
-  if (confirmBackdrop && confirmBtnOk && confirmBtnCancel) {
-    confirmBtnOk.addEventListener('click', function () { settleConfirm(true); });
-    confirmBtnCancel.addEventListener('click', function () { settleConfirm(false); });
-    confirmBackdrop.addEventListener('click', function (e) {
-      if (e.target === confirmBackdrop) settleConfirm(false);
+  function showAlertModal(message, options) {
+    var opts = options || {};
+    ensureGlobalModal();
+
+    if (confirmResolver) settleConfirm(false);
+
+    confirmTitleEl.textContent = opts.title || 'Peringatan Validasi';
+    confirmMsgEl.textContent   = message || 'Harap periksa kembali data yang Anda masukkan.';
+    confirmBtnOk.textContent   = opts.okText || 'Mengerti';
+    confirmBtnCancel.classList.add('is-hidden');
+
+    confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    confirmModalEl.classList.add('is-alert');
+    if (opts.danger || opts.tone === 'danger') {
+      confirmModalEl.classList.add('is-danger');
+    } else if (opts.tone !== 'info') {
+      confirmModalEl.classList.add('is-warn');
+    }
+
+    confirmFocusEl = opts.focusEl || null;
+    confirmBackdrop.classList.add('is-open');
+    confirmBackdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { confirmBtnOk.focus(); }, 60);
+
+    return new Promise(function (resolve) {
+      confirmResolver = resolve;
     });
   }
+
+  ensureGlobalModal();
+  window.sidrippConfirm   = sidrippConfirm;
+  window.showConfirmModal = sidrippConfirm;
+  window.sidrippAlert     = showAlertModal;
+  window.showAlertModal   = showAlertModal;
 
   function extractConfirmOptions(el) {
     var isDanger = el.getAttribute('data-confirm-tone') === 'danger' ||

@@ -3338,6 +3338,19 @@ body.login-body {
   border-color: rgba(220, 38, 38, 0.28);
   color: var(--danger);
 }
+.confirm-modal.is-warn .confirm-icon {
+  background: #FEF3C7;
+  border-color: rgba(180, 101, 30, 0.32);
+  color: #B4651E;
+}
+[data-theme="dark"] .confirm-modal.is-warn .confirm-icon {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FBBF24;
+}
+.confirm-modal.is-alert .confirm-btn-confirm {
+  min-width: 152px;
+}
 .confirm-title {
   margin: 0 0 8px;
   font-size: 18px;

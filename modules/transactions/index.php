@@ -717,8 +717,8 @@ function showStockLimitWarn(nama, stokMaks) {
   var msg = 'Jumlah melebihi stok tersedia (' + stokMaks + ' unit' + (nama ? ' untuk ' + nama : '') + ').';
   if (typeof window.sidrippToast === 'function') {
     window.sidrippToast(msg, 'warn');
-  } else {
-    alert(msg);
+  } else if (typeof window.showAlertModal === 'function') {
+    window.showAlertModal(msg, { title: 'Batas Stok Tersedia', tone: 'warn' });
   }
 }
 
@@ -1308,10 +1308,14 @@ function togglePosKat(katId, headerEl) {
 // ----------------------------------------------------------------
 function validasiCheckout() {
   if (keranjang.length === 0) {
-    if (typeof window.sidrippToast === 'function') {
+    if (typeof window.showAlertModal === 'function') {
+      window.showAlertModal('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!', {
+        title: 'Keranjang Masih Kosong',
+        tone: 'warn',
+        focusEl: '#pos-search'
+      });
+    } else if (typeof window.sidrippToast === 'function') {
       window.sidrippToast('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!', 'warn');
-    } else {
-      alert('Pilih minimal 1 produk ke dalam keranjang sebelum memproses pembayaran!');
     }
     return false;
   }
