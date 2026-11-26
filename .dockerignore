@@ -1,0 +1,20 @@
+# Git & IDE
+.git
+.gitignore
+.github
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Kredensial sensitif lokal (Render menyuntikkan Env Vars di runtime)
+.env
+.env.local
+config/db_pass.local.php
+
+# Log & berkas manajemen internal
+*.log
+docs/*.csv
+docs/WBS_Revisi_Dosen.md
+docs/Master_ToDo_PBL_SI-DRIPP.csv
+docs/ToDo_Sprint_Minggu11_12.csv
