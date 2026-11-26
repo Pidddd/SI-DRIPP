@@ -107,11 +107,11 @@ if ($res_rincian_produk) {
 
 // 3. Query Card 3 — Database VIEW v_laporan_penjualan (Dibatasi 5 item terbaru)
 $period_view = report_sql_period_clause($filter, 'waktu_transaksi', 1);
-$q_view_penjualan = "SELECT waktu_transaksi, id_transaksi, nama_barang, kuantitas, subtotal_harga, kasir
-                     FROM v_laporan_penjualan
-                     WHERE ({$period_view['sql']})
-                     ORDER BY waktu_transaksi DESC
-                     LIMIT 5";
+$q_view_penjualan = "select waktu_transaksi, id_transaksi, nama_barang, kuantitas, subtotal_harga, kasir
+                     from v_laporan_penjualan
+                     where ({$period_view['sql']})
+                     order by waktu_transaksi desc, id_transaksi desc, nama_barang asc
+                     limit 5";
 $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
 ?>
 
@@ -365,18 +365,18 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
 <div class="card flush rise">
   <div class="card-head pad pb-4">
     <div>
-      <h2>Rincian Penjualan Item (Sumber: VIEW <code>v_laporan_penjualan</code>)</h2>
-      <p>Menampilkan 5 transaksi item terbaru dari objek VIEW PostgreSQL sesuai filter periode aktif</p>
+      <h2>Rincian Penjualan Item Terbaru</h2>
+      <p>Menampilkan 5 rincian item transaksi terbaru sesuai periode laporan yang dipilih</p>
     </div>
-    <span class="badge info">5 Item Terbaru · VIEW Active</span>
+    <span class="badge info">5 Transaksi Terbaru</span>
   </div>
 
   <div class="table-wrap">
     <table class="table">
       <thead>
         <tr>
-          <th>Waktu Transaksi</th>
           <th>No. Invoice</th>
+          <th>Tanggal &amp; Waktu</th>
           <th>Nama Produk</th>
           <th class="text-center">Qty</th>
           <th class="text-right">Subtotal</th>
@@ -388,8 +388,8 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
         <?php if ($res_view && pg_num_rows($res_view) > 0): ?>
           <?php while ($v = pg_fetch_assoc($res_view)): ?>
             <tr>
-              <td class="nowrap"><?= e(date('d M Y · H:i', strtotime($v['waktu_transaksi']))) ?></td>
               <td class="mono"><strong>#<?= e($v['id_transaksi']) ?></strong></td>
+              <td class="nowrap"><?= format_waktu_wib($v['waktu_transaksi']) ?></td>
               <td><strong><?= e($v['nama_barang']) ?></strong></td>
               <td class="text-center mono"><?= (int)$v['kuantitas'] ?></td>
               <td class="text-right mono"><strong><?= rupiah($v['subtotal_harga']) ?></strong></td>
@@ -417,7 +417,7 @@ $res_view = pg_query_params($conn, $q_view_penjualan, $period_view['params']);
 
   <div class="card-foot-bar">
     <span class="muted text-xs">Menampilkan maksimal 5 item transaksi terbaru. Buka halaman Riwayat Transaksi untuk melihat seluruh catatan lengkap.</span>
-    <a href="../transactions/index.php" class="btn btn-soft">
+    <a href="<?= BASE_URL ?>modules/transactions/history.php" class="btn btn-soft">
       Lihat Selengkapnya &rarr;
     </a>
   </div>
