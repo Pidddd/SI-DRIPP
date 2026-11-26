@@ -228,7 +228,7 @@ if ($id_trx !== '') {
         </div>
       </div>
 
-      <!-- Kolom Tanda Tangan Penerima & Pengirim -->
+      <!-- Kolom Tanda Tangan Penerima & CV. MITRA KEMBAR PRADIPTA -->
       <div class="invoice-signatures">
         <div class="invoice-sign-box">
           <div class="invoice-sign-title">Penerima</div>
@@ -236,7 +236,7 @@ if ($id_trx !== '') {
           <div class="invoice-sign-name">( ...................................... )</div>
         </div>
         <div class="invoice-sign-box">
-          <div class="invoice-sign-title">Pengirim &middot; CV. MITRA KEMBAR PRADIPTA</div>
+          <div class="invoice-sign-title">CV. MITRA KEMBAR PRADIPTA</div>
           <div class="invoice-sign-space"></div>
           <div class="invoice-sign-name">( ...................................... )</div>
         </div>
