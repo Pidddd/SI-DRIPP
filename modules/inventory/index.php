@@ -435,7 +435,13 @@ function stepBatch(id, step, sisaBatchSekarang) {
   var currentVal = parseInt(el.value, 10) || 0;
   var nextVal = currentVal + step;
   if ((sisaBatchSekarang + nextVal) < 0) {
-    alert('Pengurangan tidak boleh membuat sisa fisik batch bernilai negatif!');
+    if (typeof window.showAlertModal === 'function') {
+      window.showAlertModal('Pengurangan tidak boleh membuat sisa fisik batch bernilai negatif!', {
+        title: 'Batas Pengurangan Stok',
+        tone: 'warn',
+        focusEl: el
+      });
+    }
     return;
   }
   el.value = nextVal;

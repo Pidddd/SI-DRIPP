@@ -73,6 +73,7 @@ $q_history = "SELECT so.id_opname, so.waktu_opname, so.stok_sistem, so.stok_fisi
 $res_history = pg_query($conn, $q_history);
 ?>
 
+<div class="inv-page-wrap">
 <?php if (isset($_SESSION['success'])): ?>
   <div class="callout success rise">
     <?= icon('check', 18) ?>
@@ -98,7 +99,7 @@ $res_history = pg_query($conn, $q_history);
 
 <!-- 1 Form Pembungkus Seluruh Tabel Stock Opname (Revisi Dosen Poin 2) -->
 <form action="<?= BASE_URL ?>modules/inventory/process/stock_opname.php" method="POST">
-  <div class="card flush mb-5 rise card-inventory-wrap">
+  <div class="card flush rise card-inventory-wrap inv-section-gap">
     <div class="card-head pad pb-4">
       <div>
         <h2>Audit Stock Opname &mdash; Per Kategori Produk</h2>
@@ -107,9 +108,6 @@ $res_history = pg_query($conn, $q_history);
       <div class="form-actions">
         <span class="badge neutral"><i class="dot"></i><?= count($categories) ?> Kategori &middot; <?= $total_all_produk ?> Varian</span>
         <span class="badge info"><i class="dot"></i>Bulk Audit</span>
-        <button type="submit" class="btn btn-primary" data-confirm="Terapkan seluruh penyesuaian stock opname fisik ini ke dalam sistem?">
-          <?= icon('check', 18) ?> Save All Stock Opname
-        </button>
       </div>
     </div>
 
@@ -314,5 +312,6 @@ function stepOpname(id, step) {
     </table>
   </div>
 </div>
+</div><!-- /.inv-page-wrap -->
 
 <?php require_once __DIR__ . '/../../layouts/footer.php'; ?>

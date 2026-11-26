@@ -67,45 +67,111 @@
     }
   });
 
-  /* ---------- Global Custom Confirmation Modal (Promise-based) ---------- */
-  var confirmBackdrop = $('#sidripp-confirm-backdrop');
-  var confirmModalEl  = $('#sidripp-confirm-modal');
-  var confirmTitleEl  = $('#confirm-modal-title');
-  var confirmMsgEl    = $('#confirm-modal-msg');
-  var confirmBtnOk    = $('#confirm-btn-ok');
+  /* ---------- Global Custom Notification & Confirmation Modal (Promise-based) ---------- */
+  var confirmBackdrop  = $('#sidripp-confirm-backdrop');
+  var confirmModalEl   = $('#sidripp-confirm-modal');
+  var confirmTitleEl   = $('#confirm-modal-title');
+  var confirmMsgEl     = $('#confirm-modal-msg');
+  var confirmBtnOk     = $('#confirm-btn-ok');
   var confirmBtnCancel = $('#confirm-btn-cancel');
-  var confirmResolver = null;
+  var confirmResolver  = null;
+  var confirmFocusEl   = null;
+  var confirmWired     = false;
+
+  function ensureGlobalModal() {
+    if (!confirmBackdrop) {
+      var wrap = document.createElement('div');
+      wrap.className = 'confirm-backdrop';
+      wrap.id = 'sidripp-confirm-backdrop';
+      wrap.setAttribute('role', 'dialog');
+      wrap.setAttribute('aria-modal', 'true');
+      wrap.setAttribute('aria-labelledby', 'confirm-modal-title');
+      wrap.setAttribute('aria-describedby', 'confirm-modal-msg');
+      wrap.setAttribute('aria-hidden', 'true');
+      wrap.innerHTML =
+        '<div class="confirm-modal" id="sidripp-confirm-modal" role="document">' +
+          '<div class="confirm-icon" aria-hidden="true">' +
+            '<svg class="ico" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
+          '</div>' +
+          '<h3 class="confirm-title" id="confirm-modal-title">Konfirmasi Tindakan</h3>' +
+          '<p class="confirm-msg" id="confirm-modal-msg"></p>' +
+          '<div class="confirm-actions">' +
+            '<button type="button" class="btn btn-ghost" id="confirm-btn-cancel">Batal</button>' +
+            '<button type="button" class="btn btn-primary confirm-btn-confirm" id="confirm-btn-ok">Ya, Lanjutkan</button>' +
+          '</div>' +
+        '</div>';
+      document.body.appendChild(wrap);
+      confirmBackdrop  = wrap;
+      confirmModalEl   = $('#sidripp-confirm-modal');
+      confirmTitleEl   = $('#confirm-modal-title');
+      confirmMsgEl     = $('#confirm-modal-msg');
+      confirmBtnOk     = $('#confirm-btn-ok');
+      confirmBtnCancel = $('#confirm-btn-cancel');
+    }
+    if (!confirmWired && confirmBackdrop && confirmBtnOk && confirmBtnCancel) {
+      confirmWired = true;
+      confirmBtnOk.addEventListener('click', function () { settleConfirm(true); });
+      confirmBtnCancel.addEventListener('click', function () { settleConfirm(false); });
+      confirmBackdrop.addEventListener('click', function (e) {
+        if (e.target === confirmBackdrop) settleConfirm(false);
+      });
+    }
+  }
+
+  function resolveFocusTarget(target) {
+    if (!target) return null;
+    if (typeof target === 'string') return document.querySelector(target);
+    if (typeof target.focus === 'function') return target;
+    return null;
+  }
 
   function settleConfirm(result) {
     if (!confirmBackdrop) return;
     confirmBackdrop.classList.remove('is-open');
     confirmBackdrop.setAttribute('aria-hidden', 'true');
-    if (confirmModalEl) confirmModalEl.classList.remove('is-danger');
+    if (confirmModalEl) {
+      confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    }
+    if (confirmBtnCancel) confirmBtnCancel.classList.remove('is-hidden');
+
     var resolve = confirmResolver;
+    var focusTarget = resolveFocusTarget(confirmFocusEl);
     confirmResolver = null;
+    confirmFocusEl  = null;
+
     if (typeof resolve === 'function') resolve(Boolean(result));
+    if (focusTarget) {
+      setTimeout(function () {
+        try {
+          if (typeof focusTarget.scrollIntoView === 'function') {
+            focusTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+          focusTarget.focus();
+        } catch (e) {}
+      }, 50);
+    }
   }
 
   function sidrippConfirm(message, options) {
     var opts = options || {};
-    if (!confirmBackdrop || !confirmModalEl || !confirmBtnOk || !confirmBtnCancel) {
-      return Promise.resolve(window.confirm(message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?'));
-    }
+    ensureGlobalModal();
 
-    // Jika ada modal konfirmasi sebelumnya yang belum selesai, tutup dengan false
     if (confirmResolver) settleConfirm(false);
 
     confirmTitleEl.textContent   = opts.title || 'Konfirmasi Tindakan';
     confirmMsgEl.textContent     = message || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
     confirmBtnCancel.textContent = opts.cancelText || 'Batal';
     confirmBtnOk.textContent     = opts.okText || 'Ya, Lanjutkan';
+    confirmBtnCancel.classList.remove('is-hidden');
 
-    if (opts.danger) {
+    confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    if (opts.danger || opts.tone === 'danger') {
       confirmModalEl.classList.add('is-danger');
-    } else {
-      confirmModalEl.classList.remove('is-danger');
+    } else if (opts.tone === 'warn') {
+      confirmModalEl.classList.add('is-warn');
     }
 
+    confirmFocusEl = opts.focusEl || null;
     confirmBackdrop.classList.add('is-open');
     confirmBackdrop.setAttribute('aria-hidden', 'false');
     setTimeout(function () { confirmBtnOk.focus(); }, 60);
@@ -114,15 +180,41 @@
       confirmResolver = resolve;
     });
   }
-  window.sidrippConfirm = sidrippConfirm;
 
-  if (confirmBackdrop && confirmBtnOk && confirmBtnCancel) {
-    confirmBtnOk.addEventListener('click', function () { settleConfirm(true); });
-    confirmBtnCancel.addEventListener('click', function () { settleConfirm(false); });
-    confirmBackdrop.addEventListener('click', function (e) {
-      if (e.target === confirmBackdrop) settleConfirm(false);
+  function showAlertModal(message, options) {
+    var opts = options || {};
+    ensureGlobalModal();
+
+    if (confirmResolver) settleConfirm(false);
+
+    confirmTitleEl.textContent = opts.title || 'Peringatan Validasi';
+    confirmMsgEl.textContent   = message || 'Harap periksa kembali data yang Anda masukkan.';
+    confirmBtnOk.textContent   = opts.okText || 'Mengerti';
+    confirmBtnCancel.classList.add('is-hidden');
+
+    confirmModalEl.classList.remove('is-danger', 'is-warn', 'is-alert');
+    confirmModalEl.classList.add('is-alert');
+    if (opts.danger || opts.tone === 'danger') {
+      confirmModalEl.classList.add('is-danger');
+    } else if (opts.tone !== 'info') {
+      confirmModalEl.classList.add('is-warn');
+    }
+
+    confirmFocusEl = opts.focusEl || null;
+    confirmBackdrop.classList.add('is-open');
+    confirmBackdrop.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { confirmBtnOk.focus(); }, 60);
+
+    return new Promise(function (resolve) {
+      confirmResolver = resolve;
     });
   }
+
+  ensureGlobalModal();
+  window.sidrippConfirm   = sidrippConfirm;
+  window.showConfirmModal = sidrippConfirm;
+  window.sidrippAlert     = showAlertModal;
+  window.showAlertModal   = showAlertModal;
 
   function extractConfirmOptions(el) {
     var isDanger = el.getAttribute('data-confirm-tone') === 'danger' ||
@@ -753,6 +845,463 @@
     });
 
     render();
+  }
+
+  /* ==========================================================================
+     GLOBAL CUSTOM SEARCHABLE DROPDOWN (Auto-Enhance Semua <select>)
+     - Portal menu di document.body (position: fixed, z-index: 9999) agar
+       TIDAK pernah terpotong oleh kontainer overflow-y: auto (POS, Modal, dll.)
+     - Sinkron 2-arah: native value/selectedIndex setter, MutationObserver
+       (opsi dinamis & disabled), form reset, required validation, & change event
+     ========================================================================== */
+  var sdInstances = [];
+  var sdOpenInstance = null;
+  var nativeValueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  var nativeIndexDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'selectedIndex');
+
+  function closeAllSdMenus(exceptInst) {
+    for (var i = 0; i < sdInstances.length; i++) {
+      if (sdInstances[i] !== exceptInst && sdInstances[i].isOpen()) {
+        sdInstances[i].close(true);
+      }
+    }
+  }
+
+  function enhanceSelect(select) {
+    if (!select || select.tagName !== 'SELECT') return null;
+    if (select.multiple || select.hasAttribute('data-native-select')) return null;
+    if (select.getAttribute('data-sd-enhanced') === '1') return null;
+
+    select.setAttribute('data-sd-enhanced', '1');
+
+    // Buat wrapper di posisi exact elemen <select>
+    var wrap = document.createElement('div');
+    wrap.className = 'sd-select';
+    if (select.classList.contains('mono')) wrap.classList.add('is-mono');
+    if (select.disabled) wrap.classList.add('is-disabled');
+
+    select.parentNode.insertBefore(wrap, select);
+    wrap.appendChild(select);
+    select.classList.add('sd-select-native');
+    select.setAttribute('tabindex', '-1');
+
+    // Kontrol combobox tampak
+    var control = document.createElement('div');
+    control.className = 'sd-select-control';
+
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'sd-select-input' + (select.classList.contains('mono') ? ' mono' : '');
+    input.autocomplete = 'off';
+    input.setAttribute('role', 'combobox');
+    input.setAttribute('aria-autocomplete', 'list');
+    input.setAttribute('aria-expanded', 'false');
+    if (select.disabled) input.disabled = true;
+
+    // Salin aria-label atau label teks terkait untuk aksesibilitas
+    var lblText = select.getAttribute('aria-label') || '';
+    if (!lblText && select.id) {
+      var assocLbl = document.querySelector('label[for="' + select.id + '"]');
+      if (assocLbl) lblText = assocLbl.textContent.trim();
+    }
+    if (lblText) input.setAttribute('aria-label', lblText);
+
+    var toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'sd-select-toggle';
+    toggleBtn.setAttribute('tabindex', '-1');
+    toggleBtn.setAttribute('aria-label', 'Buka daftar pilihan');
+    toggleBtn.innerHTML = '<svg class="ico" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+    if (select.disabled) toggleBtn.disabled = true;
+
+    control.appendChild(input);
+    control.appendChild(toggleBtn);
+    wrap.appendChild(control);
+
+    // Portal menu di document.body agar bebas clipping overflow-y: auto
+    var menu = document.createElement('ul');
+    menu.className = 'sd-select-menu is-hidden';
+    menu.setAttribute('role', 'listbox');
+    if (select.classList.contains('mono')) menu.classList.add('is-mono');
+    document.body.appendChild(menu);
+
+    var optionNodes = [];
+    var emptyNode = document.createElement('li');
+    emptyNode.className = 'sd-select-empty is-hidden';
+    emptyNode.textContent = 'Tidak ada pilihan yang cocok.';
+
+    var open = false;
+    var activeIndex = -1;
+    var currentLabel = '';
+    var isSyncing = false;
+
+    function getSelectedOption() {
+      if (select.selectedIndex >= 0 && select.options[select.selectedIndex]) {
+        return select.options[select.selectedIndex];
+      }
+      return select.options[0] || null;
+    }
+
+    function isPlaceholderOpt(opt) {
+      return Boolean(opt && opt.value === '');
+    }
+
+    function syncDisplay() {
+      var selOpt = getSelectedOption();
+      var txt = selOpt ? selOpt.textContent.trim() : '';
+      currentLabel = txt;
+      if (isPlaceholderOpt(selOpt)) {
+        input.value = '';
+        input.placeholder = txt || 'Pilih...';
+        wrap.classList.add('is-placeholder');
+      } else {
+        input.value = txt;
+        input.placeholder = txt || 'Pilih...';
+        wrap.classList.remove('is-placeholder');
+      }
+
+      // Sinkron status disabled
+      var dis = Boolean(select.disabled);
+      wrap.classList.toggle('is-disabled', dis);
+      input.disabled = dis;
+      toggleBtn.disabled = dis;
+      if (dis && open) closeMenu(false);
+
+      // Sinkron highlight opsi terpilih di menu
+      var curVal = select.value;
+      for (var i = 0; i < optionNodes.length; i++) {
+        var li = optionNodes[i];
+        var isSel = (li.getAttribute('data-value') === curVal);
+        li.classList.toggle('is-selected', isSel);
+        li.setAttribute('aria-selected', isSel ? 'true' : 'false');
+      }
+    }
+
+    function buildOptions() {
+      menu.innerHTML = '';
+      optionNodes = [];
+      var opts = select.options;
+      for (var i = 0; i < opts.length; i++) {
+        var opt = opts[i];
+        var li = document.createElement('li');
+        li.className = 'sd-select-opt';
+        if (opt.disabled) li.classList.add('is-opt-disabled');
+        if (opt.value === '') li.classList.add('is-opt-placeholder');
+        li.setAttribute('role', 'option');
+        li.setAttribute('data-value', opt.value);
+        li.setAttribute('data-index', String(i));
+        li.textContent = opt.textContent.trim();
+
+        (function (optIndex, optDisabled) {
+          li.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+            if (optDisabled) return;
+            commitSelection(optIndex);
+          });
+        })(i, opt.disabled);
+
+        menu.appendChild(li);
+        optionNodes.push(li);
+      }
+      menu.appendChild(emptyNode);
+      syncDisplay();
+    }
+
+    function filterOptions(keyword) {
+      var term = (keyword || '').toLowerCase().trim();
+      var visCount = 0;
+      for (var i = 0; i < optionNodes.length; i++) {
+        var li = optionNodes[i];
+        var txt = (li.textContent || '').toLowerCase();
+        var match = !term || txt.indexOf(term) > -1;
+        li.classList.toggle('is-hidden', !match);
+        li.classList.remove('is-focused');
+        if (match) visCount++;
+      }
+      emptyNode.classList.toggle('is-hidden', visCount > 0);
+      activeIndex = -1;
+    }
+
+    function getVisibleOptions() {
+      var vis = [];
+      for (var i = 0; i < optionNodes.length; i++) {
+        if (!optionNodes[i].classList.contains('is-hidden') && !optionNodes[i].classList.contains('is-opt-disabled')) {
+          vis.push(optionNodes[i]);
+        }
+      }
+      return vis;
+    }
+
+    function highlightOption(idx) {
+      var vis = getVisibleOptions();
+      for (var i = 0; i < optionNodes.length; i++) optionNodes[i].classList.remove('is-focused');
+      if (vis.length === 0) { activeIndex = -1; return; }
+      if (idx < 0) idx = vis.length - 1;
+      if (idx >= vis.length) idx = 0;
+      activeIndex = idx;
+      vis[activeIndex].classList.add('is-focused');
+      vis[activeIndex].scrollIntoView({ block: 'nearest' });
+    }
+
+    function positionMenu() {
+      if (!open) return;
+      var rect = control.getBoundingClientRect();
+      // Jika kontrol sudah tersembunyi atau keluar viewport, tutup menu
+      if (rect.width === 0 || rect.bottom < 0 || rect.top > window.innerHeight) {
+        closeMenu(true);
+        return;
+      }
+
+      var margin = 10;
+      var gap = 6;
+      var spaceBelow = window.innerHeight - rect.bottom - margin;
+      var spaceAbove = rect.top - margin;
+      var flipUp = (spaceBelow < 210 && spaceAbove > spaceBelow);
+
+      var maxH = Math.max(120, Math.min(260, (flipUp ? spaceAbove : spaceBelow) - gap));
+      menu.style.maxHeight = maxH + 'px';
+
+      var menuW = Math.max(rect.width, 160);
+      var leftPos = rect.left;
+      if (leftPos + menuW > window.innerWidth - margin) {
+        leftPos = Math.max(margin, window.innerWidth - margin - menuW);
+      }
+      menu.style.width = menuW + 'px';
+      menu.style.left = leftPos + 'px';
+
+      if (flipUp) {
+        menu.classList.add('is-flipped-up');
+        menu.style.top = 'auto';
+        menu.style.bottom = (window.innerHeight - rect.top + gap) + 'px';
+      } else {
+        menu.classList.remove('is-flipped-up');
+        menu.style.bottom = 'auto';
+        menu.style.top = (rect.bottom + gap) + 'px';
+      }
+    }
+
+    function openMenu(showAll) {
+      if (select.disabled) return;
+      closeAllSdMenus(instance);
+      if (showAll) filterOptions('');
+      open = true;
+      sdOpenInstance = instance;
+      wrap.classList.add('is-open');
+      input.setAttribute('aria-expanded', 'true');
+      menu.classList.remove('is-hidden');
+      positionMenu();
+
+      // Scroll opsi terpilih agar langsung terlihat
+      var selEl = menu.querySelector('.sd-select-opt.is-selected:not(.is-hidden)');
+      if (selEl) selEl.scrollIntoView({ block: 'nearest' });
+    }
+
+    function closeMenu(restore) {
+      if (!open) return;
+      open = false;
+      if (sdOpenInstance === instance) sdOpenInstance = null;
+      wrap.classList.remove('is-open');
+      input.setAttribute('aria-expanded', 'false');
+      menu.classList.add('is-hidden');
+      activeIndex = -1;
+      for (var i = 0; i < optionNodes.length; i++) optionNodes[i].classList.remove('is-focused');
+      if (restore) syncDisplay();
+    }
+
+    function commitSelection(optIndex) {
+      if (optIndex < 0 || optIndex >= select.options.length) return;
+      var prevVal = select.value;
+      isSyncing = true;
+      if (nativeIndexDesc && nativeIndexDesc.set) {
+        nativeIndexDesc.set.call(select, optIndex);
+      } else {
+        select.selectedIndex = optIndex;
+      }
+      isSyncing = false;
+
+      syncDisplay();
+      closeMenu(false);
+
+      if (select.value !== prevVal || select.options[optIndex].value === '__NEW__') {
+        select.dispatchEvent(new Event('input', { bubbles: true }));
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+
+    // Interaksi input & toggle
+    input.addEventListener('focus', function () {
+      if (select.disabled) return;
+      openMenu(true);
+      if (input.value !== '') {
+        try { input.select(); } catch (e) {}
+      }
+    });
+
+    input.addEventListener('click', function () {
+      if (select.disabled) return;
+      if (!open) openMenu(true);
+    });
+
+    input.addEventListener('input', function () {
+      if (select.disabled) return;
+      if (!open) openMenu(false);
+      filterOptions(input.value);
+      positionMenu();
+    });
+
+    input.addEventListener('keydown', function (e) {
+      if (select.disabled) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!open) openMenu(true);
+        highlightOption(activeIndex + 1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!open) openMenu(true);
+        highlightOption(activeIndex - 1);
+      } else if (e.key === 'Enter') {
+        if (open) {
+          e.preventDefault();
+          var vis = getVisibleOptions();
+          var targetLi = (activeIndex >= 0 && vis[activeIndex]) ? vis[activeIndex] : vis[0];
+          if (targetLi) commitSelection(parseInt(targetLi.getAttribute('data-index'), 10));
+        }
+      } else if (e.key === 'Escape') {
+        if (open) {
+          e.preventDefault();
+          closeMenu(true);
+          input.blur();
+        }
+      } else if (e.key === 'Tab') {
+        closeMenu(true);
+      }
+    });
+
+    toggleBtn.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      if (select.disabled) return;
+      if (open) {
+        closeMenu(true);
+        input.blur();
+      } else {
+        input.focus();
+        openMenu(true);
+      }
+    });
+
+    // Klik <label for="..."> diarahkan ke combobox
+    if (select.id) {
+      var labelEl = document.querySelector('label[for="' + select.id + '"]');
+      if (labelEl) {
+        labelEl.addEventListener('click', function (e) {
+          if (select.disabled) return;
+          e.preventDefault();
+          input.focus();
+          openMenu(true);
+        });
+      }
+    }
+
+    // Intercept select.focus() agar fokus diarahkan ke input tampak
+    select.focus = function () {
+      if (!select.disabled) input.focus();
+    };
+
+    // Intercept programmatic select.value = ... & select.selectedIndex = ...
+    if (nativeValueDesc && nativeValueDesc.get && nativeValueDesc.set) {
+      Object.defineProperty(select, 'value', {
+        configurable: true,
+        get: function () { return nativeValueDesc.get.call(this); },
+        set: function (val) {
+          nativeValueDesc.set.call(this, val);
+          if (!isSyncing) syncDisplay();
+        }
+      });
+    }
+    if (nativeIndexDesc && nativeIndexDesc.get && nativeIndexDesc.set) {
+      Object.defineProperty(select, 'selectedIndex', {
+        configurable: true,
+        get: function () { return nativeIndexDesc.get.call(this); },
+        set: function (idx) {
+          nativeIndexDesc.set.call(this, idx);
+          if (!isSyncing) syncDisplay();
+        }
+      });
+    }
+
+    // Sinkron saat event change dipicu dari skrip lain
+    select.addEventListener('change', function () {
+      if (!isSyncing) syncDisplay();
+    });
+
+    // Sinkron saat form.reset()
+    if (select.form) {
+      select.form.addEventListener('reset', function () {
+        setTimeout(syncDisplay, 0);
+      });
+    }
+
+    // Pantau perubahan opsi dinamis (contoh: stock_in.php #id_product) & atribut disabled
+    var observer = new MutationObserver(function () {
+      buildOptions();
+    });
+    observer.observe(select, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['disabled', 'required'],
+      characterData: true
+    });
+
+    var instance = {
+      select: select,
+      wrap: wrap,
+      menu: menu,
+      isOpen: function () { return open; },
+      close: closeMenu,
+      reposition: positionMenu,
+      refresh: buildOptions
+    };
+
+    buildOptions();
+    sdInstances.push(instance);
+    return instance;
+  }
+
+  function initAllSdSelects(root) {
+    var list = $$('select', root || document);
+    for (var i = 0; i < list.length; i++) {
+      enhanceSelect(list[i]);
+    }
+  }
+
+  // Tutup saat klik di luar kontrol & menu portal
+  document.addEventListener('mousedown', function (e) {
+    if (!sdOpenInstance) return;
+    if (sdOpenInstance.wrap.contains(e.target) || sdOpenInstance.menu.contains(e.target)) return;
+    sdOpenInstance.close(true);
+  });
+
+  // Reposisi halus saat kontainer scroll (seperti .pos-cart-pane) atau resize jendela
+  window.addEventListener('scroll', function (e) {
+    if (!sdOpenInstance) return;
+    if (e.target === sdOpenInstance.menu || (sdOpenInstance.menu.contains && sdOpenInstance.menu.contains(e.target))) return;
+    sdOpenInstance.reposition();
+  }, true);
+
+  window.addEventListener('resize', function () {
+    if (sdOpenInstance) sdOpenInstance.reposition();
+  });
+
+  window.sidrippRefreshSelects = function (root) {
+    initAllSdSelects(root);
+    for (var i = 0; i < sdInstances.length; i++) sdInstances[i].refresh();
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () { initAllSdSelects(document); });
+  } else {
+    initAllSdSelects(document);
   }
 
 })();

@@ -12,13 +12,14 @@ if (file_exists(__DIR__ . '/env.php')) {
     require_once __DIR__ . '/env.php';
 }
 
-$db_host = getenv('DB_HOST') ?: '';
-$db_port = getenv('DB_PORT') ?: '5432';
-$db_name = getenv('DB_NAME') ?: '';
-$db_user = getenv('DB_USER') ?: '';
-$db_pass = getenv('DB_PASS') ?: '';
+$db_host = function_exists('env_get') ? (string)env_get('DB_HOST', '') : (getenv('DB_HOST') ?: '');
+$db_port = function_exists('env_get') ? (string)env_get('DB_PORT', '5432') : (getenv('DB_PORT') ?: '5432');
+$db_name = function_exists('env_get') ? (string)env_get('DB_NAME', '') : (getenv('DB_NAME') ?: '');
+$db_user = function_exists('env_get') ? (string)env_get('DB_USER', '') : (getenv('DB_USER') ?: '');
+$db_pass = function_exists('env_get') ? (string)env_get('DB_PASS', '') : (getenv('DB_PASS') ?: '');
 
-$conn_string = "host={$db_host} port={$db_port} dbname={$db_name} user={$db_user} password='{$db_pass}' sslmode=require";
+$db_pass_escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $db_pass);
+$conn_string = "host={$db_host} port={$db_port} dbname={$db_name} user={$db_user} password='{$db_pass_escaped}' sslmode=require";
 
 $conn = @pg_connect($conn_string);
 

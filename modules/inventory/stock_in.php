@@ -87,7 +87,7 @@ $pre_prod_id = isset($_GET['product_id']) ? trim($_GET['product_id']) : '';
     <span class="badge info"><i class="dot"></i>Batch &amp; FEFO</span>
   </div>
 
-  <form action="<?= BASE_URL ?>modules/inventory/process/stock_in.php" method="POST">
+  <form action="<?= BASE_URL ?>modules/inventory/process/stock_in.php" method="POST" id="form-restock-batch" novalidate>
     <div class="field">
       <label for="id_category">Kategori Produk</label>
       <select id="id_category" class="select" required>
@@ -360,20 +360,79 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   <?php endif; ?>
 
-  // Validasi form sebelum submit
-  var formRestock = document.querySelector('form');
+  // Validasi form sebelum submit (Modal Notifikasi Kustom SI-DRIPP + Auto-Focus)
+  var formRestock = document.getElementById('form-restock-batch') || document.querySelector('form');
   if (formRestock) {
     formRestock.addEventListener('submit', function(e) {
-      var vendorVal = document.getElementById('nama_vendor').value.trim();
+      var catEl  = document.getElementById('id_category');
+      var prodEl = document.getElementById('id_product');
+      var expEl  = document.getElementById('expired_date');
+      var qtyEl  = document.getElementById('kuantitas');
+      var vendEl = document.getElementById('nama_vendor');
+
+      if (!catEl || !catEl.value.trim()) {
+        e.preventDefault();
+        window.showAlertModal('Silakan pilih kategori produk terlebih dahulu!', {
+          title: 'Kategori Belum Dipilih',
+          tone: 'warn',
+          focusEl: catEl
+        });
+        return;
+      }
+
+      if (!prodEl || prodEl.disabled || !prodEl.value.trim()) {
+        e.preventDefault();
+        window.showAlertModal('Silakan pilih produk sirup / bubuk yang akan di-restock terlebih dahulu!', {
+          title: 'Produk Belum Dipilih',
+          tone: 'warn',
+          focusEl: prodEl
+        });
+        return;
+      }
+
+      var vendorVal = vendEl ? vendEl.value.trim() : '';
       if (!vendorVal) {
         e.preventDefault();
-        alert('Silakan pilih salah satu vendor terdaftar atau ketik nama vendor baru terlebih dahulu!');
         var switchTrack = document.getElementById('vendor_switch_track');
-        if (switchTrack && switchTrack.getAttribute('data-mode') === 'new') {
-          document.getElementById('vendor_manual_input').focus();
-        } else {
-          document.getElementById('vendor_select_input').focus();
-        }
+        var vendorFocus = (switchTrack && switchTrack.getAttribute('data-mode') === 'new')
+          ? document.getElementById('vendor_manual_input')
+          : document.getElementById('vendor_select_input');
+        window.showAlertModal('Silakan pilih salah satu vendor terdaftar atau ketik nama vendor baru terlebih dahulu!', {
+          title: 'Vendor Belum Diisi',
+          tone: 'warn',
+          focusEl: vendorFocus
+        });
+        return;
+      }
+
+      if (!expEl || !expEl.value) {
+        e.preventDefault();
+        window.showAlertModal('Silakan isi tanggal kedaluwarsa (Expired Date) sesuai kemasan fisik batch!', {
+          title: 'Tanggal Kedaluwarsa Wajib Diisi',
+          tone: 'warn',
+          focusEl: expEl
+        });
+        return;
+      }
+
+      if (expEl.min && expEl.value < expEl.min) {
+        e.preventDefault();
+        window.showAlertModal('Tanggal kedaluwarsa tidak boleh lebih awal dari hari ini (' + expEl.min + ')!', {
+          title: 'Tanggal Kedaluwarsa Tidak Valid',
+          tone: 'warn',
+          focusEl: expEl
+        });
+        return;
+      }
+
+      var qtyNum = qtyEl ? parseInt(qtyEl.value, 10) : 0;
+      if (!qtyEl || isNaN(qtyNum) || qtyNum < 1) {
+        e.preventDefault();
+        window.showAlertModal('Masukkan jumlah barang masuk minimal 1 botol / satuan!', {
+          title: 'Jumlah Masuk Tidak Valid',
+          tone: 'warn',
+          focusEl: qtyEl
+        });
       }
     });
   }

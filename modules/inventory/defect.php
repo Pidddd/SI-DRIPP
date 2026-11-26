@@ -92,6 +92,7 @@ $res_defects = pg_query($conn, $q_defects);
 $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
 ?>
 
+<div class="inv-page-wrap">
 <!-- Flash Messages -->
 <?php if (isset($_SESSION['success'])): ?>
   <div class="callout success rise">
@@ -120,18 +121,13 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
 
 <!-- 1. Form Pembungkus Seluruh Laporan Defect (Accordion 2 Tingkat) -->
 <form action="<?= BASE_URL ?>modules/inventory/process/defects.php" method="POST">
-  <div class="card flush rise card-inventory-wrap">
+  <div class="card flush rise card-inventory-wrap inv-section-gap">
     <div class="card-head pad pb-4">
       <div>
         <h2>Tabel Input Massal Barang Defect per Batch (Save All)</h2>
         <p>Buka kategori dan produk untuk mencatat kerusakan fisik pada batch yang bersangkutan.</p>
       </div>
-      <div class="form-actions">
-        <span class="badge warn"><i class="dot"></i>Potong Stok Batch &amp; Produk Otomatis</span>
-        <button type="submit" class="btn btn-primary" data-confirm="Simpan seluruh laporan barang defect yang telah diinput ke dalam sistem?">
-          <?= icon('check', 18) ?> Save All Laporan Defect
-        </button>
-      </div>
+      <span class="badge warn"><i class="dot"></i>Potong Stok Batch &amp; Produk Otomatis</span>
     </div>
 
     <div class="table-wrap">
@@ -425,6 +421,7 @@ $total_defect_rows = $res_defects ? pg_num_rows($res_defects) : 0;
     </table>
   </div>
 </div>
+</div><!-- /.inv-page-wrap -->
 
 <script>
 function toggleAccordion(id, btn) {

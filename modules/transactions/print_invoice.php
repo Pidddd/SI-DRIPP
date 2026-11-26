@@ -82,140 +82,164 @@ if ($id_trx !== '') {
   $kontak_pelanggan = $header_trx['kontak_pelanggan'] ?: ($header_trx['telp_pt'] ?? '-');
   $waktu_trx_fmt    = format_waktu_wib($header_trx['waktu_transaksi']);
   $terbilang_teks   = terbilang_rupiah($total_harga);
+
+  $subtotal_kotor = 0;
+  foreach ($detail_items as $di_row) {
+      $subtotal_kotor += (int)$di_row['subtotal_harga'];
+  }
+  $diskon_pct_label = '';
+  if ($diskon > 0 && $subtotal_kotor > 0) {
+      $pct_val = ($diskon / $subtotal_kotor) * 100;
+      $diskon_pct_label = ' (' . (abs($pct_val - round($pct_val)) < 0.05 ? (int)round($pct_val) : number_format($pct_val, 1, ',', '.')) . '%)';
+  }
 ?>
-  <div class="invoice-box rise">
-    <!-- Header Invoice Fisik MKP Store -->
-    <div class="invoice-header">
-      <div class="invoice-brand">
+  <div class="invoice-box invoice-a5-sheet rise">
+    <!-- Kop Surat & Info Customer 2 Kolom Sejajar (Standar Nota Fisik A5 Landscape MKP Store) -->
+    <div class="invoice-top-band">
+      <div class="invoice-brand-col">
         <img src="<?= BASE_URL ?>assets/img/Logo.jpeg" alt="Logo MKP Store" class="invoice-logo">
         <div class="invoice-brand-text">
           <h2>CV. MITRA KEMBAR PRADIPTA</h2>
-          <div class="invoice-company-sub">MKP STORE MALANG · Distributor Resmi Sirup HORECA DRIPP, Multibev &amp; Ramoe</div>
-          <div class="invoice-company-contact">Jl. Moch Juki No. 40 Malang · Telp: 081237569188 / 08999452617 · Email: cvmitrakembarpradipta@gmail.com</div>
+          <div class="invoice-company-sub">MKP STORE MALANG &middot; Distributor Sirup HORECA DRIPP, Multibev &amp; Ramoe</div>
+          <div class="invoice-company-contact">Jl. Moch Juki No. 40 Malang &middot; Telp: 081237569188 / 08999452617</div>
+          <div class="invoice-company-contact">Email: cvmitrakembarpradipta@gmail.com &middot; Kasir: <strong><?= e($header_trx['nama_kasir'] ?? 'Admin Kasir') ?></strong></div>
         </div>
       </div>
-      <div class="invoice-head-meta">
-        <div class="invoice-title">INVOICE PENJUALAN</div>
-        <div class="invoice-no mono">#<?= e($header_trx['id_transaksi']) ?></div>
-        <div class="invoice-badges">
-          <span class="badge <?= $is_lunas ? 'success' : 'warn' ?>">
-            <i class="dot"></i><?= $is_lunas ? 'LUNAS' : 'PIUTANG TEMPO' ?>
-          </span>
-          <span class="badge info">
-            <i class="dot"></i><?= e($sumber_trx) ?>
-          </span>
+
+      <div class="invoice-cust-col">
+        <div class="invoice-cust-title-row">
+          <div class="invoice-title-group">
+            <span class="invoice-title">INVOICE</span>
+            <span class="invoice-no mono">#<?= e($header_trx['id_transaksi']) ?></span>
+          </div>
+          <div class="invoice-badges">
+            <span class="badge <?= $is_lunas ? 'success' : 'warn' ?>">
+              <i class="dot"></i><?= $is_lunas ? 'LUNAS' : 'PIUTANG TOP' ?>
+            </span>
+            <span class="badge info">
+              <i class="dot"></i><?= e($sumber_trx) ?>
+            </span>
+          </div>
+        </div>
+
+        <div class="invoice-cust-meta">
+          <div class="invoice-kv-line">
+            <span class="invoice-kv-k">Tanggal</span>
+            <span class="invoice-kv-v">
+              <strong><?= e($waktu_trx_fmt) ?></strong>
+              <?php if (!$is_lunas && !empty($header_trx['jatuh_tempo'])): ?>
+                &middot; <span class="text-danger">JT: <?= e(date('d M Y', strtotime($header_trx['jatuh_tempo']))) ?></span>
+              <?php endif; ?>
+            </span>
+          </div>
+          <div class="invoice-kv-line">
+            <span class="invoice-kv-k">Customer</span>
+            <span class="invoice-kv-v">
+              <strong><?= e($nama_pelanggan) ?></strong>
+              <?php if (!empty($header_trx['nama_pj'])): ?>
+                (PJ: <?= e($header_trx['nama_pj']) ?>)
+              <?php endif; ?>
+            </span>
+          </div>
+          <div class="invoice-kv-line">
+            <span class="invoice-kv-k">Alamat/Telp</span>
+            <span class="invoice-kv-v">
+              <?php if (!empty($header_trx['alamat_toko'])): ?><?= e($header_trx['alamat_toko']) ?> &middot; <?php endif; ?><?= e($kontak_pelanggan) ?>
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Metadata Invoice: Detail Pelanggan / Mitra PT & Info Transaksi -->
-    <div class="invoice-meta-grid">
-      <div class="invoice-meta-col">
-        <div class="invoice-meta-label">Kepada Pelanggan / Mitra PT:</div>
-        <div class="invoice-meta-value"><?= e($nama_pelanggan) ?></div>
-        <?php if (!empty($header_trx['nama_pj'])): ?>
-          <div class="text-xs">PJ: <strong><?= e($header_trx['nama_pj']) ?></strong><?php if (!empty($header_trx['nik_pj'])): ?> (NIK: <?= e($header_trx['nik_pj']) ?>)<?php endif; ?></div>
-        <?php endif; ?>
-        <div class="text-xs muted">Kontak / Telp: <?= e($kontak_pelanggan) ?></div>
-        <?php if (!empty($header_trx['alamat_toko'])): ?>
-          <div class="text-xs muted">Alamat Toko: <?= e($header_trx['alamat_toko']) ?></div>
-        <?php endif; ?>
-      </div>
-
-      <div class="invoice-meta-col text-right">
-        <div class="invoice-meta-label">Informasi Faktur:</div>
-        <div class="text-xs">Waktu Transaksi: <strong><?= e($waktu_trx_fmt) ?></strong></div>
-        <div class="text-xs muted">Kasir / Operator: <strong><?= e($header_trx['nama_kasir'] ?? 'Admin Kasir') ?></strong></div>
-        <div class="text-xs muted">Sumber Transaksi: <span class="mono font-semibold"><?= e($sumber_trx) ?></span></div>
-        <?php if (!empty($header_trx['jatuh_tempo'])): ?>
-          <div class="text-xs text-danger font-bold mt-1">Jatuh Tempo: <?= e(date('d M Y', strtotime($header_trx['jatuh_tempo']))) ?></div>
-        <?php endif; ?>
-      </div>
-    </div>
-
-    <!-- Tabel Rincian Produk Belanja -->
+    <!-- Tabel Rincian Produk 6 Kolom 1 Baris Tipis per Item (Muat 13-15+ Item per Lembar A5) -->
     <div class="invoice-table-wrap">
-      <table class="invoice-table">
+      <table class="invoice-table invoice-table-compact">
+        <colgroup>
+          <col class="inv-col-no">
+          <col class="inv-col-sku">
+          <col class="inv-col-nama">
+          <col class="inv-col-harga">
+          <col class="inv-col-qty">
+          <col class="inv-col-total">
+        </colgroup>
         <thead>
           <tr>
-            <th class="col-no text-center">No</th>
-            <th>Deskripsi Produk</th>
-            <th class="text-right">Harga Satuan</th>
-            <th class="text-center">Qty</th>
-            <th class="text-right">Subtotal</th>
+            <th class="text-center">NO</th>
+            <th>SKU</th>
+            <th>NAMA BARANG</th>
+            <th class="text-right">HARGA / BOTOL</th>
+            <th class="text-center">QTY</th>
+            <th class="text-right">TOTAL</th>
           </tr>
         </thead>
         <tbody>
           <?php
           $no = 1;
-          $subtotal_kotor = 0;
           foreach ($detail_items as $item):
-              $subtotal_kotor += (int)$item['subtotal_harga'];
           ?>
             <tr>
-              <td class="mono muted text-center"><?= $no++ ?></td>
-              <td>
-                <strong><?= e($item['nama_barang']) ?></strong>
-                <div class="muted text-xs">SKU: <?= e($item['id_product']) ?> · <?= e($item['nama_category'] ?? 'Umum') ?></div>
-              </td>
-              <td class="text-right mono"><?= rupiah($item['harga_jual']) ?></td>
-              <td class="text-center mono"><strong><?= (int)$item['kuantitas'] ?></strong></td>
-              <td class="text-right mono"><strong><?= rupiah($item['subtotal_harga']) ?></strong></td>
+              <td class="mono text-center"><?= $no++ ?></td>
+              <td class="mono inv-cell-nowrap"><?= e($item['id_product']) ?></td>
+              <td class="inv-cell-name"><?= e($item['nama_barang']) ?></td>
+              <td class="text-right mono inv-cell-nowrap"><?= rupiah($item['harga_jual']) ?></td>
+              <td class="text-center mono inv-cell-nowrap"><strong><?= (int)$item['kuantitas'] ?></strong></td>
+              <td class="text-right mono inv-cell-nowrap"><strong><?= rupiah($item['subtotal_harga']) ?></strong></td>
             </tr>
           <?php endforeach; ?>
         </tbody>
       </table>
     </div>
 
-    <!-- Bagian Bawah: Terbilang, Bank, Retur & Kalkulasi Total -->
-    <div class="invoice-bottom-grid">
-      <div class="invoice-info-pane">
-        <div class="invoice-terbilang">
-          <strong>Terbilang:</strong> <em># <?= e($terbilang_teks) ?> #</em>
+    <!-- Blok Footer Terpadu (Terbilang, Rekening, Ringkasan Total & Tanda Tangan — Anti Terpotong) -->
+    <div class="invoice-footer-block">
+      <div class="invoice-bottom-grid">
+        <div class="invoice-info-pane">
+          <div class="invoice-terbilang">
+            <strong>Terbilang:</strong> <em># <?= e($terbilang_teks) ?> #</em>
+          </div>
+
+          <div class="invoice-bank-box">
+            <span class="invoice-bank-title">Transfer Resmi:</span>
+            <span>BCA <strong>8161762920</strong> &middot; BRI <strong>0368.01.0261.28.501</strong> (a.n. Mia Setyaningpala)</span>
+          </div>
+
+          <div class="invoice-retur-note">
+            *Barang yang sudah dibeli tidak dapat dikembalikan atau ditukar kembali
+          </div>
         </div>
 
-        <div class="invoice-bank-box">
-          <div class="invoice-bank-title">Rekening Pembayaran Resmi:</div>
-          <div>BCA: <strong>8161762920</strong> a.n. Mia Setyaningpala</div>
-          <div>BRI: <strong>0368.01.0261.28.501</strong> a.n. Mia Setyaningpala</div>
-        </div>
-
-        <div class="invoice-retur-note">
-          *Barang yang sudah dibeli tidak dapat dikembalikan atau ditukar kembali
+        <div class="invoice-calc-pane">
+          <div class="invoice-calc-row">
+            <span>Subtotal</span>
+            <strong class="mono"><?= rupiah($subtotal_kotor) ?></strong>
+          </div>
+          <div class="invoice-calc-row">
+            <span>Diskon<?= e($diskon_pct_label) ?></span>
+            <strong class="mono text-success">- <?= rupiah($diskon) ?></strong>
+          </div>
+          <div class="invoice-calc-row">
+            <span>Ongkos Kirim</span>
+            <strong class="mono"><?= rupiah($ongkir) ?></strong>
+          </div>
+          <div class="invoice-calc-total">
+            <span>Total Tagihan</span>
+            <strong class="mono"><?= rupiah($total_harga) ?></strong>
+          </div>
         </div>
       </div>
 
-      <div class="invoice-calc-pane">
-        <div class="invoice-calc-row">
-          <span>Subtotal Pembelian</span>
-          <strong class="mono"><?= rupiah($subtotal_kotor) ?></strong>
+      <!-- Kolom Tanda Tangan Penerima & CV. MITRA KEMBAR PRADIPTA -->
+      <div class="invoice-signatures">
+        <div class="invoice-sign-box">
+          <div class="invoice-sign-title">Penerima</div>
+          <div class="invoice-sign-space"></div>
+          <div class="invoice-sign-name">( ...................................... )</div>
         </div>
-        <div class="invoice-calc-row">
-          <span>Potongan Diskon</span>
-          <strong class="mono text-success">- <?= rupiah($diskon) ?></strong>
+        <div class="invoice-sign-box">
+          <div class="invoice-sign-title">CV. MITRA KEMBAR PRADIPTA</div>
+          <div class="invoice-sign-space"></div>
+          <div class="invoice-sign-name">( ...................................... )</div>
         </div>
-        <div class="invoice-calc-row">
-          <span>Ongkos Kirim</span>
-          <strong class="mono"><?= rupiah($ongkir) ?></strong>
-        </div>
-        <div class="invoice-calc-total">
-          <span>Total Tagihan Akhir</span>
-          <strong class="mono"><?= rupiah($total_harga) ?></strong>
-        </div>
-      </div>
-    </div>
-
-    <!-- Kolom Tanda Tangan Penerima & Pengirim -->
-    <div class="invoice-signatures">
-      <div class="invoice-sign-box">
-        <div class="invoice-sign-title">Penerima</div>
-        <div class="invoice-sign-space"></div>
-        <div class="invoice-sign-name">_____________________________</div>
-      </div>
-      <div class="invoice-sign-box">
-        <div class="invoice-sign-title">CV. MITRA KEMBAR PRADIPTA</div>
-        <div class="invoice-sign-space"></div>
-        <div class="invoice-sign-name">______________________________</div>
       </div>
     </div>
   </div>

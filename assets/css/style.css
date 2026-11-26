@@ -1334,28 +1334,130 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .cart-head .order-no { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .cart-customer { padding: 0 22px 14px; }
 
-/* Tabel Item Keranjang Kompak & Rapi (Tidak Turun Baris) */
+/* Tabel Item Keranjang Kompak & Rapi (Tidak Pernah Collapse 0px, Zero Horizontal Scroll) */
+.pos-cart-table-wrap {
+  display: block;
+  flex-shrink: 0;
+  min-height: 100px;
+  max-height: 290px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: var(--card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.pos-cart-table-wrap::-webkit-scrollbar {
+  width: 5px;
+}
+.pos-cart-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pos-cart-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+.pos-cart-table {
+  width: 100%;
+  table-layout: fixed;
+}
+.pos-cart-table .pos-col-item { width: auto; }
+.pos-cart-table .pos-col-qty  { width: 98px; }
+.pos-cart-table .pos-col-sub  { width: 92px; }
+.pos-cart-table .pos-col-del  { width: 38px; }
+.pos-cart-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.pos-cart-col-name {
+  min-width: 0;
+}
+.pos-cart-col-name strong {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.pos-item-stock {
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.pos-stock-ok {
+  color: var(--success);
+}
+.pos-stock-warn {
+  color: #D97706;
+}
+.pos-stock-empty {
+  color: var(--danger);
+}
+[data-theme="dark"] .pos-stock-warn {
+  color: #FBBF24;
+}
+.pos-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+}
+.pos-qty-input {
+  width: 38px;
+  height: 26px;
+  padding: 0 2px;
+  text-align: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.pos-qty-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(180, 101, 30, 0.14);
+}
+.pos-qty-input::-webkit-outer-spin-button,
+.pos-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 .cart .table th {
-  padding: 10px 10px; font-size: 10.5px; letter-spacing: .06em;
+  padding: 9px 4px; font-size: 10px; letter-spacing: .05em;
 }
 .cart .table th:first-child,
 .cart .table td:first-child {
-  padding-left: 18px;
+  padding-left: 14px; padding-right: 6px;
 }
 .cart .table th:last-child,
 .cart .table td:last-child {
-  padding-right: 16px; width: 34px;
+  padding-left: 2px; padding-right: 10px; width: 38px;
 }
 .cart .table td {
-  padding: 12px 8px; font-size: 13px; vertical-align: middle;
+  padding: 10px 4px; font-size: 12.5px; vertical-align: middle;
+}
+.cart .table td.pos-cart-col-sub {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cart .table td.text-center {
   white-space: nowrap;
 }
 .cart .table td.text-center .btn-sm {
-  width: 28px; height: 28px; padding: 0; border-radius: 8px;
-  font-size: 14px; font-weight: 750; line-height: 1;
+  width: 24px; height: 26px; padding: 0; border-radius: 7px;
+  font-size: 13px; font-weight: 750; line-height: 1;
   display: inline-grid; place-items: center; vertical-align: middle;
+}
+.cart .table td.text-center .btn-sm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .cart .table td.text-center strong {
   display: inline-block; min-width: 24px; text-align: center;
@@ -1365,8 +1467,8 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   white-space: nowrap;
 }
 .cart .table td:last-child .btn-sm {
-  width: 28px; height: 28px; padding: 0; border-radius: 8px;
-  font-size: 15px; line-height: 1;
+  width: 24px; height: 26px; padding: 0; border-radius: 7px;
+  font-size: 14px; line-height: 1;
   display: inline-grid; place-items: center; vertical-align: middle;
 }
 .cart-items { flex: 1; overflow-y: auto; padding: 4px 22px; border-top: 1px solid var(--line); min-height: 120px; }
@@ -1399,18 +1501,80 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .due-box.show { display: block; animation: rise .3s var(--ease); }
 
 /* ==========================================================================
-   POS INDEPENDENT 2-PANEL SCROLL & TIMOTHY'S POS CONTRACT
-   (Tahap 2 Revisi Mitra MKP Store - Inas Asami El Murtadho)
+   POS INDEPENDENT 2-PANEL SCROLL, SEARCHABLE COMBOBOX & UI POLISH
    ========================================================================== */
 
-/* 1. Independent 2-Panel Scroll for POS (Desktop vs Mobile/Tablet) */
-@media (min-width: 1025px) {
+/* 1. Split Independent 2-Panel Viewport Scroll (Desktop >= 1101px) */
+@media (min-width: 1101px) {
+  html:has(.pos),
+  body:has(.pos) {
+    height: 100vh;
+    overflow: hidden;
+  }
+  .app:has(.pos) {
+    height: 100vh;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .main:has(.pos) {
+    height: 100vh;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .content:has(.pos) {
+    flex: 1;
+    min-height: 0;
+    height: calc(100vh - var(--topbar-h));
+    padding: 14px 24px 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .content:has(.pos) > .callout {
+    margin-bottom: 0;
+    flex-shrink: 0;
+  }
+  .content:has(.pos) > .footer {
+    display: none;
+  }
+  .content:has(.pos) > .pos {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    align-items: stretch;
+    overflow: hidden;
+  }
   .pos-catalog-pane,
   .pos-cart-pane {
-    max-height: calc(100vh - var(--topbar-h) - 48px);
+    height: 100%;
+    max-height: 100%;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     overscroll-behavior: contain;
-    padding-right: 4px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  .pos-catalog-pane {
+    padding-bottom: 96px;
+  }
+  .pos-cart-pane {
+    display: block;
+    position: static;
+    top: auto;
+    overflow-y: auto !important;
+  }
+  .pos-cart-pane > form {
+    display: block;
+    height: auto;
+    min-height: 100%;
+  }
+  .pos-cart-pane .cart-summary {
+    margin-top: 0;
+    padding-bottom: 96px;
   }
   .pos-catalog-pane::-webkit-scrollbar,
   .pos-cart-pane::-webkit-scrollbar {
@@ -1431,21 +1595,22 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   }
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 1100px) {
   .pos-catalog-pane,
   .pos-cart-pane {
+    height: auto !important;
     max-height: none !important;
     overflow-y: visible !important;
-    padding-right: 0 !important;
+    overscroll-behavior: auto;
   }
 }
 
-/* 2. Timothy's POS Contract Classes (Bento Grid Soft Caramel Cream & Dark Mode) */
+/* 2. POS Components (Bento Grid Soft Caramel Cream & Dark Mode) */
 
 /* .pos-bestseller-wrap: Area produk terlaris di katalog POS */
 .pos-bestseller-wrap {
   margin-bottom: 16px;
-  padding: 14px 16px;
+  padding: 14px 16px 12px;
   background: linear-gradient(135deg, var(--amber-50) 0%, var(--card) 100%);
   border: 1px solid var(--amber-200);
   border-radius: var(--radius);
@@ -1471,9 +1636,57 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 }
 .pos-bestseller-items {
   display: flex;
-  gap: 10px;
+  gap: 14px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  padding: 4px 2px 10px;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 101, 30, 0.35) transparent;
+}
+.pos-bestseller-items::-webkit-scrollbar {
+  height: 5px;
+}
+.pos-bestseller-items::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pos-bestseller-items::-webkit-scrollbar-thumb {
+  background: rgba(180, 101, 30, 0.32);
+  border-radius: 999px;
+}
+.pos-bestseller-items::-webkit-scrollbar-thumb:hover {
+  background: #B4651E;
+}
+.pos-bestseller-items .product-card {
+  flex: 0 0 212px;
+  width: 212px;
+  scroll-snap-align: start;
+}
+.pos-bestseller-items .product-photo {
+  height: 156px;
+}
+.pos-bestseller-items .product-photo .bottle {
+  height: 116px;
+  margin-top: 14px;
+}
+.pos-bestseller-items .product-body {
+  padding: 12px 14px 14px;
+}
+.pos-bestseller-items .product-body h3 {
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pos-bestseller-items .product-foot {
+  padding-top: 10px;
+  gap: 6px;
+}
+.pos-bestseller-items .price {
+  font-size: 14px;
+  white-space: nowrap;
 }
 [data-theme="dark"] .pos-bestseller-wrap,
 .dark .pos-bestseller-wrap {
@@ -1484,10 +1697,13 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .dark .pos-bestseller-title {
   color: #D98A36;
 }
+[data-theme="dark"] .pos-bestseller-items::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+}
 
 /* .pos-cat-acc: Kategori Accordion / Navigasi Kategori POS */
 .pos-cat-acc {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--card);
@@ -1499,19 +1715,59 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 11px 16px;
+  gap: 12px;
+  padding: 12px 16px;
   background: var(--bg-soft);
   cursor: pointer;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--ink-2);
   user-select: none;
-  border-bottom: 1px solid var(--line);
-  transition: background .2s var(--ease), color .2s var(--ease);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease);
+}
+.pos-cat-acc.is-open .pos-cat-acc-header {
+  border-bottom-color: var(--line);
 }
 .pos-cat-acc-header:hover {
   background: var(--amber-100);
   color: var(--primary-dark);
+}
+.pos-cat-header-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.pos-cat-name {
+  font-weight: 750;
+  color: inherit;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pos-cat-count {
+  flex-shrink: 0;
+  line-height: 1.2;
+  text-decoration: none;
+  border-bottom: 0;
+}
+.pos-cat-acc-header .acc-icon {
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: transform .22s var(--ease), color .2s var(--ease);
+}
+.pos-cat-acc.is-open .pos-cat-acc-header .acc-icon {
+  transform: rotate(180deg);
+  color: var(--primary);
 }
 .pos-cat-acc-body {
   padding: 14px 16px;
@@ -1533,53 +1789,293 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   color: #D98A36;
 }
 
-/* .pos-toolbar: Toolbar pencarian & penyaringan cepat kasir */
+/* .pos-toolbar: Toolbar pencarian & Custom Searchable Dropdown Kategori */
 .pos-toolbar {
-  display: flex;
+  position: relative;
+  z-index: 25;
+  overflow: visible;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(220px, 0.85fr);
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
   margin-bottom: 16px;
-  padding: 10px 14px;
+  padding: 10px 12px;
   background: var(--bg-soft);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
-.pos-toolbar .input-icon {
-  flex: 1;
-  min-width: 200px;
+.pos-toolbar .pos-search-box {
+  width: 100%;
+  min-width: 0;
+}
+.pos-toolbar .pos-search-box .input {
+  height: 44px;
+  background: #FFFDF9;
+  border-color: #E6D8C7;
 }
 [data-theme="dark"] .pos-toolbar {
   background: rgba(15, 23, 42, 0.6);
   border-color: var(--line);
 }
+[data-theme="dark"] .pos-toolbar .pos-search-box .input {
+  background: var(--card);
+  border-color: var(--line-strong);
+}
 
-/* .pos-discount-switch: Switch Diskon Persentase / Potongan Tunai */
-.pos-discount-switch {
+/* Custom Searchable Dropdown (Combobox) Kategori — Soft Caramel Cream */
+.pos-cat-combo {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.pos-cat-combo-control {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  background: #FFFDF9;
+  border: 1.5px solid #E6D8C7;
+  border-radius: 12px;
+  padding: 0 6px 0 12px;
+  gap: 8px;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+}
+.pos-cat-combo-control:hover {
+  border-color: #D2B79B;
+}
+.pos-cat-combo.is-open .pos-cat-combo-control,
+.pos-cat-combo-control:focus-within {
+  border-color: #B4651E;
+  box-shadow: 0 0 0 3px rgba(180, 101, 30, 0.14);
+}
+.pos-cat-combo-ico {
   display: inline-flex;
   align-items: center;
-  padding: 3px;
+  justify-content: center;
+  color: #9A7B63;
+  flex-shrink: 0;
+  pointer-events: none;
+  transition: color .2s var(--ease);
+}
+.pos-cat-combo.is-open .pos-cat-combo-ico,
+.pos-cat-combo-control:focus-within .pos-cat-combo-ico {
+  color: #B4651E;
+}
+.pos-cat-combo-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  outline: none;
+}
+.pos-cat-combo-input::placeholder {
+  color: var(--ink-2);
+  opacity: 0.78;
+}
+.pos-cat-combo-clear {
+  width: 24px;
+  height: 24px;
+  border: 0;
+  border-radius: 999px;
+  background: #F4E8DA;
+  color: #8C4D17;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .18s var(--ease), color .18s var(--ease), transform .15s var(--ease);
+}
+.pos-cat-combo-clear:hover {
+  background: #B4651E;
+  color: #FFFFFF;
+  transform: scale(1.06);
+}
+.pos-cat-combo-toggle {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #8C6D53;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.pos-cat-combo-toggle:hover {
+  background: #F6ECE0;
+  color: #B4651E;
+}
+.pos-cat-combo.is-open .pos-cat-combo-toggle {
+  transform: rotate(180deg);
+  color: #B4651E;
+}
+.pos-cat-combo-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 40;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  max-height: 260px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #FFFDF9;
+  border: 1.5px solid #E6D8C7;
+  border-radius: 14px;
+  box-shadow: 0 18px 36px -14px rgba(59, 35, 20, 0.24), 0 4px 10px -4px rgba(59, 35, 20, 0.08);
+  animation: popIn .18s var(--ease) both;
+}
+.pos-cat-combo-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background .15s var(--ease), color .15s var(--ease);
+}
+.pos-cat-combo-opt:hover,
+.pos-cat-combo-opt.is-focused {
+  background: #F8EFE4;
+  color: #7C4110;
+}
+.pos-cat-combo-opt.is-selected {
+  background: rgba(180, 101, 30, 0.13);
+  color: #B4651E;
+  font-weight: 700;
+}
+.pos-cat-combo-opt-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pos-cat-combo-opt-count {
+  font-size: 11px;
+  font-weight: 650;
+  color: #8C6D53;
+  background: #F5EAE0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.pos-cat-combo-opt.is-selected .pos-cat-combo-opt-count {
+  background: #B4651E;
+  color: #FFFFFF;
+}
+.pos-cat-combo-empty {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+[data-theme="dark"] .pos-cat-combo-control {
+  background: var(--card);
+  border-color: var(--line-strong);
+}
+[data-theme="dark"] .pos-cat-combo.is-open .pos-cat-combo-control,
+[data-theme="dark"] .pos-cat-combo-control:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+}
+[data-theme="dark"] .pos-cat-combo-input::placeholder {
+  color: var(--muted);
+}
+[data-theme="dark"] .pos-cat-combo-clear {
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--ink);
+}
+[data-theme="dark"] .pos-cat-combo-clear:hover {
+  background: var(--primary);
+  color: #0F172A;
+}
+[data-theme="dark"] .pos-cat-combo-toggle:hover {
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--primary);
+}
+[data-theme="dark"] .pos-cat-combo-menu {
+  background: var(--card);
+  border-color: var(--line-strong);
+  box-shadow: 0 18px 36px -12px rgba(0, 0, 0, 0.55);
+}
+[data-theme="dark"] .pos-cat-combo-opt:hover,
+[data-theme="dark"] .pos-cat-combo-opt.is-focused {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--ink);
+}
+[data-theme="dark"] .pos-cat-combo-opt.is-selected {
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--primary);
+}
+[data-theme="dark"] .pos-cat-combo-opt-count {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--muted);
+}
+[data-theme="dark"] .pos-cat-combo-opt.is-selected .pos-cat-combo-opt-count {
+  background: var(--primary);
+  color: #0F172A;
+}
+@media (max-width: 680px) {
+  .pos-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* .pos-discount-switch: Segmented Toggle 2 Kolom (Diskon Otomatis vs Diskon Manual) */
+.pos-discount-switch {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+  padding: 4px;
   background: var(--bg-soft);
   border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  gap: 2px;
+  border-radius: 12px;
+  margin-bottom: 10px;
 }
 .pos-discount-switch button,
 .pos-discount-switch .switch-btn,
 .pos-discount-switch a {
   border: none;
   background: transparent;
-  padding: 4px 12px;
-  font-size: 11.5px;
+  height: 38px;
+  padding: 0 12px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--muted);
-  border-radius: 999px;
+  border-radius: 9px;
   cursor: pointer;
+  white-space: nowrap;
   transition: all .2s var(--ease);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 6px;
+}
+.pos-discount-switch button:hover,
+.pos-discount-switch .switch-btn:hover,
+.pos-discount-switch a:hover {
+  color: var(--primary-dark);
+  background: var(--amber-100);
 }
 .pos-discount-switch button.active,
 .pos-discount-switch .switch-btn.active,
@@ -1592,6 +2088,12 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   background: rgba(15, 23, 42, 0.85);
   border-color: var(--line-strong);
 }
+[data-theme="dark"] .pos-discount-switch button:hover,
+[data-theme="dark"] .pos-discount-switch .switch-btn:hover,
+[data-theme="dark"] .pos-discount-switch a:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--primary);
+}
 [data-theme="dark"] .pos-discount-switch button.active,
 [data-theme="dark"] .pos-discount-switch .switch-btn.active,
 [data-theme="dark"] .pos-discount-switch a.active {
@@ -1602,6 +2104,7 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 /* .pos-ongkir-box: Kotak input & rincian Ongkos Kirim */
 .pos-ongkir-box {
   margin-top: 10px;
+  margin-bottom: 12px;
   padding: 10px 14px;
   border-radius: var(--radius-sm);
   background: var(--bg-soft);
@@ -1615,6 +2118,10 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   font-size: 11.5px;
   font-weight: 700;
   color: var(--ink-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
 }
 .pos-ongkir-row {
   display: flex;
@@ -1630,32 +2137,40 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   color: var(--ink);
 }
 
-/* .pos-source-switch: Switch Penanda Sumber Transaksi (Umum, Shopee, WA, dll) */
+/* .pos-source-switch: Switch Penanda Sumber Transaksi (Umum vs Shopee) */
 .pos-source-switch {
-  display: flex;
-  align-items: center;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
   padding: 4px;
   background: var(--bg-soft);
   border: 1px solid var(--line-strong);
   border-radius: 12px;
-  gap: 4px;
-  margin-bottom: 12px;
-  overflow-x: auto;
+  margin-bottom: 4px;
 }
 .pos-source-btn {
-  flex: 1;
-  min-width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
   border: none;
   background: transparent;
-  padding: 6px 12px;
-  font-size: 11.5px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--muted);
-  border-radius: 8px;
+  border-radius: 9px;
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
   transition: all .2s var(--ease);
+}
+.pos-source-btn svg,
+.pos-source-btn .ico {
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: middle;
 }
 .pos-source-btn:hover {
   color: var(--primary-dark);
@@ -1680,6 +2195,16 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .dark .pos-source-btn.active {
   background: var(--caramel-grad);
   color: #FFFFFF;
+}
+
+.pos-no-result {
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 /* ---------- 14. Modal & Toast ---------- */
@@ -2018,121 +2543,142 @@ body.login-body {
 .modal-close { background: none; border: none; font-size: 24px; color: var(--faint); cursor: pointer; }
 
 /* ==========================================================================
-   INVOICE / NOTA FISIK & DIGITAL MKP STORE (A5 Landscape Ready)
+   INVOICE / NOTA FISIK & DIGITAL MKP STORE (A5 Landscape Padat — 13-15+ Item)
    ========================================================================== */
 .invoice-box {
-  max-width: 900px;
-  margin: 24px auto;
+  max-width: 920px;
+  margin: 18px auto 32px;
   background: var(--card);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
-  padding: 24px 28px;
+  padding: 20px 24px;
   box-shadow: var(--shadow);
   color: var(--ink);
   position: relative;
 }
-.invoice-head,
-.invoice-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+.invoice-top-band {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
   gap: 16px;
+  align-items: start;
+  border-bottom: 2px solid var(--line-strong);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
-.invoice-brand {
+.invoice-brand-col {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
 }
 .invoice-logo {
-  max-height: 52px;
-  max-width: 140px;
+  max-height: 50px;
+  max-width: 112px;
   object-fit: contain;
   border-radius: 8px;
   flex-shrink: 0;
 }
+.invoice-brand-text {
+  min-width: 0;
+}
 .invoice-brand-text h2 {
-  font-size: 15.5px;
+  font-size: 14.5px;
   font-weight: 800;
-  color: #3B2314;
+  color: var(--ink);
   margin: 0 0 2px;
   letter-spacing: -0.01em;
 }
 .invoice-company-sub {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 650;
-  color: #9A5B25;
-  margin-bottom: 3px;
+  color: var(--primary);
+  margin-bottom: 2px;
+  line-height: 1.3;
 }
 .invoice-company-contact {
   font-size: 10.5px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.35;
 }
-.invoice-head-meta {
-  text-align: right;
+.invoice-cust-col {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+.invoice-cust-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.invoice-title-group {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  white-space: nowrap;
 }
 .invoice-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: #3B2314;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--ink);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   margin: 0;
 }
 .invoice-no {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 750;
-  color: #9A5B25;
+  color: var(--primary);
 }
 .invoice-badges {
-  display: flex;
-  gap: 6px;
+  display: inline-flex;
+  gap: 5px;
   align-items: center;
-  margin-top: 2px;
+  justify-content: flex-end;
+  margin-left: auto;
+  text-align: right;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
-
-/* Meta section (Customer & Trx Info) */
-.invoice-meta,
-.invoice-meta-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
-  padding: 12px 16px;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  margin-bottom: 16px;
-  font-size: 12px;
+.invoice-badges .badge {
+  padding: 2px 8px;
+  font-size: 10.5px;
 }
-.invoice-meta-col {
+.invoice-cust-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+  font-size: 11.5px;
+  line-height: 1.3;
 }
-.invoice-meta-label {
-  font-size: 10px;
+.invoice-kv-line {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 6px;
+  align-items: baseline;
+}
+.invoice-kv-k {
+  font-size: 10.5px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--muted);
-  margin-bottom: 1px;
 }
-.invoice-meta-value {
-  font-size: 12.5px;
-  font-weight: 700;
+.invoice-kv-v {
   color: var(--ink);
+  word-break: break-word;
 }
 
-/* Table wrap & table */
+/* Tabel 6 Kolom Padat (1 Baris Tipis per Produk) */
 .invoice-table-wrap {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -2140,22 +2686,31 @@ body.login-body {
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  table-layout: fixed;
+  font-size: 11.5px;
 }
+.invoice-table .inv-col-no    { width: 4%; }
+.invoice-table .inv-col-sku   { width: 12%; }
+.invoice-table .inv-col-nama  { width: 42%; }
+.invoice-table .inv-col-harga { width: 15%; }
+.invoice-table .inv-col-qty   { width: 9%; }
+.invoice-table .inv-col-total { width: 18%; }
 .invoice-table thead th {
   background: var(--table-head-bg);
-  color: #3B2314;
+  color: var(--ink);
   font-weight: 750;
-  font-size: 11px;
-  padding: 8px 10px;
+  font-size: 10.5px;
+  padding: 6px 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-bottom: 1.5px solid var(--line);
+  border-bottom: 1.5px solid var(--line-strong);
+  white-space: nowrap;
 }
 .invoice-table tbody td {
-  padding: 8px 10px;
+  padding: 5px 6px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
+  line-height: 1.25;
 }
 .invoice-table tbody tr:last-child td {
   border-bottom: none;
@@ -2163,61 +2718,78 @@ body.login-body {
 .invoice-table tbody tr:nth-child(even) {
   background: var(--table-even-bg);
 }
+.inv-cell-name {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inv-cell-nowrap {
+  white-space: nowrap;
+}
 
-/* Bottom Grid (Keterangan + Kalkulasi) */
+/* Footer Terpadu (Anti Terpotong) */
+.invoice-footer-block {
+  margin-top: 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .invoice-bottom-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 18px;
-  align-items: start;
-  margin-bottom: 14px;
+  grid-template-columns: 1.38fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 8px;
 }
 .invoice-info-pane {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
 }
 .invoice-terbilang {
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: var(--bg-soft);
-  border-left: 3.5px solid #9A5B25;
+  border-left: 3px solid var(--primary);
   border-radius: 4px;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--ink-2);
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .invoice-terbilang strong {
-  color: #3B2314;
+  color: var(--ink);
 }
 .invoice-bank-box {
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-xs);
   background: var(--card);
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 10.5px;
+  line-height: 1.35;
   color: var(--ink-2);
 }
 .invoice-bank-title {
   font-weight: 750;
-  color: #3B2314;
-  margin-bottom: 2px;
+  color: var(--ink);
+  margin-right: 4px;
 }
 .invoice-retur-note {
-  font-size: 10.5px;
+  font-size: 10px;
   font-style: italic;
   color: var(--muted);
-  line-height: 1.35;
+  line-height: 1.25;
 }
 
 /* Calculation summary */
 .invoice-calc-pane {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 12px;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11.5px;
   background: var(--bg-soft);
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
@@ -2235,19 +2807,19 @@ body.login-body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-top: 8px;
-  margin-top: 6px;
+  padding-top: 5px;
+  margin-top: 4px;
   border-top: 1.5px solid var(--line-strong);
-  font-size: 13.5px;
-  color: #3B2314;
+  font-size: 12.5px;
+  color: var(--ink);
 }
 .invoice-calc-total span {
   font-weight: 750;
 }
 .invoice-calc-total strong {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 800;
-  color: #9A5B25;
+  color: var(--primary);
 }
 
 /* Signatures */
@@ -2255,30 +2827,36 @@ body.login-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 4px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .invoice-sign-box {
   text-align: center;
-  font-size: 11.5px;
+  font-size: 11px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 85px;
+  min-height: 64px;
 }
 .invoice-sign-title {
   font-weight: 700;
   color: var(--ink);
 }
 .invoice-sign-space {
-  height: 48px;
+  height: 34px;
 }
 .invoice-sign-name {
-  font-weight: 750;
-  border-top: 1px dotted var(--line-strong);
-  padding-top: 4px;
-  color: var(--ink-2);
+  font-weight: 650;
+  color: var(--muted);
   margin-top: auto;
+}
+@media (max-width: 780px) {
+  .invoice-top-band,
+  .invoice-bottom-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Komponen Kasir POS Mitra PT & Modal Dialog (Revisi Poin 6 - Zero Inline CSS) */
@@ -2670,38 +3248,43 @@ body.login-body {
 }
 
 /* ==========================================================================
-   PRINT STYLESHEET — A5 LANDSCAPE (MKP STORE INVOICE STANDARDS)
+   PRINT STYLESHEET — A5 LANDSCAPE PRESISI (MKP STORE PHYSICAL INVOICE)
    ========================================================================== */
 @page {
   size: A5 landscape;
-  margin: 8mm;
+  margin: 6mm 8mm;
 }
 
 @media print {
   /* Hilangkan seluruh chrome dan kontrol UI interaktif */
   .sidebar,
+  .sidebar-backdrop,
   .topbar,
   .page-actions,
   .role-switcher,
   .theme-toggle,
   .no-print,
   .modal-backdrop,
+  .confirm-backdrop,
   .modal,
   .toast-wrap,
+  .sd-select-menu,
   .footer {
     display: none !important;
   }
 
-  /* Reset layout kanvas cetak */
+  /* Reset layout kanvas cetak penuh A5 Landscape */
   html,
   body {
     background: #FFFFFF !important;
     color: #2B1B12 !important;
-    font-size: 8.8pt !important;
-    line-height: 1.25 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.2 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -2709,6 +3292,7 @@ body.login-body {
   /* PAKSA MATIKAN DARK MODE SAAT PRINT SUPAYA HEMAT TINTA & BERSIH */
   [data-theme="dark"],
   [data-theme="dark"] body,
+  [data-theme="dark"] .app,
   [data-theme="dark"] .main,
   [data-theme="dark"] .content,
   [data-theme="dark"] .invoice-box {
@@ -2716,105 +3300,152 @@ body.login-body {
     color: #2B1B12 !important;
   }
 
+  .app,
   .main,
   .content {
+    display: block !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  /* Box Invoice A5 Landscape */
+  /* Kontainer Nota: Lebar penuh A5 Landscape, Flexbox kolom penuh 1 halaman (134mm) agar TTD selalu di paling bawah */
   .invoice-box {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: 134mm !important;
+    width: 100% !important;
+    max-width: none !important;
     box-shadow: none !important;
-    border: 1px solid #E8D5BC !important;
-    border-radius: 6px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
     margin: 0 !important;
-    padding: 3mm 4mm !important;
-    max-width: 100% !important;
+    padding: 0 !important;
     background: #FFFFFF !important;
     color: #2B1B12 !important;
   }
 
-  .invoice-head,
-  .invoice-header {
-    border-bottom: 1.5px solid #E8D5BC !important;
-    padding-bottom: 6px !important;
-    margin-bottom: 6px !important;
-    gap: 10px !important;
+  /* Kop & Header 2 Kolom Padat */
+  .invoice-top-band {
+    display: grid !important;
+    grid-template-columns: 1.08fr 1fr !important;
+    gap: 8px !important;
+    border-bottom: 1.5px solid #C8A682 !important;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
   }
 
-  .invoice-brand {
-    gap: 10px !important;
+  .invoice-brand-col {
+    gap: 8px !important;
   }
 
   .invoice-logo {
-    max-height: 38px !important;
-    max-width: 100px !important;
+    max-height: 36px !important;
+    max-width: 84px !important;
+    border-radius: 4px !important;
   }
 
   .invoice-brand-text h2 {
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
     color: #3B2314 !important;
-    margin-bottom: 1px !important;
+    margin: 0 0 1px !important;
   }
 
   .invoice-company-sub {
-    font-size: 7.5pt !important;
+    font-size: 7pt !important;
     color: #9A5B25 !important;
     margin-bottom: 1px !important;
   }
 
   .invoice-company-contact {
-    font-size: 7pt !important;
+    font-size: 6.8pt !important;
     color: #4A3222 !important;
-    line-height: 1.25 !important;
+    line-height: 1.2 !important;
+  }
+
+  .invoice-cust-col {
+    background: #FDF9F4 !important;
+    border: 1px solid #E5D4BE !important;
+    border-radius: 4px !important;
+    padding: 4px 7px !important;
+    gap: 3px !important;
+  }
+
+  .invoice-cust-title-row {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 6px !important;
+    width: 100% !important;
+    padding-bottom: 3px !important;
+    border-bottom: 1px dashed #D6B792 !important;
+  }
+
+  .invoice-title-group {
+    white-space: nowrap !important;
   }
 
   .invoice-title {
-    font-size: 11.5pt !important;
+    font-size: 9.5pt !important;
     color: #3B2314 !important;
   }
 
   .invoice-no {
-    font-size: 9.5pt !important;
+    font-size: 8.5pt !important;
     color: #9A5B25 !important;
   }
 
+  .invoice-badges {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    margin-left: auto !important;
+    text-align: right !important;
+    gap: 4px !important;
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+
   .invoice-badges .badge {
-    padding: 2px 6px !important;
-    font-size: 7.5pt !important;
-  }
-
-  /* Meta info box */
-  .invoice-meta,
-  .invoice-meta-grid {
-    padding: 5px 8px !important;
-    margin-bottom: 6px !important;
-    background: #FDF8F2 !important;
-    border: 1px solid #E8D5BC !important;
-    font-size: 8pt !important;
-    gap: 10px !important;
-  }
-
-  .invoice-meta-label {
+    padding: 1px 5px !important;
     font-size: 6.5pt !important;
-    color: #846954 !important;
   }
 
-  .invoice-meta-value {
-    font-size: 8.5pt !important;
+  .invoice-cust-meta {
+    font-size: 7.5pt !important;
+    line-height: 1.2 !important;
+    gap: 1px !important;
+  }
+
+  .invoice-kv-line {
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    gap: 4px !important;
+  }
+
+  .invoice-kv-k {
+    font-size: 7pt !important;
+    color: #6B513E !important;
+  }
+
+  .invoice-kv-v {
     color: #2B1B12 !important;
   }
 
-  /* Tabel item cetak */
+  /* Tabel Produk 6 Kolom — 1 Baris Tipis per Item (~18px, Muat 13-15 Item/Halaman) */
   .invoice-table-wrap {
-    margin-bottom: 6px !important;
-    border: 1px solid #E8D5BC !important;
+    margin-bottom: 5px !important;
+    border: 1px solid #D8C2A8 !important;
+    border-radius: 3px !important;
   }
 
   .invoice-table {
-    font-size: 8pt !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 9pt !important;
+    line-height: 1.2 !important;
   }
 
   .invoice-table thead {
@@ -2822,20 +3453,28 @@ body.login-body {
   }
 
   .invoice-table thead th {
-    background: #F7ECDC !important;
+    background: #F5E9D9 !important;
     color: #3B2314 !important;
     padding: 3px 6px !important;
     font-size: 7.5pt !important;
-    border-bottom: 1px solid #E8D5BC !important;
+    border-bottom: 1px solid #C8A682 !important;
   }
 
   .invoice-table tbody td {
     padding: 3px 6px !important;
-    border-bottom: 1px solid #E8D5BC !important;
+    font-size: 8.5pt !important;
+    line-height: 1.2 !important;
+    border-bottom: 1px solid #EADBCB !important;
+    color: #2B1B12 !important;
+  }
+
+  .inv-cell-name {
+    color: #2B1B12 !important;
+    font-weight: 600 !important;
   }
 
   .invoice-table tbody tr:nth-child(even) {
-    background: rgba(250, 243, 232, 0.4) !important;
+    background: #FCF8F2 !important;
   }
 
   .invoice-table tr {
@@ -2843,10 +3482,20 @@ body.login-body {
     page-break-inside: avoid !important;
   }
 
-  /* Bottom grid & Kalkulasi */
+  /* Blok Footer (Terbilang, Rekening, Total & Tanda Tangan) — Menempel di Paling Bawah & Anti-Potong */
+  .invoice-footer-block {
+    margin-top: auto !important;
+    padding-top: 6px !important;
+    font-size: 8.5pt !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   .invoice-bottom-grid {
-    gap: 10px !important;
-    margin-bottom: 6px !important;
+    display: grid !important;
+    grid-template-columns: 1.38fr 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 4px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
@@ -2857,39 +3506,53 @@ body.login-body {
     page-break-inside: avoid !important;
   }
 
+  .invoice-info-pane {
+    gap: 3px !important;
+  }
+
   .invoice-terbilang {
-    background: #FDF8F2 !important;
+    background: #FDF9F4 !important;
     border-left: 2.5px solid #9A5B25 !important;
-    padding: 4px 6px !important;
+    padding: 3px 6px !important;
     font-size: 7.5pt !important;
-    line-height: 1.25 !important;
+    line-height: 1.2 !important;
+    color: #2B1B12 !important;
+  }
+
+  .invoice-terbilang strong {
+    color: #3B2314 !important;
   }
 
   .invoice-bank-box {
     background: #FFFFFF !important;
-    border: 1px dashed #D6B792 !important;
-    padding: 4px 6px !important;
-    font-size: 7pt !important;
-    line-height: 1.25 !important;
+    border: 1px dashed #C8A682 !important;
+    padding: 3px 6px !important;
+    font-size: 7.2pt !important;
+    line-height: 1.2 !important;
+    color: #2B1B12 !important;
   }
 
   .invoice-bank-title {
-    font-size: 7pt !important;
+    font-size: 7.2pt !important;
     color: #3B2314 !important;
   }
 
   .invoice-retur-note {
     font-size: 6.8pt !important;
-    color: #846954 !important;
-    line-height: 1.2 !important;
+    color: #6B513E !important;
+    line-height: 1.15 !important;
   }
 
   .invoice-calc-pane {
-    background: #FDF8F2 !important;
-    border: 1px solid #E8D5BC !important;
+    background: #FDF9F4 !important;
+    border: 1px solid #E5D4BE !important;
     padding: 4px 8px !important;
     font-size: 8pt !important;
-    gap: 2.5px !important;
+    gap: 2px !important;
+  }
+
+  .invoice-calc-row {
+    color: #4A3222 !important;
   }
 
   .invoice-calc-row strong {
@@ -2897,28 +3560,29 @@ body.login-body {
   }
 
   .invoice-calc-total {
-    padding-top: 4px !important;
-    margin-top: 3px !important;
-    border-top: 1px solid #D6B792 !important;
+    padding-top: 3px !important;
+    margin-top: 2px !important;
+    border-top: 1px solid #C8A682 !important;
     font-size: 8.5pt !important;
+    color: #3B2314 !important;
   }
 
   .invoice-calc-total strong {
     color: #9A5B25 !important;
-    font-size: 10pt !important;
+    font-size: 9.5pt !important;
   }
 
-  /* Tanda Tangan */
+  /* Tanda Tangan Padat */
   .invoice-signatures {
     margin-top: 4px !important;
     padding-top: 2px !important;
-    gap: 20px !important;
+    gap: 24px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
   .invoice-sign-box {
-    min-height: 48px !important;
+    min-height: 38px !important;
     font-size: 7.5pt !important;
   }
 
@@ -2927,13 +3591,11 @@ body.login-body {
   }
 
   .invoice-sign-space {
-    height: 26px !important;
+    height: 20px !important;
   }
 
   .invoice-sign-name {
-    border-top: 1px dotted #846954 !important;
-    color: #2B1B12 !important;
-    padding-top: 2px !important;
+    color: #4A3222 !important;
   }
 
   /* Badges color exact print */
@@ -3041,6 +3703,19 @@ body.login-body {
   background: var(--danger-bg);
   border-color: rgba(220, 38, 38, 0.28);
   color: var(--danger);
+}
+.confirm-modal.is-warn .confirm-icon {
+  background: #FEF3C7;
+  border-color: rgba(180, 101, 30, 0.32);
+  color: #B4651E;
+}
+[data-theme="dark"] .confirm-modal.is-warn .confirm-icon {
+  background: rgba(245, 158, 11, 0.18);
+  border-color: rgba(245, 158, 11, 0.35);
+  color: #FBBF24;
+}
+.confirm-modal.is-alert .confirm-btn-confirm {
+  min-width: 152px;
 }
 .confirm-title {
   margin: 0 0 8px;
@@ -3498,4 +4173,293 @@ body.login-body {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--ink);
+}
+
+/* ==========================================================================
+   GLOBAL CUSTOM SEARCHABLE DROPDOWN (.sd-select — Mengganti <select> OS)
+   ========================================================================== */
+.sd-select {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+.sd-select-native {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1;
+  margin: 0 !important;
+}
+.sd-select-control {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  width: 100%;
+  background: #FFFDF9;
+  border: 1.5px solid #E6D8C7;
+  border-radius: 12px;
+  padding: 0 6px 0 14px;
+  gap: 6px;
+  transition: border-color .2s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease);
+}
+.sd-select-control:hover {
+  border-color: #D2B79B;
+}
+.sd-select.is-open .sd-select-control,
+.sd-select-control:focus-within {
+  border-color: #B4651E;
+  box-shadow: 0 0 0 3px rgba(180, 101, 30, 0.14);
+}
+.sd-select.is-disabled .sd-select-control {
+  background: var(--bg-soft);
+  border-color: var(--line);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.sd-select-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 550;
+  outline: none;
+  cursor: pointer;
+}
+.sd-select.is-open .sd-select-input,
+.sd-select-input:focus {
+  cursor: text;
+}
+.sd-select-input::placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+.sd-select.is-disabled .sd-select-input {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+.sd-select-toggle {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #8C6D53;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform .2s var(--ease), color .2s var(--ease), background .2s var(--ease);
+}
+.sd-select-toggle:hover {
+  background: #F6ECE0;
+  color: #B4651E;
+}
+.sd-select.is-open .sd-select-toggle {
+  transform: rotate(180deg);
+  color: #B4651E;
+}
+.sd-select.is-disabled .sd-select-toggle {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Portal Dropdown Menu (document.body, position: fixed, z-index: 9999) */
+.sd-select-menu {
+  position: fixed;
+  z-index: 9999;
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #FFFDF9;
+  border: 1.5px solid #E6D8C7;
+  border-radius: 14px;
+  box-shadow: 0 20px 40px -14px rgba(59, 35, 20, 0.26), 0 4px 12px -4px rgba(59, 35, 20, 0.1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(180, 101, 30, 0.35) transparent;
+}
+.sd-select-menu.is-hidden {
+  display: none !important;
+}
+.sd-select-menu::-webkit-scrollbar {
+  width: 6px;
+}
+.sd-select-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sd-select-menu::-webkit-scrollbar-thumb {
+  background: rgba(180, 101, 30, 0.32);
+  border-radius: 999px;
+}
+.sd-select-menu.is-mono .sd-select-opt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+.sd-select-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 550;
+  color: var(--ink-2);
+  cursor: pointer;
+  line-height: 1.35;
+  transition: background .14s var(--ease), color .14s var(--ease);
+}
+.sd-select-opt.is-opt-placeholder {
+  color: var(--muted);
+  font-weight: 500;
+}
+.sd-select-opt:hover,
+.sd-select-opt.is-focused {
+  background: #F8EFE4;
+  color: #7C4110;
+}
+.sd-select-opt.is-selected {
+  background: rgba(180, 101, 30, 0.14);
+  color: #B4651E;
+  font-weight: 700;
+}
+.sd-select-opt.is-selected::after {
+  content: '✓';
+  font-size: 12px;
+  font-weight: 800;
+  color: #B4651E;
+  flex-shrink: 0;
+}
+.sd-select-opt.is-opt-disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+.sd-select-empty {
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+/* Dark Mode untuk Global Custom Searchable Dropdown */
+[data-theme="dark"] .sd-select-control {
+  background: var(--card);
+  border-color: var(--line-strong);
+}
+[data-theme="dark"] .sd-select.is-open .sd-select-control,
+[data-theme="dark"] .sd-select-control:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16);
+}
+[data-theme="dark"] .sd-select-toggle:hover {
+  background: rgba(56, 189, 248, 0.14);
+  color: var(--primary);
+}
+[data-theme="dark"] .sd-select.is-open .sd-select-toggle {
+  color: var(--primary);
+}
+[data-theme="dark"] .sd-select-menu {
+  background: var(--card);
+  border-color: var(--line-strong);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.58);
+}
+[data-theme="dark"] .sd-select-opt:hover,
+[data-theme="dark"] .sd-select-opt.is-focused {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--ink);
+}
+[data-theme="dark"] .sd-select-opt.is-selected {
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--primary);
+}
+[data-theme="dark"] .sd-select-opt.is-selected::after {
+  color: var(--primary);
+}
+
+/* ==========================================================================
+   FORM TERPUSAT KATEGORI PRODUK & BADGE RINGKAS KATEGORI TERDAFTAR
+   ========================================================================== */
+.page-actions-narrow {
+  max-width: 640px;
+  margin: 0 auto 16px;
+}
+.callout-narrow {
+  max-width: 640px;
+  margin: 0 auto 16px;
+}
+.card-form-narrow {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.cat-existing-box {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line-strong);
+}
+.cat-existing-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.cat-existing-title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-2);
+  margin: 0;
+}
+.cat-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.cat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 11px;
+  border-radius: 999px;
+  background: #FFFDF9;
+  border: 1px solid #E6D8C7;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.cat-pill-count {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #B4651E;
+  background: rgba(180, 101, 30, 0.12);
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+[data-theme="dark"] .cat-pill {
+  background: var(--bg-soft);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+[data-theme="dark"] .cat-pill-count {
+  background: rgba(56, 189, 248, 0.18);
+  color: var(--primary);
+}
+
+/* ==========================================================================
+   PENYERAGAMAN SPACING HALAMAN INVENTARIS (DEFECT & STOCK OPNAME)
+   ========================================================================== */
+.inv-page-wrap {
+  padding-bottom: 90px;
+}
+.inv-section-gap {
+  margin-bottom: 28px !important;
 }
