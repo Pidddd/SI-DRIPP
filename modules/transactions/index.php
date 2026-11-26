@@ -441,8 +441,14 @@ $palet = [
       </div>
 
       <!-- ---- Tabel Item Keranjang ---- -->
-      <div class="table-wrap border-top-line">
-        <table class="table">
+      <div class="table-wrap border-top-line pos-cart-table-wrap" id="pos-cart-table-wrap">
+        <table class="table pos-cart-table">
+          <colgroup>
+            <col class="pos-col-item">
+            <col class="pos-col-qty">
+            <col class="pos-col-sub">
+            <col class="pos-col-del">
+          </colgroup>
           <thead>
             <tr>
               <th>Item Produk</th>
@@ -707,19 +713,80 @@ function syncManualCustomer() {
 // ----------------------------------------------------------------
 // Keranjang — Tambah & Ubah Qty
 // ----------------------------------------------------------------
+function showStockLimitWarn(nama, stokMaks) {
+  var msg = 'Jumlah melebihi stok tersedia (' + stokMaks + ' unit' + (nama ? ' untuk ' + nama : '') + ').';
+  if (typeof window.sidrippToast === 'function') {
+    window.sidrippToast(msg, 'warn');
+  } else {
+    alert(msg);
+  }
+}
+
 function tambahKeKeranjang(id, nama, harga, stokMaks) {
+  var stok = Math.max(0, parseInt(stokMaks, 10) || 0);
+  if (stok <= 0) {
+    showStockLimitWarn(nama, 0);
+    return;
+  }
   var idx = -1;
   for (var i = 0; i < keranjang.length; i++) {
     if (keranjang[i].id === id) { idx = i; break; }
   }
   if (idx > -1) {
-    if (keranjang[idx].qty + 1 > stokMaks) {
-      alert('Stok produk ' + nama + ' hanya tersisa ' + stokMaks + ' unit.');
+    keranjang[idx].stok     = stok;
+    keranjang[idx].stokMaks = stok;
+    if (keranjang[idx].qty + 1 > stok) {
+      showStockLimitWarn(nama, stok);
       return;
     }
     keranjang[idx].qty += 1;
   } else {
-    keranjang.push({ id: id, nama: nama, harga: harga, qty: 1, stokMaks: stokMaks });
+    keranjang.push({ id: id, nama: nama, harga: harga, qty: 1, stok: stok, stokMaks: stok });
+  }
+  renderKeranjang();
+}
+
+function escapeHtml(str) {
+  return String(str == null ? '' : str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function cekBatasQty(inputEl, id) {
+  if (!inputEl) return;
+  var idx = -1;
+  for (var i = 0; i < keranjang.length; i++) {
+    if (keranjang[i].id === id) { idx = i; break; }
+  }
+  if (idx === -1) return;
+  var stokMaks = keranjang[idx].stok;
+  var val = parseInt(inputEl.value, 10);
+  if (!isNaN(val) && val > stokMaks) {
+    inputEl.value = stokMaks;
+    keranjang[idx].qty = stokMaks;
+    showStockLimitWarn(keranjang[idx].nama, stokMaks);
+    renderKeranjang();
+  }
+}
+
+function setQtyManual(id, rawVal) {
+  var idx = -1;
+  for (var i = 0; i < keranjang.length; i++) {
+    if (keranjang[i].id === id) { idx = i; break; }
+  }
+  if (idx === -1) return;
+  var stokMaks = keranjang[idx].stok;
+  var qtyBaru = parseInt(rawVal, 10);
+  if (isNaN(qtyBaru) || qtyBaru <= 0) {
+    keranjang.splice(idx, 1);
+  } else if (qtyBaru > stokMaks) {
+    showStockLimitWarn(keranjang[idx].nama, stokMaks);
+    keranjang[idx].qty = stokMaks;
+  } else {
+    keranjang[idx].qty = qtyBaru;
   }
   renderKeranjang();
 }
@@ -730,12 +797,13 @@ function ubahQty(id, delta) {
     if (keranjang[i].id === id) { idx = i; break; }
   }
   if (idx === -1) return;
-  var qtyBaru = keranjang[idx].qty + delta;
+  var stokMaks = keranjang[idx].stok;
+  var qtyBaru  = keranjang[idx].qty + delta;
   if (qtyBaru <= 0) {
     keranjang.splice(idx, 1);
-  } else if (qtyBaru > keranjang[idx].stokMaks) {
-    alert('Tidak dapat melebihi stok tersedia (' + keranjang[idx].stokMaks + ').');
-    return;
+  } else if (qtyBaru > stokMaks) {
+    showStockLimitWarn(keranjang[idx].nama, stokMaks);
+    keranjang[idx].qty = stokMaks;
   } else {
     keranjang[idx].qty = qtyBaru;
   }
@@ -860,20 +928,36 @@ function renderKeranjang() {
     totalUnit  += item.qty;
     subtotal   += subItem;
 
+    var safeId     = escapeHtml(item.id);
+    var safeNama   = escapeHtml(item.nama);
+    var stokTotal  = Math.max(0, parseInt(item.stok != null ? item.stok : item.stokMaks, 10) || 0);
+    var sisaStok   = Math.max(0, stokTotal - item.qty);
+    var stockClass = sisaStok === 0 ? 'pos-stock-empty' : (sisaStok <= 5 ? 'pos-stock-warn' : 'pos-stock-ok');
+    var isMaxQty   = item.qty >= stokTotal;
+    var plusAttrs  = isMaxQty
+      ? ' disabled title="Sudah mencapai batas maksimal stok (' + stokTotal + ')"'
+      : ' title="Tambah jumlah"';
+
     var tr = document.createElement('tr');
     tr.innerHTML =
-      '<td><strong>' + item.nama + '</strong><div class="muted text-xxs">' + formatRupiah(item.harga) + ' / unit</div></td>' +
-      '<td class="text-center mono">' +
-        '<button type="button" class="btn btn-ghost btn-sm" onclick="ubahQty(\'' + item.id + '\', -1)">-</button> ' +
-        '<strong>' + item.qty + '</strong> ' +
-        '<button type="button" class="btn btn-ghost btn-sm" onclick="ubahQty(\'' + item.id + '\', 1)">+</button>' +
+      '<td class="pos-cart-col-name">' +
+        '<strong>' + safeNama + '</strong>' +
+        '<div class="muted text-xxs">' + formatRupiah(item.harga) + ' / unit</div>' +
+        '<div class="pos-item-stock ' + stockClass + '">Stok: ' + stokTotal + ' (Sisa: ' + sisaStok + ')</div>' +
       '</td>' +
-      '<td class="text-right mono"><strong>' + formatRupiah(subItem) + '</strong></td>' +
-      '<td class="text-right"><button type="button" class="btn btn-danger-soft btn-sm" onclick="ubahQty(\'' + item.id + '\', -9999)">&times;</button></td>';
+      '<td class="text-center mono pos-cart-col-qty">' +
+        '<div class="pos-qty-stepper">' +
+          '<button type="button" class="btn btn-ghost btn-sm" onclick="ubahQty(\'' + safeId + '\', -1)" title="Kurangi jumlah" aria-label="Kurangi jumlah">&minus;</button>' +
+          '<input type="number" class="pos-qty-input mono" value="' + item.qty + '" min="1" max="' + stokTotal + '" oninput="cekBatasQty(this, \'' + safeId + '\')" onchange="setQtyManual(\'' + safeId + '\', this.value)" aria-label="Jumlah ' + safeNama + '">' +
+          '<button type="button" class="btn btn-ghost btn-sm" onclick="ubahQty(\'' + safeId + '\', 1)" aria-label="Tambah jumlah"' + plusAttrs + '>&plus;</button>' +
+        '</div>' +
+      '</td>' +
+      '<td class="text-right mono pos-cart-col-sub"><strong>' + formatRupiah(subItem) + '</strong></td>' +
+      '<td class="text-right pos-cart-col-del"><button type="button" class="btn btn-danger-soft btn-sm" onclick="ubahQty(\'' + safeId + '\', -9999)" title="Hapus item" aria-label="Hapus item">&times;</button></td>';
     tbody.appendChild(tr);
 
     hiddenWrap.innerHTML +=
-      '<input type="hidden" name="product_id[]" value="' + item.id + '">' +
+      '<input type="hidden" name="product_id[]" value="' + safeId + '">' +
       '<input type="hidden" name="kuantitas[]" value="' + item.qty + '">' +
       '<input type="hidden" name="harga[]" value="' + item.harga + '">';
   }
