@@ -110,9 +110,10 @@ try {
     $diskon      = 0;
 
     if ($diskon_mode === 'manual') {
-        // Mode Manual: input kasir dibatasi 0 s.d. subtotal_kotor
-        $raw_diskon = isset($_POST['diskon']) ? (int)$_POST['diskon'] : 0;
-        $diskon     = min($subtotal_kotor, max(0, $raw_diskon));
+        // Mode Manual: bersihkan pemisah ribuan (titik/karakter non-angka) lalu batasi 0 s.d. subtotal_kotor
+        $raw_diskon_clean = preg_replace('/[^0-9]/', '', (string)($_POST['diskon'] ?? '0'));
+        $raw_diskon       = ($raw_diskon_clean !== '') ? (int)$raw_diskon_clean : 0;
+        $diskon           = min($subtotal_kotor, max(0, $raw_diskon));
     } else {
         // Mode Otomatis (Default): Jika total botol >= 24 (2 karton), diskon 2% resmi
         if ($total_qty >= 24) {
@@ -123,8 +124,11 @@ try {
     }
 
     // 7. Validasi Ongkir (Hanya masuk ke transactions, TIDAK ke transaction_details)
-    $pakai_ongkir = trim($_POST['pakai_ongkir'] ?? '0');
-    $ongkir       = ($pakai_ongkir === '1') ? max(0, (int)($_POST['ongkir'] ?? 0)) : 0;
+    // Bersihkan pemisah ribuan (.) sebelum konversi integer
+    $raw_ongkir_clean = preg_replace('/[^0-9]/', '', (string)($_POST['ongkir'] ?? '0'));
+    $ongkir_nominal   = ($raw_ongkir_clean !== '') ? max(0, (int)$raw_ongkir_clean) : 0;
+    $pakai_ongkir     = trim((string)($_POST['pakai_ongkir'] ?? '0'));
+    $ongkir           = ($pakai_ongkir === '1') ? $ongkir_nominal : 0;
 
     // 8. Hitung Total Akhir Transaksi
     $total_harga = max(0, $subtotal_kotor - $diskon) + $ongkir;

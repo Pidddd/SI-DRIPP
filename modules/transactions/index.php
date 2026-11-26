@@ -363,7 +363,8 @@ $palet = [
       <!-- Diskon final yang dikirim ke backend (diisi JS) -->
       <input type="hidden" id="hidden_diskon" name="diskon" value="0">
 
-      <!-- Ongkir final yang dikirim ke backend (diisi JS) -->
+      <!-- Status & nominal ongkir final yang dikirim ke backend (diisi JS) -->
+      <input type="hidden" id="hidden_pakai_ongkir" name="pakai_ongkir" value="0">
       <input type="hidden" id="hidden_ongkir" name="ongkir" value="0">
 
       <!-- Sumber transaksi aktual (diisi JS via switch) -->
@@ -495,7 +496,7 @@ $palet = [
               Diskon Manual
             </button>
           </div>
-          <input type="hidden" id="diskon_mode" value="auto">
+          <input type="hidden" id="diskon_mode" name="diskon_mode" value="auto">
 
           <!-- Mode Auto: Info box -->
           <div class="moq-hint" id="disc-auto-info">
@@ -508,14 +509,14 @@ $palet = [
             <div class="field field-tight">
               <label for="input_diskon_manual">Potongan Diskon Manual (Rp)</label>
               <input
-                type="number"
+                type="text"
+                inputmode="numeric"
                 id="input_diskon_manual"
                 class="input mono"
-                value="0"
-                min="0"
-                step="500"
-                placeholder="0"
-                oninput="renderKeranjang()"
+                value=""
+                placeholder="Contoh: 15.000"
+                autocomplete="off"
+                oninput="formatInputRibuan(this)"
               >
               <span class="muted text-xs">Setara <strong id="disc-manual-pct-val">0%</strong> dari subtotal</span>
             </div>
@@ -533,14 +534,14 @@ $palet = [
           </div>
           <div id="ongkir-input-wrap" class="is-hidden">
             <input
-              type="number"
+              type="text"
+              inputmode="numeric"
               id="input_ongkir"
               class="input mono"
-              value="0"
-              min="0"
-              step="1000"
-              placeholder="Masukkan nominal ongkir..."
-              oninput="renderKeranjang()"
+              value=""
+              placeholder="Contoh: 30.000"
+              autocomplete="off"
+              oninput="formatInputRibuan(this)"
             >
           </div>
         </div>
@@ -850,14 +851,33 @@ function setDiskonMode(mode) {
   renderKeranjang();
 }
 
+function parseRibuan(val) {
+  var clean = String(val == null ? '' : val).replace(/[^0-9]/g, '');
+  if (!clean) return 0;
+  var num = parseInt(clean, 10);
+  return isNaN(num) ? 0 : Math.max(0, num);
+}
+
+function formatInputRibuan(el) {
+  if (!el) return;
+  var digits = String(el.value || '').replace(/[^0-9]/g, '');
+  if (digits === '') {
+    el.value = '';
+  } else {
+    var num = parseInt(digits, 10);
+    el.value = isNaN(num) ? '' : num.toLocaleString('id-ID');
+  }
+  renderKeranjang();
+}
+
 function hitungDiskon(subtotal, totalUnit) {
   var mode = document.getElementById('diskon_mode').value;
   if (mode === 'auto') {
     return totalUnit >= 24 ? Math.round(subtotal * 0.02) : 0;
   }
   var el = document.getElementById('input_diskon_manual');
-  var val = parseInt(el ? el.value : '0', 10);
-  return Math.max(0, isNaN(val) ? 0 : val);
+  var val = parseRibuan(el ? el.value : '0');
+  return Math.min(subtotal, Math.max(0, val));
 }
 
 // ----------------------------------------------------------------
@@ -868,22 +888,27 @@ function toggleOngkir() {
   var wrap  = document.getElementById('ongkir-input-wrap');
   var rowOK = document.getElementById('sum-row-ongkir');
   var badge = document.getElementById('badge-ongkir-status');
+  var hPakai = document.getElementById('hidden_pakai_ongkir');
   if (cb.checked) {
     wrap.classList.remove('is-hidden');
     if (rowOK) rowOK.classList.remove('is-hidden');
+    if (hPakai) hPakai.value = '1';
     if (badge) {
       badge.textContent = 'Aktif';
       badge.className = 'badge info';
     }
+    var elOn = document.getElementById('input_ongkir');
+    if (elOn) setTimeout(function() { elOn.focus(); }, 30);
   } else {
     wrap.classList.add('is-hidden');
     if (rowOK) rowOK.classList.add('is-hidden');
+    if (hPakai) hPakai.value = '0';
     if (badge) {
       badge.textContent = 'Opsional';
       badge.className = 'badge neutral';
     }
     var el = document.getElementById('input_ongkir');
-    if (el) el.value = 0;
+    if (el) el.value = '';
   }
   renderKeranjang();
 }
@@ -914,8 +939,9 @@ function renderKeranjang() {
       textEl.innerHTML = 'Diskon <strong>2%</strong> otomatis aktif jika keranjang &ge; <strong>24 botol</strong> (campur produk).';
     }
 
-    document.getElementById('hidden_diskon').value = 0;
-    document.getElementById('hidden_ongkir').value = 0;
+    document.getElementById('hidden_diskon').value       = 0;
+    document.getElementById('hidden_pakai_ongkir').value = document.getElementById('cb-ongkir').checked ? '1' : '0';
+    document.getElementById('hidden_ongkir').value       = 0;
     return;
   }
 
@@ -996,8 +1022,7 @@ function renderKeranjang() {
   var ongkir = 0;
   if (pakai_ongkir) {
     var ongkirEl = document.getElementById('input_ongkir');
-    var ongkirRaw = parseInt(ongkirEl ? ongkirEl.value : '0', 10);
-    ongkir = Math.max(0, isNaN(ongkirRaw) ? 0 : ongkirRaw);
+    ongkir = parseRibuan(ongkirEl ? ongkirEl.value : '0');
   }
 
   var grandTotal = Math.max(0, subtotal - diskon + ongkir);
@@ -1008,8 +1033,9 @@ function renderKeranjang() {
   document.getElementById('label-ongkir').textContent     = '+ ' + formatRupiah(ongkir);
   document.getElementById('label-grandtotal').textContent = formatRupiah(grandTotal);
 
-  document.getElementById('hidden_diskon').value = diskon;
-  document.getElementById('hidden_ongkir').value = ongkir;
+  document.getElementById('hidden_diskon').value       = diskon;
+  document.getElementById('hidden_pakai_ongkir').value = pakai_ongkir ? '1' : '0';
+  document.getElementById('hidden_ongkir').value       = ongkir;
 }
 
 // ----------------------------------------------------------------
