@@ -12,24 +12,26 @@ if (file_exists(__DIR__ . '/env.php')) {
     require_once __DIR__ . '/env.php';
 }
 
-// 2. Baca parameter koneksi murni dari environment variable (tanpa kredensial hardcoded)
-$db_host = getenv('DB_HOST') ?: '';
-$db_port = getenv('DB_PORT') ?: '5432';
-$db_name = getenv('DB_NAME') ?: '';
-$db_user = getenv('DB_USER') ?: '';
-$db_pass = getenv('DB_PASS');
+// 2. Baca parameter koneksi murni dari environment variable (Render $_ENV/$_SERVER/getenv atau .env lokal)
+$db_host = function_exists('env_get') ? (string)env_get('DB_HOST', '') : (getenv('DB_HOST') ?: '');
+$db_port = function_exists('env_get') ? (string)env_get('DB_PORT', '5432') : (getenv('DB_PORT') ?: '5432');
+$db_name = function_exists('env_get') ? (string)env_get('DB_NAME', '') : (getenv('DB_NAME') ?: '');
+$db_user = function_exists('env_get') ? (string)env_get('DB_USER', '') : (getenv('DB_USER') ?: '');
+$db_pass = function_exists('env_get') ? env_get('DB_PASS', null) : getenv('DB_PASS');
 
 // Pertahankan fallback config/db_pass.local.php bila DB_PASS belum diisi di .env lokal
-if (($db_pass === false || $db_pass === '') && file_exists(__DIR__ . '/db_pass.local.php')) {
+if (($db_pass === null || $db_pass === false || $db_pass === '') && file_exists(__DIR__ . '/db_pass.local.php')) {
     $db_pass = require __DIR__ . '/db_pass.local.php';
 }
+$db_pass = (string)($db_pass ?? '');
 
 if ($db_host === '' || $db_name === '' || $db_user === '') {
-    die("<h3>Konfigurasi Database Belum Lengkap</h3><p>Variabel environment <code>DB_HOST</code>, <code>DB_NAME</code>, atau <code>DB_USER</code> belum diatur. Salin <code>.env.example</code> menjadi <code>.env</code> di root proyek lalu isi kredensial Supabase Anda.</p>");
+    die("<h3>Konfigurasi Database Belum Lengkap</h3><p>Variabel environment <code>DB_HOST</code>, <code>DB_NAME</code>, atau <code>DB_USER</code> belum diatur. Di lokal, salin <code>.env.example</code> menjadi <code>.env</code>; di Render, isi pada menu <b>Environment Variables</b>.</p>");
 }
 
 // 3. Koneksi ke host remote Supabase wajib menggunakan sslmode=require
-$conn_string = "host={$db_host} port={$db_port} dbname={$db_name} user={$db_user} password='{$db_pass}' sslmode=require";
+$db_pass_escaped = str_replace(['\\', "'"], ['\\\\', "\\'"], $db_pass);
+$conn_string = "host={$db_host} port={$db_port} dbname={$db_name} user={$db_user} password='{$db_pass_escaped}' sslmode=require";
 
 // Eksekusi koneksi menggunakan fungsi native PostgreSQL PHP
 $conn = @pg_connect($conn_string);
