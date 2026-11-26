@@ -18,28 +18,29 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-$nama_pt     = trim($_POST['nama_pt'] ?? '');
-$nama_pj     = trim($_POST['nama_pj'] ?? '');
-$nik_pj      = trim($_POST['nik_pj'] ?? '');
-$no_telp     = trim($_POST['no_telp'] ?? '');
-$alamat_toko = trim($_POST['alamat_toko'] ?? '');
+$nama_pt     = trim((string)($_POST['nama_pt'] ?? ''));
+$nama_pj     = trim((string)($_POST['nama_pj'] ?? ''));
+$nik_pj_raw  = trim((string)($_POST['nik_pj'] ?? ''));
+$nik_pj      = $nik_pj_raw !== '' ? $nik_pj_raw : null;
+$no_telp     = trim((string)($_POST['no_telp'] ?? ''));
+$alamat_toko = trim((string)($_POST['alamat_toko'] ?? ''));
 
-if (empty($nama_pt) || empty($nama_pj) || empty($nik_pj) || empty($no_telp) || empty($alamat_toko)) {
-    header("Location: {$halaman_pos}?error=" . urlencode("Seluruh kolom data mitra PT wajib diisi lengkap."));
+if ($nama_pt === '' || $nama_pj === '' || $no_telp === '' || $alamat_toko === '') {
+    header("Location: {$halaman_pos}?error=" . urlencode("Nama PT, Penanggung Jawab, No. Telepon, dan Alamat Toko wajib diisi."));
     exit();
 }
 
 // Cek duplikasi Nama PT
-$q_cek = "SELECT id_customer FROM customers WHERE LOWER(nama_pt) = LOWER($1) LIMIT 1";
+$q_cek = "select id_customer from public.customers where lower(nama_pt) = lower($1) limit 1";
 $res_cek = pg_query_params($conn, $q_cek, [$nama_pt]);
 if ($res_cek && pg_num_rows($res_cek) > 0) {
     header("Location: {$halaman_pos}?error=" . urlencode("Mitra PT dengan nama '{$nama_pt}' sudah terdaftar."));
     exit();
 }
 
-$query = "INSERT INTO customers (nama_pt, nama_pj, nik_pj, no_telp, alamat_toko, created_at)
-          VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
-          RETURNING id_customer";
+$query = "insert into public.customers (nama_pt, nama_pj, nik_pj, no_telp, alamat_toko, created_at)
+          values ($1, $2, $3, $4, $5, current_timestamp)
+          returning id_customer";
 $res = pg_query_params($conn, $query, [$nama_pt, $nama_pj, $nik_pj, $no_telp, $alamat_toko]);
 
 if ($res && pg_num_rows($res) > 0) {

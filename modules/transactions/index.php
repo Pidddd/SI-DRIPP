@@ -395,7 +395,7 @@ $palet = [
               <option value="<?= (int)$c['id_customer'] ?>"
                       data-nama-pt="<?= e($c['nama_pt']) ?>"
                       data-pj="<?= e($c['nama_pj']) ?>"
-                      data-nik="<?= e($c['nik_pj']) ?>"
+                      data-nik="<?= e($c['nik_pj'] ?? '') ?>"
                       data-telp="<?= e($c['no_telp']) ?>"
                       data-alamat="<?= e($c['alamat_toko']) ?>">
                 <?= e($c['nama_pt']) ?> (PJ: <?= e($c['nama_pj']) ?>)
@@ -611,8 +611,8 @@ $palet = [
             <input type="text" id="modal_nama_pj" name="nama_pj" class="input" placeholder="Nama lengkap PJ" required>
           </div>
           <div class="field">
-            <label for="modal_nik_pj">NIK / Identitas PJ *</label>
-            <input type="text" id="modal_nik_pj" name="nik_pj" class="input mono" placeholder="16 Digit NIK KTP" maxlength="20" required>
+            <label for="modal_nik_pj">NIK Penanggung Jawab (Opsional)</label>
+            <input type="text" id="modal_nik_pj" name="nik_pj" class="input mono" placeholder="Opsional (16 digit NIK KTP)" maxlength="20">
           </div>
         </div>
 
@@ -693,7 +693,7 @@ function pilihMitra(idCustomer) {
 
   document.getElementById('disp-nama-pt').textContent     = namaPt;
   document.getElementById('disp-nama-pj').textContent     = pj;
-  document.getElementById('disp-nik-pj').textContent      = nik;
+  document.getElementById('disp-nik-pj').textContent      = nik || '-';
   document.getElementById('disp-no-telp').textContent     = telp;
   document.getElementById('disp-alamat-toko').textContent = alamat;
 

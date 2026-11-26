@@ -244,7 +244,7 @@ $jml_tampil = count($customers);
             >
           </div>
           <div class="field">
-            <label for="field_nik_pj">NIK PJ (Opsional)</label>
+            <label for="field_nik_pj">NIK Penanggung Jawab (Opsional)</label>
             <input
               type="text"
               id="field_nik_pj"
