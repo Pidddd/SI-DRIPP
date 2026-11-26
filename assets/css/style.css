@@ -1011,28 +1011,130 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
 .cart-head .order-no { font-size: 12px; color: var(--muted); margin-top: 2px; }
 .cart-customer { padding: 0 22px 14px; }
 
-/* Tabel Item Keranjang Kompak & Rapi (Tidak Turun Baris) */
+/* Tabel Item Keranjang Kompak & Rapi (Tidak Pernah Collapse 0px, Zero Horizontal Scroll) */
+.pos-cart-table-wrap {
+  display: block;
+  flex-shrink: 0;
+  min-height: 100px;
+  max-height: 290px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  background: var(--card);
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.pos-cart-table-wrap::-webkit-scrollbar {
+  width: 5px;
+}
+.pos-cart-table-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.pos-cart-table-wrap::-webkit-scrollbar-thumb {
+  background: var(--line-strong);
+  border-radius: 999px;
+}
+.pos-cart-table {
+  width: 100%;
+  table-layout: fixed;
+}
+.pos-cart-table .pos-col-item { width: auto; }
+.pos-cart-table .pos-col-qty  { width: 98px; }
+.pos-cart-table .pos-col-sub  { width: 92px; }
+.pos-cart-table .pos-col-del  { width: 38px; }
+.pos-cart-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.pos-cart-col-name {
+  min-width: 0;
+}
+.pos-cart-col-name strong {
+  display: block;
+  font-size: 12.5px;
+  line-height: 1.3;
+  word-break: break-word;
+}
+.pos-item-stock {
+  margin-top: 3px;
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+.pos-stock-ok {
+  color: var(--success);
+}
+.pos-stock-warn {
+  color: #D97706;
+}
+.pos-stock-empty {
+  color: var(--danger);
+}
+[data-theme="dark"] .pos-stock-warn {
+  color: #FBBF24;
+}
+.pos-qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  max-width: 100%;
+}
+.pos-qty-input {
+  width: 38px;
+  height: 26px;
+  padding: 0 2px;
+  text-align: center;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 7px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  -moz-appearance: textfield;
+}
+.pos-qty-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(180, 101, 30, 0.14);
+}
+.pos-qty-input::-webkit-outer-spin-button,
+.pos-qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 .cart .table th {
-  padding: 10px 10px; font-size: 10.5px; letter-spacing: .06em;
+  padding: 9px 4px; font-size: 10px; letter-spacing: .05em;
 }
 .cart .table th:first-child,
 .cart .table td:first-child {
-  padding-left: 18px;
+  padding-left: 14px; padding-right: 6px;
 }
 .cart .table th:last-child,
 .cart .table td:last-child {
-  padding-right: 16px; width: 34px;
+  padding-left: 2px; padding-right: 10px; width: 38px;
 }
 .cart .table td {
-  padding: 12px 8px; font-size: 13px; vertical-align: middle;
+  padding: 10px 4px; font-size: 12.5px; vertical-align: middle;
+}
+.cart .table td.pos-cart-col-sub {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .cart .table td.text-center {
   white-space: nowrap;
 }
 .cart .table td.text-center .btn-sm {
-  width: 28px; height: 28px; padding: 0; border-radius: 8px;
-  font-size: 14px; font-weight: 750; line-height: 1;
+  width: 24px; height: 26px; padding: 0; border-radius: 7px;
+  font-size: 13px; font-weight: 750; line-height: 1;
   display: inline-grid; place-items: center; vertical-align: middle;
+}
+.cart .table td.text-center .btn-sm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .cart .table td.text-center strong {
   display: inline-block; min-width: 24px; text-align: center;
@@ -1042,8 +1144,8 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
   white-space: nowrap;
 }
 .cart .table td:last-child .btn-sm {
-  width: 28px; height: 28px; padding: 0; border-radius: 8px;
-  font-size: 15px; line-height: 1;
+  width: 24px; height: 26px; padding: 0; border-radius: 7px;
+  font-size: 14px; line-height: 1;
   display: inline-grid; place-items: center; vertical-align: middle;
 }
 .cart-items { flex: 1; overflow-y: auto; padding: 4px 22px; border-top: 1px solid var(--line); min-height: 120px; }
@@ -1137,17 +1239,18 @@ table.table { width: 100%; border-collapse: separate; border-spacing: 0; }
     padding-bottom: 96px;
   }
   .pos-cart-pane {
+    display: block;
     position: static;
     top: auto;
     overflow-y: auto !important;
   }
   .pos-cart-pane > form {
-    display: flex;
-    flex-direction: column;
+    display: block;
+    height: auto;
     min-height: 100%;
   }
   .pos-cart-pane .cart-summary {
-    margin-top: auto;
+    margin-top: 0;
     padding-bottom: 96px;
   }
   .pos-catalog-pane::-webkit-scrollbar,
@@ -2107,121 +2210,136 @@ body.login-body {
 .modal-close { background: none; border: none; font-size: 24px; color: var(--faint); cursor: pointer; }
 
 /* ==========================================================================
-   INVOICE / NOTA FISIK & DIGITAL MKP STORE (A5 Landscape Ready)
+   INVOICE / NOTA FISIK & DIGITAL MKP STORE (A5 Landscape Padat — 13-15+ Item)
    ========================================================================== */
 .invoice-box {
-  max-width: 900px;
-  margin: 24px auto;
+  max-width: 920px;
+  margin: 18px auto 32px;
   background: var(--card);
   border: 1.5px solid var(--line);
   border-radius: var(--radius);
-  padding: 24px 28px;
+  padding: 20px 24px;
   box-shadow: var(--shadow);
   color: var(--ink);
   position: relative;
 }
-.invoice-head,
-.invoice-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 16px;
-  margin-bottom: 16px;
+.invoice-top-band {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr;
   gap: 16px;
+  align-items: start;
+  border-bottom: 2px solid var(--line-strong);
+  padding-bottom: 12px;
+  margin-bottom: 12px;
 }
-.invoice-brand {
+.invoice-brand-col {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
 }
 .invoice-logo {
-  max-height: 52px;
-  max-width: 140px;
+  max-height: 50px;
+  max-width: 112px;
   object-fit: contain;
   border-radius: 8px;
   flex-shrink: 0;
 }
+.invoice-brand-text {
+  min-width: 0;
+}
 .invoice-brand-text h2 {
-  font-size: 15.5px;
+  font-size: 14.5px;
   font-weight: 800;
-  color: #3B2314;
+  color: var(--ink);
   margin: 0 0 2px;
   letter-spacing: -0.01em;
 }
 .invoice-company-sub {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 650;
-  color: #9A5B25;
-  margin-bottom: 3px;
+  color: var(--primary);
+  margin-bottom: 2px;
+  line-height: 1.3;
 }
 .invoice-company-contact {
   font-size: 10.5px;
   color: var(--muted);
-  line-height: 1.4;
+  line-height: 1.35;
 }
-.invoice-head-meta {
-  text-align: right;
+.invoice-cust-col {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+.invoice-cust-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed var(--line-strong);
+}
+.invoice-title-group {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
 }
 .invoice-title {
-  font-size: 17px;
-  font-weight: 800;
-  color: #3B2314;
-  letter-spacing: 0.04em;
+  font-size: 14px;
+  font-weight: 850;
+  color: var(--ink);
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   margin: 0;
 }
 .invoice-no {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 750;
-  color: #9A5B25;
+  color: var(--primary);
 }
 .invoice-badges {
-  display: flex;
-  gap: 6px;
+  display: inline-flex;
+  gap: 5px;
   align-items: center;
-  margin-top: 2px;
+  flex-wrap: wrap;
 }
-
-/* Meta section (Customer & Trx Info) */
-.invoice-meta,
-.invoice-meta-grid {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 16px;
-  padding: 12px 16px;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  margin-bottom: 16px;
-  font-size: 12px;
+.invoice-badges .badge {
+  padding: 2px 8px;
+  font-size: 10.5px;
 }
-.invoice-meta-col {
+.invoice-cust-meta {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
+  font-size: 11.5px;
+  line-height: 1.3;
 }
-.invoice-meta-label {
-  font-size: 10px;
+.invoice-kv-line {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 6px;
+  align-items: baseline;
+}
+.invoice-kv-k {
+  font-size: 10.5px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--muted);
-  margin-bottom: 1px;
 }
-.invoice-meta-value {
-  font-size: 12.5px;
-  font-weight: 700;
+.invoice-kv-v {
   color: var(--ink);
+  word-break: break-word;
 }
 
-/* Table wrap & table */
+/* Tabel 6 Kolom Padat (1 Baris Tipis per Produk) */
 .invoice-table-wrap {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   overflow: hidden;
@@ -2229,22 +2347,31 @@ body.login-body {
 .invoice-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  table-layout: fixed;
+  font-size: 11.5px;
 }
+.invoice-table .inv-col-no    { width: 4%; }
+.invoice-table .inv-col-sku   { width: 12%; }
+.invoice-table .inv-col-nama  { width: 42%; }
+.invoice-table .inv-col-harga { width: 15%; }
+.invoice-table .inv-col-qty   { width: 9%; }
+.invoice-table .inv-col-total { width: 18%; }
 .invoice-table thead th {
   background: var(--table-head-bg);
-  color: #3B2314;
+  color: var(--ink);
   font-weight: 750;
-  font-size: 11px;
-  padding: 8px 10px;
+  font-size: 10.5px;
+  padding: 6px 6px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  border-bottom: 1.5px solid var(--line);
+  border-bottom: 1.5px solid var(--line-strong);
+  white-space: nowrap;
 }
 .invoice-table tbody td {
-  padding: 8px 10px;
+  padding: 5px 6px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
+  line-height: 1.25;
 }
 .invoice-table tbody tr:last-child td {
   border-bottom: none;
@@ -2252,61 +2379,78 @@ body.login-body {
 .invoice-table tbody tr:nth-child(even) {
   background: var(--table-even-bg);
 }
+.inv-cell-name {
+  font-weight: 600;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inv-cell-nowrap {
+  white-space: nowrap;
+}
 
-/* Bottom Grid (Keterangan + Kalkulasi) */
+/* Footer Terpadu (Anti Terpotong) */
+.invoice-footer-block {
+  margin-top: 8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .invoice-bottom-grid {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 18px;
-  align-items: start;
-  margin-bottom: 14px;
+  grid-template-columns: 1.38fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+  margin-bottom: 8px;
 }
 .invoice-info-pane {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 6px;
 }
 .invoice-terbilang {
-  padding: 8px 12px;
+  padding: 6px 10px;
   background: var(--bg-soft);
-  border-left: 3.5px solid #9A5B25;
+  border-left: 3px solid var(--primary);
   border-radius: 4px;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--ink-2);
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .invoice-terbilang strong {
-  color: #3B2314;
+  color: var(--ink);
 }
 .invoice-bank-box {
-  padding: 8px 12px;
+  padding: 5px 10px;
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-xs);
   background: var(--card);
-  font-size: 11px;
-  line-height: 1.5;
+  font-size: 10.5px;
+  line-height: 1.35;
   color: var(--ink-2);
 }
 .invoice-bank-title {
   font-weight: 750;
-  color: #3B2314;
-  margin-bottom: 2px;
+  color: var(--ink);
+  margin-right: 4px;
 }
 .invoice-retur-note {
-  font-size: 10.5px;
+  font-size: 10px;
   font-style: italic;
   color: var(--muted);
-  line-height: 1.35;
+  line-height: 1.25;
 }
 
 /* Calculation summary */
 .invoice-calc-pane {
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  font-size: 12px;
+  justify-content: center;
+  gap: 3px;
+  font-size: 11.5px;
   background: var(--bg-soft);
-  padding: 12px 16px;
+  padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
 }
@@ -2324,19 +2468,19 @@ body.login-body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-top: 8px;
-  margin-top: 6px;
+  padding-top: 5px;
+  margin-top: 4px;
   border-top: 1.5px solid var(--line-strong);
-  font-size: 13.5px;
-  color: #3B2314;
+  font-size: 12.5px;
+  color: var(--ink);
 }
 .invoice-calc-total span {
   font-weight: 750;
 }
 .invoice-calc-total strong {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 800;
-  color: #9A5B25;
+  color: var(--primary);
 }
 
 /* Signatures */
@@ -2344,30 +2488,36 @@ body.login-body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
-  margin-top: 14px;
-  padding-top: 10px;
+  margin-top: 8px;
+  padding-top: 4px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .invoice-sign-box {
   text-align: center;
-  font-size: 11.5px;
+  font-size: 11px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 85px;
+  min-height: 64px;
 }
 .invoice-sign-title {
   font-weight: 700;
   color: var(--ink);
 }
 .invoice-sign-space {
-  height: 48px;
+  height: 34px;
 }
 .invoice-sign-name {
-  font-weight: 750;
-  border-top: 1px dotted var(--line-strong);
-  padding-top: 4px;
-  color: var(--ink-2);
+  font-weight: 650;
+  color: var(--muted);
   margin-top: auto;
+}
+@media (max-width: 780px) {
+  .invoice-top-band,
+  .invoice-bottom-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Komponen Kasir POS Mitra PT & Modal Dialog (Revisi Poin 6 - Zero Inline CSS) */
@@ -2756,38 +2906,43 @@ body.login-body {
 }
 
 /* ==========================================================================
-   PRINT STYLESHEET — A5 LANDSCAPE (MKP STORE INVOICE STANDARDS)
+   PRINT STYLESHEET — A5 LANDSCAPE PRESISI (MKP STORE PHYSICAL INVOICE)
    ========================================================================== */
 @page {
   size: A5 landscape;
-  margin: 8mm;
+  margin: 6mm 8mm;
 }
 
 @media print {
   /* Hilangkan seluruh chrome dan kontrol UI interaktif */
   .sidebar,
+  .sidebar-backdrop,
   .topbar,
   .page-actions,
   .role-switcher,
   .theme-toggle,
   .no-print,
   .modal-backdrop,
+  .confirm-backdrop,
   .modal,
   .toast-wrap,
+  .sd-select-menu,
   .footer {
     display: none !important;
   }
 
-  /* Reset layout kanvas cetak */
+  /* Reset layout kanvas cetak penuh A5 Landscape */
   html,
   body {
     background: #FFFFFF !important;
     color: #2B1B12 !important;
-    font-size: 8.8pt !important;
-    line-height: 1.25 !important;
+    font-size: 8.5pt !important;
+    line-height: 1.2 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -2795,6 +2950,7 @@ body.login-body {
   /* PAKSA MATIKAN DARK MODE SAAT PRINT SUPAYA HEMAT TINTA & BERSIH */
   [data-theme="dark"],
   [data-theme="dark"] body,
+  [data-theme="dark"] .app,
   [data-theme="dark"] .main,
   [data-theme="dark"] .content,
   [data-theme="dark"] .invoice-box {
@@ -2802,105 +2958,129 @@ body.login-body {
     color: #2B1B12 !important;
   }
 
+  .app,
   .main,
   .content {
+    display: block !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
-    max-width: 100% !important;
+    max-width: none !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  /* Box Invoice A5 Landscape */
+  /* Kontainer Nota: Lebar penuh A5 Landscape tanpa bayangan/border luar */
   .invoice-box {
+    width: 100% !important;
+    max-width: none !important;
     box-shadow: none !important;
-    border: 1px solid #E8D5BC !important;
-    border-radius: 6px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
     margin: 0 !important;
-    padding: 3mm 4mm !important;
-    max-width: 100% !important;
+    padding: 0 !important;
     background: #FFFFFF !important;
     color: #2B1B12 !important;
   }
 
-  .invoice-head,
-  .invoice-header {
-    border-bottom: 1.5px solid #E8D5BC !important;
-    padding-bottom: 6px !important;
-    margin-bottom: 6px !important;
-    gap: 10px !important;
+  /* Kop & Header 2 Kolom Padat */
+  .invoice-top-band {
+    display: grid !important;
+    grid-template-columns: 1.08fr 1fr !important;
+    gap: 8px !important;
+    border-bottom: 1.5px solid #C8A682 !important;
+    padding-bottom: 5px !important;
+    margin-bottom: 5px !important;
   }
 
-  .invoice-brand {
-    gap: 10px !important;
+  .invoice-brand-col {
+    gap: 8px !important;
   }
 
   .invoice-logo {
-    max-height: 38px !important;
-    max-width: 100px !important;
+    max-height: 36px !important;
+    max-width: 84px !important;
+    border-radius: 4px !important;
   }
 
   .invoice-brand-text h2 {
-    font-size: 11pt !important;
+    font-size: 10.5pt !important;
     color: #3B2314 !important;
-    margin-bottom: 1px !important;
+    margin: 0 0 1px !important;
   }
 
   .invoice-company-sub {
-    font-size: 7.5pt !important;
+    font-size: 7pt !important;
     color: #9A5B25 !important;
     margin-bottom: 1px !important;
   }
 
   .invoice-company-contact {
-    font-size: 7pt !important;
+    font-size: 6.8pt !important;
     color: #4A3222 !important;
-    line-height: 1.25 !important;
+    line-height: 1.2 !important;
+  }
+
+  .invoice-cust-col {
+    background: #FDF9F4 !important;
+    border: 1px solid #E5D4BE !important;
+    border-radius: 4px !important;
+    padding: 4px 7px !important;
+    gap: 3px !important;
+  }
+
+  .invoice-cust-title-row {
+    padding-bottom: 3px !important;
+    border-bottom: 1px dashed #D6B792 !important;
   }
 
   .invoice-title {
-    font-size: 11.5pt !important;
+    font-size: 10pt !important;
     color: #3B2314 !important;
   }
 
   .invoice-no {
-    font-size: 9.5pt !important;
+    font-size: 8.8pt !important;
     color: #9A5B25 !important;
   }
 
   .invoice-badges .badge {
-    padding: 2px 6px !important;
+    padding: 1px 5px !important;
+    font-size: 6.8pt !important;
+  }
+
+  .invoice-cust-meta {
     font-size: 7.5pt !important;
+    line-height: 1.2 !important;
+    gap: 1px !important;
   }
 
-  /* Meta info box */
-  .invoice-meta,
-  .invoice-meta-grid {
-    padding: 5px 8px !important;
-    margin-bottom: 6px !important;
-    background: #FDF8F2 !important;
-    border: 1px solid #E8D5BC !important;
-    font-size: 8pt !important;
-    gap: 10px !important;
+  .invoice-kv-line {
+    grid-template-columns: 54px minmax(0, 1fr) !important;
+    gap: 4px !important;
   }
 
-  .invoice-meta-label {
-    font-size: 6.5pt !important;
-    color: #846954 !important;
+  .invoice-kv-k {
+    font-size: 7pt !important;
+    color: #6B513E !important;
   }
 
-  .invoice-meta-value {
-    font-size: 8.5pt !important;
+  .invoice-kv-v {
     color: #2B1B12 !important;
   }
 
-  /* Tabel item cetak */
+  /* Tabel Produk 6 Kolom — 1 Baris Tipis per Item (~18px, Muat 13-15 Item/Halaman) */
   .invoice-table-wrap {
-    margin-bottom: 6px !important;
-    border: 1px solid #E8D5BC !important;
+    margin-bottom: 5px !important;
+    border: 1px solid #D8C2A8 !important;
+    border-radius: 3px !important;
   }
 
   .invoice-table {
-    font-size: 8pt !important;
+    width: 100% !important;
+    table-layout: fixed !important;
+    font-size: 9pt !important;
+    line-height: 1.2 !important;
   }
 
   .invoice-table thead {
@@ -2908,20 +3088,28 @@ body.login-body {
   }
 
   .invoice-table thead th {
-    background: #F7ECDC !important;
+    background: #F5E9D9 !important;
     color: #3B2314 !important;
     padding: 3px 6px !important;
     font-size: 7.5pt !important;
-    border-bottom: 1px solid #E8D5BC !important;
+    border-bottom: 1px solid #C8A682 !important;
   }
 
   .invoice-table tbody td {
     padding: 3px 6px !important;
-    border-bottom: 1px solid #E8D5BC !important;
+    font-size: 8.5pt !important;
+    line-height: 1.2 !important;
+    border-bottom: 1px solid #EADBCB !important;
+    color: #2B1B12 !important;
+  }
+
+  .inv-cell-name {
+    color: #2B1B12 !important;
+    font-weight: 600 !important;
   }
 
   .invoice-table tbody tr:nth-child(even) {
-    background: rgba(250, 243, 232, 0.4) !important;
+    background: #FCF8F2 !important;
   }
 
   .invoice-table tr {
@@ -2929,10 +3117,19 @@ body.login-body {
     page-break-inside: avoid !important;
   }
 
-  /* Bottom grid & Kalkulasi */
+  /* Blok Footer (Terbilang, Rekening, Total & Tanda Tangan) — Padat & Anti-Potong */
+  .invoice-footer-block {
+    margin-top: 6px !important;
+    font-size: 8.5pt !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   .invoice-bottom-grid {
-    gap: 10px !important;
-    margin-bottom: 6px !important;
+    display: grid !important;
+    grid-template-columns: 1.38fr 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 4px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
@@ -2943,39 +3140,53 @@ body.login-body {
     page-break-inside: avoid !important;
   }
 
+  .invoice-info-pane {
+    gap: 3px !important;
+  }
+
   .invoice-terbilang {
-    background: #FDF8F2 !important;
+    background: #FDF9F4 !important;
     border-left: 2.5px solid #9A5B25 !important;
-    padding: 4px 6px !important;
+    padding: 3px 6px !important;
     font-size: 7.5pt !important;
-    line-height: 1.25 !important;
+    line-height: 1.2 !important;
+    color: #2B1B12 !important;
+  }
+
+  .invoice-terbilang strong {
+    color: #3B2314 !important;
   }
 
   .invoice-bank-box {
     background: #FFFFFF !important;
-    border: 1px dashed #D6B792 !important;
-    padding: 4px 6px !important;
-    font-size: 7pt !important;
-    line-height: 1.25 !important;
+    border: 1px dashed #C8A682 !important;
+    padding: 3px 6px !important;
+    font-size: 7.2pt !important;
+    line-height: 1.2 !important;
+    color: #2B1B12 !important;
   }
 
   .invoice-bank-title {
-    font-size: 7pt !important;
+    font-size: 7.2pt !important;
     color: #3B2314 !important;
   }
 
   .invoice-retur-note {
     font-size: 6.8pt !important;
-    color: #846954 !important;
-    line-height: 1.2 !important;
+    color: #6B513E !important;
+    line-height: 1.15 !important;
   }
 
   .invoice-calc-pane {
-    background: #FDF8F2 !important;
-    border: 1px solid #E8D5BC !important;
+    background: #FDF9F4 !important;
+    border: 1px solid #E5D4BE !important;
     padding: 4px 8px !important;
     font-size: 8pt !important;
-    gap: 2.5px !important;
+    gap: 2px !important;
+  }
+
+  .invoice-calc-row {
+    color: #4A3222 !important;
   }
 
   .invoice-calc-row strong {
@@ -2983,28 +3194,29 @@ body.login-body {
   }
 
   .invoice-calc-total {
-    padding-top: 4px !important;
-    margin-top: 3px !important;
-    border-top: 1px solid #D6B792 !important;
+    padding-top: 3px !important;
+    margin-top: 2px !important;
+    border-top: 1px solid #C8A682 !important;
     font-size: 8.5pt !important;
+    color: #3B2314 !important;
   }
 
   .invoice-calc-total strong {
     color: #9A5B25 !important;
-    font-size: 10pt !important;
+    font-size: 9.5pt !important;
   }
 
-  /* Tanda Tangan */
+  /* Tanda Tangan Padat */
   .invoice-signatures {
     margin-top: 4px !important;
     padding-top: 2px !important;
-    gap: 20px !important;
+    gap: 24px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
   .invoice-sign-box {
-    min-height: 48px !important;
+    min-height: 38px !important;
     font-size: 7.5pt !important;
   }
 
@@ -3013,13 +3225,11 @@ body.login-body {
   }
 
   .invoice-sign-space {
-    height: 26px !important;
+    height: 20px !important;
   }
 
   .invoice-sign-name {
-    border-top: 1px dotted #846954 !important;
-    color: #2B1B12 !important;
-    padding-top: 2px !important;
+    color: #4A3222 !important;
   }
 
   /* Badges color exact print */
