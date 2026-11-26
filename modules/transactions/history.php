@@ -48,7 +48,7 @@ $q_history = "SELECT t.id_transaksi, t.waktu_transaksi, t.nama_pelanggan, t.kont
                       WHERE td.transactionsid_transaksi = t.id_transaksi) AS total_botol
               FROM transactions t
               LEFT JOIN users u ON t.userid_user = u.id_user
-              ORDER BY t.waktu_transaksi DESC";
+              ORDER BY t.waktu_transaksi DESC, t.id_transaksi DESC";
 $res_history   = pg_query($conn, $q_history);
 $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
 ?>
@@ -87,7 +87,7 @@ $total_riwayat = $res_history ? pg_num_rows($res_history) : 0;
       <h2>Daftar Riwayat Transaksi Penjualan</h2>
       <p>Klik tombol Cetak Nota pada kolom aksi untuk membuka halaman struk invoice resmi</p>
     </div>
-    <span class="badge neutral">Data Live Supabase</span>
+    <span class="badge neutral"><?= (int)$total_riwayat ?> Riwayat Transaksi Tercatat</span>
   </div>
 
   <div class="table-wrap">

@@ -21,6 +21,7 @@ $menu = [
     'Master Data' => [
         ['key' => 'categories',   'label' => 'Kategori Produk',  'icon' => 'tag',       'href' => 'modules/categories/index.php',    'roles' => ['super_admin', 'admin'],                  'built' => true],
         ['key' => 'products',     'label' => 'Master Produk',    'icon' => 'box',       'href' => 'modules/products/index.php',      'roles' => ['super_admin', 'admin'],                  'built' => true],
+        ['key' => 'customers',    'label' => 'Kelola Mitra',     'icon' => 'users',     'href' => 'modules/customers/index.php',     'roles' => ['super_admin', 'admin', 'kasir'],         'built' => true],
     ],
     'Gudang & Logistik' => [
         ['key' => 'inventory',    'label' => 'Inventaris Stok',  'icon' => 'box',       'href' => 'modules/inventory/index.php',     'roles' => ['super_admin', 'admin', 'staf_gudang'],    'built' => true],

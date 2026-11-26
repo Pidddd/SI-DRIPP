@@ -44,4 +44,26 @@ if (!$conn) {
 }
 
 // 5. Sinkronisasi zona waktu sesi PostgreSQL ke WIB (Asia/Jakarta)
-pg_query($conn, "SET TIME ZONE 'Asia/Jakarta';");
+pg_query($conn, "set time zone 'Asia/Jakarta';");
+
+// 6. Helper koneksi PDO PostgreSQL untuk modul berbasis prepared statement PDO
+if (!function_exists('get_pdo_connection')) {
+    function get_pdo_connection(): PDO {
+        static $pdo = null;
+        if ($pdo instanceof PDO) {
+            return $pdo;
+        }
+
+        global $db_host, $db_port, $db_name, $db_user, $db_pass;
+        $dsn = "pgsql:host={$db_host};port={$db_port};dbname={$db_name};sslmode=require";
+
+        $pdo = new PDO($dsn, $db_user, $db_pass, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ]);
+        $pdo->exec("set time zone 'Asia/Jakarta'");
+
+        return $pdo;
+    }
+}

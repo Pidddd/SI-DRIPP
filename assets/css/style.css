@@ -2838,14 +2838,14 @@ body.login-body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  min-height: 64px;
+  min-height: 112px;
 }
 .invoice-sign-title {
   font-weight: 700;
   color: var(--ink);
 }
 .invoice-sign-space {
-  height: 34px;
+  height: 75px;
 }
 .invoice-sign-name {
   font-weight: 650;
@@ -3252,7 +3252,7 @@ body.login-body {
    ========================================================================== */
 @page {
   size: A5 landscape;
-  margin: 6mm 8mm;
+  margin: 6mm 8mm 12mm 8mm;
 }
 
 @media print {
@@ -3312,18 +3312,18 @@ body.login-body {
     overflow: visible !important;
   }
 
-  /* Kontainer Nota: Lebar penuh A5 Landscape, Flexbox kolom penuh 1 halaman (134mm) agar TTD selalu di paling bawah */
+  /* Kontainer Nota: Lebar penuh A5 Landscape, Flexbox kolom agar TTD rapi dan tidak mepet batas bawah */
   .invoice-box {
     display: flex !important;
     flex-direction: column !important;
-    min-height: 134mm !important;
+    min-height: 126mm !important;
     width: 100% !important;
     max-width: none !important;
     box-shadow: none !important;
     border: 0 !important;
     border-radius: 0 !important;
     margin: 0 !important;
-    padding: 0 !important;
+    padding: 0 0 3mm 0 !important;
     background: #FFFFFF !important;
     color: #2B1B12 !important;
   }
@@ -3572,17 +3572,18 @@ body.login-body {
     font-size: 9.5pt !important;
   }
 
-  /* Tanda Tangan Padat */
+  /* Tanda Tangan & Stempel Basah */
   .invoice-signatures {
-    margin-top: 4px !important;
-    padding-top: 2px !important;
+    margin-top: 8px !important;
+    padding-top: 4px !important;
+    padding-bottom: 4px !important;
     gap: 24px !important;
     break-inside: avoid !important;
     page-break-inside: avoid !important;
   }
 
   .invoice-sign-box {
-    min-height: 38px !important;
+    min-height: 108px !important;
     font-size: 7.5pt !important;
   }
 
@@ -3591,7 +3592,7 @@ body.login-body {
   }
 
   .invoice-sign-space {
-    height: 20px !important;
+    height: 75px !important;
   }
 
   .invoice-sign-name {
@@ -4462,4 +4463,52 @@ body.login-body {
 }
 .inv-section-gap {
   margin-bottom: 28px !important;
+}
+
+/* Modul Kelola Mitra */
+.customer-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 320px;
+  max-width: 480px;
+}
+.customer-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+.customer-search-box .customer-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: inline-flex;
+}
+.customer-search-box .input {
+  padding-left: 36px;
+}
+.customer-address-cell {
+  max-width: 280px;
+  line-height: 1.45;
+  color: var(--ink-2);
+  word-break: break-word;
+}
+.customer-meta-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.inline-form {
+  display: inline-flex;
+  margin: 0;
+}
+@media (max-width: 640px) {
+  .customer-search-form {
+    max-width: 100%;
+    width: 100%;
+  }
 }

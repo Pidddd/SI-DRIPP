@@ -384,7 +384,7 @@ $palet = [
         <div class="cart-customer-header">
           <label for="select_customer" class="label">Mitra PT / Pelanggan HORECA</label>
           <button type="button" class="btn-add-mitra" onclick="bukaModalMitra()" title="Daftarkan mitra usaha baru">
-            <?= icon('plus', 13) ?> + Mitra Baru
+            <?= icon('plus', 13) ?> Mitra Baru
           </button>
         </div>
 
